@@ -13,14 +13,21 @@ import android.view.View;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinActivityViewModel;
+import com.digitalartsplayground.fantasycrypto.util.MyXAxisValueFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.github.mikephil.charting.charts.CandleStickChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.CandleData;
 import com.github.mikephil.charting.data.CandleDataSet;
 import com.github.mikephil.charting.data.CandleEntry;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class CoinActivity extends AppCompatActivity {
 
@@ -44,8 +51,47 @@ public class CoinActivity extends AppCompatActivity {
     private void init() {
 
         coinID = getIntent().getStringExtra(EXTRA_ID);
-        candleStickChart = findViewById(R.id.coin_fragment_candlestick_graph);
+        initCandleChart();
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
+
+
+        candleStickChart = findViewById(R.id.coin_fragment_candlestick_graph);
+        candleStickChart.setMinOffset(0);
+        candleStickChart.setHighlightPerDragEnabled(true);
+        candleStickChart.setDrawBorders(false);
+        candleStickChart.requestDisallowInterceptTouchEvent(true);
+        candleStickChart.setDoubleTapToZoomEnabled(false);
+        candleStickChart.getDescription().setEnabled(false);
+
+        XAxis xAxis = candleStickChart.getXAxis();
+        xAxis.setTextColor(Color.WHITE);
+        xAxis.setDrawGridLines(false);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(21.6f);
+        xAxis.setGranularityEnabled(true);
+        xAxis.setAvoidFirstLastClipping(true);
+        xAxis.setValueFormatter(new MyXAxisValueFormatter());
+        xAxis.setAxisLineColor(Color.GRAY);
+
+        YAxis rightYAxis = candleStickChart.getAxisRight();
+        rightYAxis.setDrawGridLines(true);
+        rightYAxis.setGridLineWidth(0.5f);
+        rightYAxis.setGridColor(Color.BLACK);
+        rightYAxis.setTextColor(Color.WHITE);
+        rightYAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
+
+        YAxis yAxis = candleStickChart.getAxisLeft();
+        yAxis.setDrawGridLines(false);
+        yAxis.setDrawLabels(false);
+        yAxis.setAxisLineColor(Color.TRANSPARENT);
+
+
+        Legend legend = candleStickChart.getLegend();
+        legend.setEnabled(false);
+    }
+
+    private void initCandleChart() {
+
     }
 
     private void subscribeObservers() {
@@ -66,14 +112,15 @@ public class CoinActivity extends AppCompatActivity {
         List<CandleEntry> candleEntries = new ArrayList<>(candleStickData.size());
         CandleEntry tempEntry;
 
-        for(List<Double> candleUnit : candleStickData){
+        for(List<Float> candleUnit : candleStickData){
             if(candleUnit.size() == 5) {
+
                 tempEntry = new CandleEntry(
-                        candleUnit.get(0).floatValue(),
-                        candleUnit.get(1).floatValue(),
-                        candleUnit.get(2).floatValue(),
-                        candleUnit.get(3).floatValue(),
-                        candleUnit.get(4).floatValue()
+                        (candleUnit.get(0) / 1000000f),
+                        candleUnit.get(2),
+                        candleUnit.get(3),
+                        candleUnit.get(1),
+                        candleUnit.get(4)
                 );
 
                 candleEntries.add(tempEntry);
@@ -81,17 +128,19 @@ public class CoinActivity extends AppCompatActivity {
         }
 
         CandleDataSet cds = new CandleDataSet(candleEntries, "Entries");
-        cds.setColor(Color.rgb(80, 80, 80));
-        cds.setShadowColor(Color.DKGRAY);
-        cds.setShadowWidth(0.7f);
+        cds.setShadowColor(Color.GRAY);
+        cds.setShadowWidth(0.8f);
         cds.setDecreasingColor(Color.RED);
         cds.setDecreasingPaintStyle(Paint.Style.FILL);
-        cds.setIncreasingColor(Color.rgb(122, 242, 84));
-        cds.setIncreasingPaintStyle(Paint.Style.STROKE);
-        cds.setNeutralColor(Color.BLUE);
-        cds.setValueTextColor(Color.RED);
+        cds.setIncreasingColor(Color.GREEN);
+        cds.setIncreasingPaintStyle(Paint.Style.FILL);
+        cds.setNeutralColor(Color.GRAY);
+        cds.setDrawValues(false);
         CandleData cd = new CandleData(cds);
         candleStickChart.setData(cd);
         candleStickChart.invalidate();
+
+
+
     }
 }
