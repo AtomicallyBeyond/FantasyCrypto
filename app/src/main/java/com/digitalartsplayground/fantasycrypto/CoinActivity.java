@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.view.View;
+import android.widget.Button;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinActivityViewModel;
@@ -37,6 +38,7 @@ public class CoinActivity extends AppCompatActivity {
     private String coinID;
     private CandleStickChart candleStickChart;
     private CoinActivityViewModel coinActivityViewModel;
+    private Button buyButton;
 
 
     @Override
@@ -45,17 +47,49 @@ public class CoinActivity extends AppCompatActivity {
         setContentView(R.layout.coin_layout);
 
         init();
-        subscribeObservers();
+
     }
 
     private void init() {
-
         coinID = getIntent().getStringExtra(EXTRA_ID);
-        initCandleChart();
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
-
-
         candleStickChart = findViewById(R.id.coin_fragment_candlestick_graph);
+        buyButton = findViewById(R.id.coin_buy_button);
+
+        initCandleChart();
+        setListeners();
+        subscribeObservers();
+
+    }
+
+
+    private void setListeners(){
+        buyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CoinBottomFragment bottomFragment = new CoinBottomFragment();
+                bottomFragment.show(getSupportFragmentManager(), "Bottom Sheet");
+            }
+        });
+    }
+
+
+    private void subscribeObservers() {
+        coinActivityViewModel.getLiveCandleData().observe(this, new Observer<Resource<CandleStickData>>() {
+            @Override
+            public void onChanged(Resource<CandleStickData> candleStickDataResource) {
+                if(candleStickDataResource.status == Resource.Status.SUCCESS) {
+                    if(candleStickDataResource.data != null) {
+                        loadCandleStickGraph(candleStickDataResource.data);
+                    }
+                }
+            }
+        });
+
+        coinActivityViewModel.fetchCandleStickData(coinID);
+    }
+
+    private void initCandleChart() {
         candleStickChart.setMinOffset(0);
         candleStickChart.setHighlightPerDragEnabled(true);
         candleStickChart.setDrawBorders(false);
@@ -88,23 +122,6 @@ public class CoinActivity extends AppCompatActivity {
 
         Legend legend = candleStickChart.getLegend();
         legend.setEnabled(false);
-    }
-
-    private void initCandleChart() {
-
-    }
-
-    private void subscribeObservers() {
-        coinActivityViewModel.fetchCandleStickData(coinID).observe(this, new Observer<Resource<CandleStickData>>() {
-            @Override
-            public void onChanged(Resource<CandleStickData> candleStickDataResource) {
-                if(candleStickDataResource.status == Resource.Status.SUCCESS) {
-                    if(candleStickDataResource.data != null) {
-                        loadCandleStickGraph(candleStickDataResource.data);
-                    }
-                }
-            }
-        });
     }
 
     private void loadCandleStickGraph(CandleStickData candleStickData) {

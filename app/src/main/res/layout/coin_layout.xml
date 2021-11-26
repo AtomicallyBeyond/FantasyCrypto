@@ -144,6 +144,17 @@
      android:layout_height="400dp"
      android:layout_marginTop="4dp" />
 
+ <Button
+     android:id="@+id/coin_buy_button"
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+     android:text="BUY/SELL"
+     android:textSize="24sp"
+     android:textColor="@color/black"
+     android:backgroundTint="@color/green"
+     app:layout_anchor="@+id/coin_fragment_candlestick_graph"
+     app:layout_anchorGravity="bottom"/>
+
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
