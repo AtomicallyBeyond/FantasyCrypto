@@ -9,7 +9,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
-import com.digitalartsplayground.fantasycrypto.models.QuantityUnit;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 
@@ -32,7 +32,6 @@ public class CoinActivityViewModel extends AndroidViewModel {
         liveCandleData.addSource(liveData, new Observer<Resource<CandleStickData>>() {
             @Override
             public void onChanged(Resource<CandleStickData> candleStickDataResource) {
-                liveCandleData.removeSource(liveData);
                 liveCandleData.setValue(candleStickDataResource);
             }
         });
@@ -42,7 +41,7 @@ public class CoinActivityViewModel extends AndroidViewModel {
         return liveCandleData;
     }
 
-    public LiveData<QuantityUnit> getQuantityUnit(String id) {
+    public LiveData<CryptoAsset> getQuantityUnit(String id) {
         return repository.getQuantityByID(id);
     }
 }

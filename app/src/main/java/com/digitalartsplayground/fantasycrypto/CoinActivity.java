@@ -46,8 +46,15 @@ public class CoinActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.coin_layout);
 
-        init();
+        findViewById(R.id.coin_main_container).post(new Runnable() {
+            @Override
+            public void run() {
+                int a = findViewById(R.id.coin_main_container).getHeight();
+                int b = 1;
+            }
+        });
 
+        init();
     }
 
     private void init() {

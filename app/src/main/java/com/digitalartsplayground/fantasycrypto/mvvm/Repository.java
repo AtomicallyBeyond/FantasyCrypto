@@ -5,21 +5,21 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
-import com.digitalartsplayground.fantasycrypto.models.QuantityUnit;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
+import com.digitalartsplayground.fantasycrypto.persistence.CryptoAssetDao;
 import com.digitalartsplayground.fantasycrypto.persistence.CryptoDatabase;
 import com.digitalartsplayground.fantasycrypto.persistence.MarketDao;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.ServiceGenerator;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
-import com.digitalartsplayground.fantasycrypto.persistence.QuantityDao;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Repository {
@@ -28,7 +28,7 @@ public class Repository {
 
     private static Repository instance;
     private MarketDao marketDao;
-    private QuantityDao quantityDao;
+    private CryptoAssetDao cryptoAssetDao;
 
     public static Repository getInstance(Context context){
         if(instance == null){
@@ -40,7 +40,7 @@ public class Repository {
 
     private Repository(Context context) {
         marketDao = CryptoDatabase.getInstance(context).getMarketDao();
-        quantityDao = CryptoDatabase.getInstance(context).getQuantityDao();
+        cryptoAssetDao = CryptoDatabase.getInstance(context).getCryptoAssetDao();
     }
 
 
@@ -77,6 +77,7 @@ public class Repository {
             @NotNull
             @Override
             protected LiveData<ApiResponse<List<MarketUnit>>> createCall() {
+
                 return ServiceGenerator.getCryptoApi().getMarketData(
                         currency,
                         order,
@@ -100,7 +101,7 @@ public class Repository {
     }
 
 
-    public LiveData<QuantityUnit> getQuantityByID(String id){
-        return quantityDao.getQuantityUnit(id);
+    public LiveData<CryptoAsset> getQuantityByID(String id){
+        return cryptoAssetDao.getCryptoAsset(id);
     }
 }

@@ -8,10 +8,10 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
-import com.digitalartsplayground.fantasycrypto.models.QuantityUnit;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 
 
-@Database(entities = {MarketUnit.class, QuantityUnit.class}, version = 1)
+@Database(entities = {MarketUnit.class, CryptoAsset.class}, version = 1)
 @TypeConverters({Converters.class})
 public abstract class CryptoDatabase extends RoomDatabase {
 
@@ -32,6 +32,6 @@ public abstract class CryptoDatabase extends RoomDatabase {
 
     public abstract MarketDao getMarketDao();
 
-    public abstract QuantityDao getQuantityDao();
+    public abstract CryptoAssetDao getCryptoAssetDao();
 
 }

@@ -6,7 +6,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "quantities")
-public class QuantityUnit {
+public class CryptoAsset {
 
     @NonNull
     @PrimaryKey
@@ -16,11 +16,11 @@ public class QuantityUnit {
     @ColumnInfo(name = "amount")
     private float amount;
 
-    public QuantityUnit(){
+    public CryptoAsset(){
 
     }
 
-    public QuantityUnit(String id, float amount) {
+    public CryptoAsset(String id, float amount) {
         this.id = id;
         this.amount = amount;
     }

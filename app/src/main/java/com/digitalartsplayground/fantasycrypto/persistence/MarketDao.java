@@ -19,5 +19,8 @@ public interface MarketDao {
     @Query("SELECT * FROM market_data")
     LiveData<List<MarketUnit>> getMarketData();
 
+    @Query("SELECT coin_id FROM market_data")
+    List<String> getAllIds();
+
 
 }

@@ -101,12 +101,7 @@ public class MarketUnit {
     }
 
     public void setPercentChange(String percentChange) {
-
         this.percentChange = String.format("%.2f", Double.parseDouble(percentChange));
-
-    /*NumberFormat
-                .getNumberInstance(Locale.US)
-                .format(Double.parseDouble(percentChange));*/
     }
 
     public void setCurrencyName(String currencySymbol) {

@@ -6,17 +6,14 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
-import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
-import com.digitalartsplayground.fantasycrypto.models.QuantityUnit;
-
-import java.util.List;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 
 @Dao
-public interface QuantityDao {
+public interface CryptoAssetDao{
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    long[] insertMarketUnits(QuantityUnit... quantityUnits);
+    long[] insertCryptoAssets(CryptoAsset... cryptoAssets);
 
     @Query("SELECT * FROM quantities WHERE id=:id")
-    LiveData<QuantityUnit> getQuantityUnit(String id);
+    LiveData<CryptoAsset> getCryptoAsset(String id);
 }
