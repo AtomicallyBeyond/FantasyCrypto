@@ -6,18 +6,15 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import com.digitalartsplayground.fantasycrypto.adapters.SparkLineAdapter;
-import com.github.mikephil.charting.data.LineData;
+import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
-import java.text.NumberFormat;
-import java.util.Locale;
 
 @Entity(tableName = "market_data")
 public class MarketUnit {
 
-    @ColumnInfo(name = "currency_name")
-    private String currencyName;
+    @ColumnInfo(name = "time_stamp")
+    private String timeStamp;
 
     @SerializedName("name")
     @Expose
@@ -46,10 +43,50 @@ public class MarketUnit {
     @ColumnInfo(name = "current_price")
     private String currentPrice;
 
+    @SerializedName("market_cap")
+    @Expose
+    @ColumnInfo(name = "market_cap")
+    private String marketCap;
+
+    @SerializedName("market_cap_rank")
+    @Expose
+    @ColumnInfo(name = "market_cap_rank")
+    private String rank;
+
+    @SerializedName("fully_diluted_valuation")
+    @Expose
+    @ColumnInfo(name = "fully_diluted_valuation")
+    private String fullDiluted;
+
+    @SerializedName("total_volume")
+    @Expose
+    @ColumnInfo(name = "total_volume")
+    private String volume;
+
+    @SerializedName("circulating_supply")
+    @Expose
+    @ColumnInfo(name = "circulating_supply")
+    private String circulatingSupply;
+
+    @SerializedName("total_supply")
+    @Expose
+    @ColumnInfo(name = "total_supply")
+    private String totalSupply;
+
+    @SerializedName("max_supply")
+    @Expose
+    @ColumnInfo(name = "max_supply")
+    private String maxSupply;
+
     @SerializedName("price_change_percentage_24h_in_currency")
     @Expose
-    @ColumnInfo(name = "percent_change")
-    private String percentChange;
+    @ColumnInfo(name = "one_day_percent_change")
+    private String oneDayPercentChange;
+
+    @SerializedName("price_change_percentage_7d_in_currency")
+    @Expose
+    @ColumnInfo(name = "seven_day_percent_change")
+    private String sevenDayPercentChange;
 
     @SerializedName("sparkline_in_7d")
     @Expose
@@ -67,10 +104,6 @@ public class MarketUnit {
 
     public SparkLineAdapter getSparkLineAdapter() {
         return sparkLineData.getSparkLineAdapter();
-    }
-
-    public String getCurrencyName() {
-        return currencyName;
     }
 
     public String getCoinName() {
@@ -96,16 +129,22 @@ public class MarketUnit {
 
     public void setCurrentPrice(String currentPrice) {
 
+        float price = Float.valueOf(currentPrice);
 
-        this.currentPrice = "$" + String.format("%s", currentPrice);;
+        if(price < 0.0001) {
+            this.currentPrice = NumberFormatter.roundToLastDecimalDigits(price, 3);
+        } else {
+            this.currentPrice = currentPrice;
+        }
     }
 
-    public void setPercentChange(String percentChange) {
-        this.percentChange = String.format("%.2f", Double.parseDouble(percentChange));
-    }
+    public void setOneDayPercentChange(String oneDayPercentChange) {
 
-    public void setCurrencyName(String currencySymbol) {
-        this.currencyName = currencyName;
+        if(oneDayPercentChange != null) {
+            int a = 1;
+            this.oneDayPercentChange = String.format("%.2f", Double.parseDouble(oneDayPercentChange));
+        }
+
     }
 
     public String getCoinID() {
@@ -127,67 +166,80 @@ public class MarketUnit {
         return currentPrice;
     }
 
-    public String getPercentChange() {
-        return percentChange;
+    public String getOneDayPercentChange() {
+        return oneDayPercentChange;
     }
 
+    public String getMarketCap() {
+        return marketCap;
+    }
+
+    public void setMarketCap(String marketCap) {
+        this.marketCap = marketCap;
+    }
+
+    public String getRank() {
+        return rank;
+    }
+
+    public void setRank(String rank) {
+        this.rank = rank;
+    }
+
+    public String getFullDiluted() {
+        return fullDiluted;
+    }
+
+    public void setFullDiluted(String fullDiluted) {
+        this.fullDiluted = fullDiluted;
+    }
+
+    public String getVolume() {
+        return volume;
+    }
+
+    public void setVolume(String volume) {
+        this.volume = volume;
+    }
+
+    public String getCirculatingSupply() {
+        return circulatingSupply;
+    }
+
+    public void setCirculatingSupply(String circulatingSupply) {
+        this.circulatingSupply = circulatingSupply;
+    }
+
+    public String getTotalSupply() {
+        return totalSupply;
+    }
+
+    public void setTotalSupply(String totalSupply) {
+        this.totalSupply = totalSupply;
+    }
+
+    public String getMaxSupply() {
+        return maxSupply;
+    }
+
+    public void setMaxSupply(String maxSupply) {
+        this.maxSupply = maxSupply;
+    }
+
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public String getSevenDayPercentChange() {
+        return sevenDayPercentChange;
+    }
+
+    public void setSevenDayPercentChange(String sevenDayPercentChange) {
+        this.sevenDayPercentChange = sevenDayPercentChange;
+    }
 }
 
-
-
-
-/*    @ColumnInfo(name = "spark_line_data")
-    private String sparkString;
-
-    public String getSparkString() {
-        return sparkString;
-    }
-
-    public void setSparkString(String sparkString) {
-        this.sparkString = sparkString;
-        Type listType = new TypeToken<List<Double>>(){}.getType();
-        sparkLineData.setPrice(new Gson().fromJson(sparkString, listType));
-    }
-
-    public Sparkline getSparkLineData() {
-        return sparkLineData;
-    }*/
-
-
-       /* sparkString = new Gson().toJson(sparkLineData.getPrice());
-
-        List<Entry> sparkEntries = new ArrayList<>(sparkLineData.getPrice().size());
-
-        int index = 0;
-        for(Double sparkUnit : sparkLineData.getPrice()) {
-            sparkEntries.add(new Entry(index, sparkUnit.floatValue()));
-            index++;
-        }
-
-        LineDataSet dataSet = new LineDataSet(sparkEntries, "");
-        dataSet.setDrawValues(false);
-
-        sparkLineData.setSparkLine(new LineData(dataSet));*/
-
-
-    /*    public void setSparkLineData(List<Double> sparkLineData) {
-        this.sparkLineData = sparkLineData;
-
-        sparkString = new Gson().toJson(sparkLineData);
-
-        List<Entry> sparkEntries = new ArrayList<>(sparkLineData.size());
-
-        int index = 0;
-        for(Double sparkUnit : sparkLineData) {
-            sparkEntries.add(new Entry(index, sparkUnit.floatValue()));
-        }
-
-        LineDataSet dataSet = new LineDataSet(sparkEntries, "");
-        dataSet.setDrawValues(false);
-
-        sparkLine = new LineData(dataSet);
-    }*/
-
-/*    public List<Double> getSparkLineData() {
-        return sparkLineData;
-    }*/

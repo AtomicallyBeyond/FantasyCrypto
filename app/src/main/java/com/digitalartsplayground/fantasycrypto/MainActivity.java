@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -15,6 +16,7 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 
 import com.digitalartsplayground.fantasycrypto.interfaces.MarketItemClickedListener;
+import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.github.mikephil.charting.charts.LineChart;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -27,6 +29,14 @@ public class MainActivity extends AppCompatActivity implements MarketItemClicked
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SharedPrefs sharedPrefs = SharedPrefs.getInstance(this.getApplication());
+        boolean isFirstTime = sharedPrefs.getIsFirstTime();
+
+        if(isFirstTime) {
+            sharedPrefs.setBalance(10000);
+            sharedPrefs.setFirstTime(false);
+        }
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(navListener);

@@ -50,7 +50,11 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
                     results.addSource(dbSource, new Observer<CacheObject>() {
                         @Override
                         public void onChanged(@Nullable CacheObject cacheObject) {
-                            setValue(Resource.success(cacheObject));
+
+                            if(cacheObject == null)
+                                setValue(Resource.error("Data does not exist in database", null));
+                            else
+                                setValue(Resource.success(cacheObject));
                         }
                     });
                 }
@@ -137,16 +141,16 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
                         @Override
                         public void onChanged(@Nullable CacheObject cacheObject) {
 
-
-
-
                             appExecutors.mainThread().execute(new Runnable() {
                                 @Override
                                 public void run() {
                                     results.addSource(loadFromDb(), new Observer<CacheObject>() {
                                         @Override
                                         public void onChanged(@Nullable CacheObject cacheObject) {
-                                            setValue(Resource.success(cacheObject));
+                                            if(cacheObject == null)
+                                                setValue(Resource.error("Data does not exist in database", null));
+                                            else
+                                                setValue(Resource.success(cacheObject));
                                         }
                                     });
                                 }

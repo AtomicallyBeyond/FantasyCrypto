@@ -13,12 +13,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.digitalartsplayground.fantasycrypto.adapters.MarketAdapter;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.MarketFragmentViewModel;
+import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
+import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 
 import java.util.List;
 
@@ -29,6 +32,7 @@ public class MarketFragment extends Fragment {
     private SearchView marketSearchView;
     private RecyclerView marketRecyclerView;
     private MarketAdapter marketAdapter;
+    private TextView marketBalance;
 
 
     @Override
@@ -46,12 +50,21 @@ public class MarketFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.market_fragment, container, false);
+        marketBalance = view.findViewById(R.id.market_balance_textview);
         initMarket(view);
         subscribeObservers();
 
         return view;
     }
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        float balance = SharedPrefs.getInstance(getContext().getApplicationContext()).getBalance();
+        marketBalance.setText(NumberFormatter.currency(balance));
+    }
 
     private void initMarket(View view){
         marketSearchView = view.findViewById(R.id.market_searchView);
@@ -63,6 +76,7 @@ public class MarketFragment extends Fragment {
         marketRecyclerView.setLayoutManager(linearLayoutManager);
         marketRecyclerView.setAdapter(marketAdapter);
     }
+
 
     private void setSearchViewListener(SearchView searchView) {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -79,9 +93,10 @@ public class MarketFragment extends Fragment {
         });
     }
 
+
     private void subscribeObservers() {
 
-        marketFragmentViewModel.fetchMarketData().observe(getViewLifecycleOwner(), new Observer<Resource<List<MarketUnit>>>() {
+        marketFragmentViewModel.getLiveMarketData().observe(getViewLifecycleOwner(), new Observer<Resource<List<MarketUnit>>>() {
             @Override
             public void onChanged(Resource<List<MarketUnit>> listResource) {
                 if(listResource.status == Resource.Status.SUCCESS) {
@@ -91,5 +106,11 @@ public class MarketFragment extends Fragment {
                 }
             }
         });
+
+        SharedPrefs
+                .getInstance(getActivity().getApplication())
+                .setTimeStamp(String.valueOf(System.currentTimeMillis()/1000));
+
+        marketFragmentViewModel.fetchMarketData(6);
     }
 }

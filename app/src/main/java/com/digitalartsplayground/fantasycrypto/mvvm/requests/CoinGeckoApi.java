@@ -3,6 +3,7 @@ package com.digitalartsplayground.fantasycrypto.mvvm.requests;
 import androidx.lifecycle.LiveData;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
+import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
 
@@ -38,5 +39,8 @@ public interface CoinGeckoApi {
             @Path("id") String id,
             @Query("vs_currency")String currency,
             @Query("days") String days);
+
+    @GET("coins/{id}")
+    LiveData<ApiResponse<DeveloperUnit>> getDeveloperData(@Path("id") String id);
 
 }

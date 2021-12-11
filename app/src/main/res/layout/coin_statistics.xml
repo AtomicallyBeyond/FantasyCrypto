@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="20dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="8dp"
+    android:background="@color/black">
+
+    <LinearLayout
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:background="@color/app_gray"
+        app:layout_constraintStart_toEndOf="@+id/statistic_middle_line"
+        app:layout_constraintTop_toTopOf="@+id/coin_market_cap"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+        android:id="@+id/market_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MARKET"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/statistic_middle_line"/>
+
+    <TextView
+        android:id="@+id/coin_market_cap_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingStart="4dp"
+        android:text="Market Cap"
+        android:textColor="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/market_title"
+        app:layout_constraintEnd_toStartOf="@+id/coin_market_cap"
+        app:layout_constraintHorizontal_bias="0"/>
+
+    <TextView
+        android:id="@+id/coin_market_cap"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="8dp"
+        android:text="1.08T"
+        android:textColor="@color/white"
+        android:gravity="right"
+        app:layout_constraintStart_toEndOf="@+id/coin_market_cap_title"
+        app:layout_constraintTop_toBottomOf="@+id/market_title"
+        app:layout_constraintEnd_toStartOf="@+id/statistic_middle_line"/>
+
+    <TextView
+        android:id="@+id/coin_fully_diluted_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingStart="4dp"
+        android:text="Fully Diluted"
+        android:textColor="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/coin_market_cap_title"
+        app:layout_constraintEnd_toStartOf="@+id/coin_fully_dilluted"
+        app:layout_constraintHorizontal_bias="0"/>
+
+    <TextView
+        android:id="@+id/coin_fully_dilluted"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="8dp"
+        android:text="$1.7T"
+        android:textColor="@color/white"
+        android:gravity="right"
+        app:layout_constraintStart_toEndOf="@+id/coin_fully_diluted_title"
+        app:layout_constraintTop_toBottomOf="@+id/coin_market_cap"
+        app:layout_constraintEnd_toStartOf="@+id/statistic_middle_line"/>
+
+    <TextView
+        android:id="@+id/coin_volume_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingStart="4dp"
+        android:text="24h Volume"
+        android:textColor="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/coin_fully_diluted_title"
+        app:layout_constraintEnd_toStartOf="@+id/coin_volume"
+        app:layout_constraintHorizontal_bias="0"/>
+
+    <TextView
+        android:id="@+id/coin_volume"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="8dp"
+        android:text="$3.2B"
+        android:textColor="@color/white"
+        android:gravity="right"
+        app:layout_constraintStart_toEndOf="@+id/coin_volume_title"
+        app:layout_constraintTop_toBottomOf="@+id/coin_fully_dilluted"
+        app:layout_constraintEnd_toStartOf="@+id/statistic_middle_line"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/statistic_middle_line"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5"/>
+
+
+    <TextView
+        android:id="@+id/supply_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SUPPLY"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/statistic_middle_line"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/coin_circ_supply_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:paddingEnd="4dp"
+        android:text="Circulating"
+        android:textColor="@color/white"
+        android:gravity="left"
+        app:layout_constraintStart_toEndOf="@+id/statistic_middle_line"
+        app:layout_constraintTop_toBottomOf="@+id/supply_title"
+        app:layout_constraintEnd_toStartOf="@+id/coin_circ_supply"
+        app:layout_constraintHorizontal_bias="0"/>
+
+    <TextView
+        android:id="@+id/coin_circ_supply"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="4dp"
+        android:text="18,887,118 BTC"
+        android:textColor="@color/white"
+        android:gravity="right"
+        app:layout_constraintStart_toEndOf="@+id/coin_circ_supply_title"
+        app:layout_constraintTop_toBottomOf="@+id/supply_title"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/coin_total_supply_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="4dp"
+        android:text="Total"
+        android:textColor="@color/white"
+        android:gravity="left"
+        app:layout_constraintStart_toEndOf="@+id/statistic_middle_line"
+        app:layout_constraintTop_toBottomOf="@+id/coin_circ_supply_title"
+        app:layout_constraintEnd_toStartOf="@+id/coin_total_supply"
+        app:layout_constraintHorizontal_bias="0"/>
+
+    <TextView
+        android:id="@+id/coin_total_supply"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="4dp"
+        android:text="18,887,118 BTC"
+        android:textColor="@color/white"
+        android:gravity="right"
+        app:layout_constraintStart_toEndOf="@+id/coin_circ_supply_title"
+        app:layout_constraintTop_toBottomOf="@+id/coin_circ_supply"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/coin_max_supply_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="4dp"
+        android:text="Max"
+        android:textColor="@color/white"
+        android:gravity="left"
+        app:layout_constraintStart_toEndOf="@+id/statistic_middle_line"
+        app:layout_constraintTop_toBottomOf="@+id/coin_total_supply_title"
+        app:layout_constraintHorizontal_bias="0"/>
+
+    <TextView
+        android:id="@+id/coin_max_supply"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingEnd="4dp"
+        android:text="21,000,000 BTC"
+        android:textColor="@color/white"
+        android:gravity="right"
+        app:layout_constraintStart_toEndOf="@+id/coin_circ_supply_title"
+        app:layout_constraintTop_toBottomOf="@+id/coin_total_supply"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
