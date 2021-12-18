@@ -9,6 +9,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
+import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
+import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
@@ -74,26 +77,5 @@ public class MarketFragmentViewModel extends AndroidViewModel {
 
         }
     }
+
 }
-
-
-/*        for(int i = 0; i < 3; i++) {
-
-            repository.getMarketData(
-                    "usd",
-                    "market_cap_desc",
-                    "250",
-                    String.valueOf(i),
-                    "true",
-                    "24h");
-        }
-
-        return repository.getMarketData(
-                "usd",
-                "market_cap_desc",
-                "250",
-                "4",
-                "true",
-                "24h");
-    }*/
-

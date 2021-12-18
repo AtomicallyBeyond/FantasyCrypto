@@ -1,5 +1,5 @@
 package com.digitalartsplayground.fantasycrypto.interfaces;
 
-public interface MarketItemClickedListener {
+public interface ItemClickedListener {
     void onItemClicked(String id);
 }

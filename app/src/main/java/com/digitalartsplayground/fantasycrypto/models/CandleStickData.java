@@ -8,9 +8,8 @@ import java.util.List;
 
 public class CandleStickData extends ArrayList<List<Float>> {
 
-    private ArrayList<List<Float>> getCandleStickData(){
-        return this;
-    }
+    public ArrayList<List<Float>> getCandleStickData(){
+        return this; }
 
 
 }

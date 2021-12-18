@@ -14,7 +14,7 @@ import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.CryptoAssetDao;
 import com.digitalartsplayground.fantasycrypto.persistence.CryptoDatabase;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.DeveloperDao;
-import com.digitalartsplayground.fantasycrypto.persistence.Dao.CryptoOrdersDao;
+import com.digitalartsplayground.fantasycrypto.persistence.Dao.LimitOrderDao;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.MarketDao;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.ServiceGenerator;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
@@ -34,7 +34,7 @@ public class Repository {
     private MarketDao marketDao;
     private CryptoAssetDao cryptoAssetDao;
     private DeveloperDao developerDao;
-    private CryptoOrdersDao cryptoOrdersDao;
+    private LimitOrderDao limitOrderDao;
     private SharedPrefs sharedPrefs;
 
 
@@ -53,16 +53,44 @@ public class Repository {
         marketDao = cryptoDatabase.getMarketDao();
         cryptoAssetDao = cryptoDatabase.getCryptoAssetDao();
         developerDao = cryptoDatabase.getDeveloperDao();
-        cryptoOrdersDao = cryptoDatabase.getLimitDao();
+        limitOrderDao = cryptoDatabase.getLimitDao();
         sharedPrefs = SharedPrefs.getInstance(context);
     }
 
     public LiveData<List<LimitOrder>> getLimitOrders() {
-        return cryptoOrdersDao.getLimitOrders();
+        return limitOrderDao.getLimitOrders();
     }
 
     public void addLimitOrder(LimitOrder limitOrder) {
-        cryptoOrdersDao.insertLimit(limitOrder);
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                limitOrderDao.insertLimit(limitOrder);
+            }
+        });
+
+    }
+
+    public void updateLimitOrder(LimitOrder limitOrder) {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                limitOrderDao.updateLimit(limitOrder);
+            }
+        });
+    }
+
+    public LiveData<List<LimitOrder>> getActiveLimitOrders() {
+        return limitOrderDao.getActiveOrders();
+    }
+
+    public List<LimitOrder> getBackgroundActiveLimitOrders() {
+        return limitOrderDao.getBackgroundActiveOrders();
+    }
+
+    public LiveData<List<LimitOrder>> getFilledLimitOrders() {
+        return limitOrderDao.getFilledOrders();
     }
 
 
@@ -90,6 +118,9 @@ public class Repository {
         return cryptoAssetDao.getAllCryptoAsset();
     }
 
+    public LiveData<List<MarketUnit>> getAssetMarketUnits(List<String> coinIDs) {
+        return marketDao.getAssetMarketUnits(coinIDs);
+    }
 
     public LiveData<MarketUnit> getDatabaseMarketUnit(String id) {
         return marketDao.getMarketUnit(id);
@@ -115,7 +146,7 @@ public class Repository {
             @Override
             protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable DeveloperUnit data) {
 
-                if(data == null || data.getCoinDescription() == null || data.getClass() == null)
+                if(data == null || data.getCoinDescription() == null)
                     return true;
                 return false;
             }
@@ -176,7 +207,23 @@ public class Repository {
 
             @Override
             protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable List<MarketUnit> data) {
-                return true;
+
+                Long secondsTime = System.currentTimeMillis()/1000;
+                int count = sharedPrefs.getMarketDataFetcherCount();
+                boolean fiveMinutesPassed = secondsTime - sharedPrefs.getMarketDataTimeStamp() > 300;
+
+                if(fiveMinutesPassed || count < 8) {
+
+                    if(fiveMinutesPassed) {
+                        count = 0;
+                        sharedPrefs.setMarketDataTimeStamp(secondsTime);
+                    }
+
+                    sharedPrefs.setMarketDataFetcherCount(count + 1);
+                    return true;
+                }
+
+                return false;
             }
 
             @NonNull

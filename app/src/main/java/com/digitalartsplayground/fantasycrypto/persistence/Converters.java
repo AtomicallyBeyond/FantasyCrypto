@@ -50,4 +50,14 @@ public class Converters {
     public static boolean toBoolean(String booleanString) {
         return "1".equals(booleanString);
     }
+
+    @TypeConverter
+    public static String fromLong(long value) {
+        return String.valueOf(value);
+    }
+
+    @TypeConverter
+    public static long toLong(String longString) {
+        return Long.parseLong(longString);
+    }
 }

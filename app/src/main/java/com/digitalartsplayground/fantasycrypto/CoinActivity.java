@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.digitalartsplayground.fantasycrypto.fragments.CoinBottomFragment;
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
@@ -51,6 +52,7 @@ public class CoinActivity extends AppCompatActivity {
     private CandleStickChart candleStickChart;
     private CoinActivityViewModel coinActivityViewModel;
     private Button buyButton;
+    private Button sellButton;
 
     private TextView marketCap;
     private TextView fullyDiluted;
@@ -80,6 +82,7 @@ public class CoinActivity extends AppCompatActivity {
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
         candleStickChart = findViewById(R.id.coin_fragment_candlestick_graph);
         buyButton = findViewById(R.id.coin_buy_button);
+        sellButton = findViewById(R.id.coin_sell_button);
 
         marketCap = findViewById(R.id.coin_market_cap);
         fullyDiluted = findViewById(R.id.coin_fully_dilluted);
@@ -198,7 +201,7 @@ public class CoinActivity extends AppCompatActivity {
     private void loadURLImage(String urlString) {
         Glide.with(CoinActivity.this)
                 .load(urlString)
-                .placeholder(R.drawable.home)
+                .placeholder(R.drawable.blur)
                 .circleCrop()
                 .into(coinImage);
     }
@@ -208,7 +211,14 @@ public class CoinActivity extends AppCompatActivity {
         buyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CoinBottomFragment bottomFragment = CoinBottomFragment.getInstance(coinID);
+                CoinBottomFragment bottomFragment = CoinBottomFragment.getInstance(coinID, true);
+                bottomFragment.show(getSupportFragmentManager(), "Bottom Sheet");
+            }
+        });
+        sellButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CoinBottomFragment bottomFragment = CoinBottomFragment.getInstance(coinID, false);
                 bottomFragment.show(getSupportFragmentManager(), "Bottom Sheet");
             }
         });

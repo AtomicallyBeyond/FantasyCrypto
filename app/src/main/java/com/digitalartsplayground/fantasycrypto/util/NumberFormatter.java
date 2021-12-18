@@ -10,8 +10,9 @@ public class NumberFormatter {
     public static String roundToLastDecimalDigits(float f, int decimalPlace) {
 
         if(f != 0) {
+
             // split whole number and decimals
-            String[] floatParts = new BigDecimal(f).toPlainString().split("\\.");
+             String[] floatParts = new BigDecimal(f).toPlainString().split("\\.");
 
             int wholeNumberPortion = Integer.parseInt(floatParts[0]);
 
@@ -21,21 +22,30 @@ public class NumberFormatter {
             while (decimalPortion.charAt(numDecimalPlaces) == '0')
                 numDecimalPlaces++;
 
-            // get 3 digits to round
-            String toRound = decimalPortion.substring(numDecimalPlaces,
-                    numDecimalPlaces + (decimalPlace + 1));
+            int decimalDifference = decimalPortion.length() - (numDecimalPlaces + decimalPlace + 1);
 
-            int decimalForRounding = Math.round(Float.parseFloat(toRound) / 10);
+            if(decimalDifference >= 0) {
 
-            StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
 
-            sb.append(wholeNumberPortion);
-            sb.append(".");
-            for (int i = 0; i < numDecimalPlaces; i++)
-                sb.append("0");
-            sb.append(decimalForRounding);
+                // get 3 digits to round
+                String toRound = decimalPortion.substring(numDecimalPlaces,
+                        numDecimalPlaces + (decimalPlace + 1));
 
-            return sb.toString();
+                int decimalForRounding = Math.round(Float.parseFloat(toRound) / 10);
+
+                sb.append(wholeNumberPortion);
+                sb.append(".");
+                for (int i = 0; i < numDecimalPlaces; i++)
+                    sb.append("0");
+                sb.append(decimalForRounding);
+
+                return sb.toString();
+
+            } else {
+
+                return new BigDecimal(f).toPlainString();
+            }
 
         }
 
@@ -43,7 +53,7 @@ public class NumberFormatter {
     }
 
     private static String round(float d) {
-        DecimalFormat formatter = new DecimalFormat("#,###,###");
+        DecimalFormat formatter = new DecimalFormat("#,###,###.##");
 
         BigDecimal bd = new BigDecimal(Float.toString(d));
         bd = bd.setScale(3, BigDecimal.ROUND_HALF_UP);

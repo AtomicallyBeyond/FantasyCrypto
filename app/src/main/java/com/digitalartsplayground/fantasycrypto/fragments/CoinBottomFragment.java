@@ -1,4 +1,4 @@
-package com.digitalartsplayground.fantasycrypto;
+package com.digitalartsplayground.fantasycrypto.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -24,9 +24,10 @@ import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.room.ColumnInfo;
 
+import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
+import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinBottomViewModel;
 import com.digitalartsplayground.fantasycrypto.util.CryptoCalculator;
@@ -45,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 public class CoinBottomFragment extends BottomSheetDialogFragment {
 
     private final static String COIN_ID_ARG = "coin_id";
+    private final static String IS_BUY_ORDER = "isBuyOrder";
 
     private CoinBottomViewModel coinBottomViewModel;
     private Button buyButton;
@@ -68,15 +70,19 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     private Slider slider;
 
     private String coinID;
+    private boolean isBuyOrder;
     private MarketUnit marketUnit;
-    private CryptoAsset cryptoAsset;
+    private TradingType tradingType;
+    private OrderType orderType;
+    private float limitPrice;
 
 
-    public static CoinBottomFragment getInstance(String coinID) {
+    public static CoinBottomFragment getInstance(String coinID, boolean isBuyOrder) {
         CoinBottomFragment coinBottomFragment = new CoinBottomFragment();
 
         Bundle args = new Bundle();
         args.putString(COIN_ID_ARG, coinID);
+        args.putBoolean(IS_BUY_ORDER, isBuyOrder);
         coinBottomFragment.setArguments(args);
         return coinBottomFragment;
     }
@@ -95,7 +101,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
         Bundle args = getArguments();
         coinID = args.getString(COIN_ID_ARG);
-
+        isBuyOrder = args.getBoolean(IS_BUY_ORDER);
     }
 
     @NonNull
@@ -114,6 +120,12 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 
         coinBottomViewModel = new ViewModelProvider(this).get(CoinBottomViewModel.class);
+
+        if(isBuyOrder){
+            coinBottomViewModel.setLiveOrderType(OrderType.BUY);
+        } else {
+            coinBottomViewModel.setLiveOrderType(OrderType.SELL);
+        }
 
         View view = inflater.inflate(R.layout.coin_bottom_fragment, container, false);
         buyButton = view.findViewById(R.id.coin_bottom_buy_button);
@@ -151,20 +163,57 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
     }
 
+
     private void subscribeObservers(){
+
+        coinBottomViewModel.getLiveLimitPrice().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                if(s != null) {
+                    limitPrice = Float.parseFloat(s.replaceAll(",", ""));
+                }
+            }
+        });
+
+        coinBottomViewModel.getLiveMarketUnit().observe(getViewLifecycleOwner(), new Observer<MarketUnit>() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onChanged(MarketUnit marketUnit) {
+
+                CoinBottomFragment.this.marketUnit = marketUnit;
+                coinBottomViewModel.setLiveLimitPrice(marketUnit.getCurrentPrice());
+                limitEdit.setHint(marketUnit.getCurrentPrice());
+                amountType.setText(marketUnit.getCoinSymbol().toUpperCase());
+                showBalanceMessage();
+                subscribeObserverTypes();
+            }
+        });
+
+        if(coinBottomViewModel.getLiveMarketUnit().getValue() == null)
+            coinBottomViewModel.fetchMarketUnit(coinID);
+
+
+
+    }
+
+    private void subscribeObserverTypes() {
 
         coinBottomViewModel.getLiveOrderType().observe(getViewLifecycleOwner(), new Observer<OrderType>() {
             @Override
             public void onChanged(OrderType orderType) {
+
+                CoinBottomFragment.this.orderType = orderType;
+
                 if(orderType == OrderType.SELL) {
                     setSellLayout();
                 } else {
                     setBuyLayout();
                 }
 
-                String amountString = amountEdit.getText().toString();
-                if(!amountString.isEmpty()) {
-                    displayCalculatedValues(Float.valueOf(amountString));
+                float amount = getAmount();
+
+                if(amount != 0) {
+                    displayCalculatedValues(Float.valueOf(amount));
                 }
             }
         });
@@ -173,9 +222,11 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             @Override
             public void onChanged(TradingType tradingType) {
 
+                CoinBottomFragment.this.tradingType = tradingType;
+
                 if(tradingType == TradingType.MARKET) {
                     setMarketLayout();
-                    coinBottomViewModel.setLimitStringPrice(coinBottomViewModel.getMarketPrice());
+                    coinBottomViewModel.setLiveLimitPrice(marketUnit.getCurrentPrice());
                 } else {
                     setLimitLayout();
                 }
@@ -192,28 +243,11 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
                     setOrderCompletedLayout();
                 } else {
                     setOrderLayout();
-                    showBalanceMessage();
                 }
             }
         });
-
-        coinBottomViewModel.getLiveMarketUnit().observe(getViewLifecycleOwner(), new Observer<MarketUnit>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onChanged(MarketUnit marketUnit) {
-
-                coinBottomViewModel.setLimitStringPrice(marketUnit.getCurrentPrice());
-                coinBottomViewModel.setMarketStringPrice(marketUnit.getCurrentPrice());
-                limitEdit.setHint(marketUnit.getCurrentPrice());
-                amountType.setText(marketUnit.getCoinSymbol().toUpperCase());
-                showBalanceMessage();
-            }
-        });
-
-        if(coinBottomViewModel.getLiveMarketUnit().getValue() == null)
-            coinBottomViewModel.fetchMarketUnit(coinID);
-
     }
+
 
     private void setBuyLayout() {
         sellButton.setBackgroundColor(getResources().getColor(R.color.app_gray));
@@ -248,6 +282,12 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         backButton.setVisibility(View.INVISIBLE);
         confirmButton.setVisibility(View.GONE);
         confirmOder.setVisibility(View.INVISIBLE);
+
+        if(orderType == OrderType.SELL){
+            showCryptoBalance();
+        } else {
+            showBalanceMessage();
+        }
     }
 
     private void setConfirmationLayout() {
@@ -313,6 +353,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View view) {
                 coinBottomViewModel.setLiveTradingType(TradingType.MARKET);
+                limitEdit.setText(marketUnit.getCurrentPrice());
             }
         });
 
@@ -346,23 +387,18 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
                 } else if (s.toString().length() == 0){
 
-                    MarketUnit marketUnit = coinBottomViewModel.getLiveMarketUnit().getValue();
-
                     if(marketUnit != null)
-                        coinBottomViewModel.setLimitStringPrice(marketUnit.getCurrentPrice());
+                        coinBottomViewModel.setLiveLimitPrice(marketUnit.getCurrentPrice());
 
                 } else  {
-                    coinBottomViewModel.setLimitStringPrice(temp);
+                    coinBottomViewModel.setLiveLimitPrice(temp);
                 }
 
 
-                if(!amountEdit.getText().toString().isEmpty()) {
-                    float currentAmount = Float.parseFloat(amountEdit.getText().toString().replaceAll(",", ""));
+                float amount = getAmount();
 
-                    if(currentAmount > 0)
-                        displayCalculatedValues(currentAmount);
-                }
-
+                if(amount > 0)
+                    displayCalculatedValues(amount);
             }
         });
 
@@ -422,31 +458,35 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View view) {
 
-                LiveData<MarketUnit> liveMarketUnit = coinBottomViewModel.getLiveMarketUnit();
-                MarketUnit marketUnit = liveMarketUnit.getValue();
+                LiveData<CryptoAsset> liveAsset = coinBottomViewModel.getLiveCryptoAsset();
 
-                if(marketUnit == null) {
-                    liveMarketUnit.observe(getViewLifecycleOwner(), new Observer<MarketUnit>() {
+                if(liveAsset.getValue() == null) {
+
+                    liveAsset.observe(getViewLifecycleOwner(), new Observer<CryptoAsset>() {
                         @Override
-                        public void onChanged(MarketUnit marketUnit) {
-                            if(coinBottomViewModel.getLiveOrderType().getValue() == OrderType.SELL){
-                                confirmSellOrder(marketUnit);
+                        public void onChanged(CryptoAsset cryptoAsset) {
+
+                            if(orderType == OrderType.SELL){
+                                confirmSellOrder(cryptoAsset);
                             } else {
-                                confirmBuyOrder(marketUnit);
+                                confirmBuyOrder(cryptoAsset);
                             }
-                            liveMarketUnit.removeObserver(this::onChanged);
+
+                            liveAsset.removeObserver(this);
                         }
                     });
 
-                    coinBottomViewModel.fetchMarketUnit(coinID);
+                    coinBottomViewModel.fetchCryptoAsset(coinID);
                 } else {
 
-                    if(coinBottomViewModel.getLiveOrderType().getValue() == OrderType.SELL){
-                        confirmSellOrder(marketUnit);
+                    if(orderType == OrderType.SELL){
+                        confirmSellOrder(liveAsset.getValue());
                     } else {
-                        confirmBuyOrder(marketUnit);
+                        confirmBuyOrder(liveAsset.getValue());
                     }
                 }
+
+
             }
         });
 
@@ -470,7 +510,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             public void onValueChange(@NonNull @NotNull Slider slider, float value, boolean fromUser) {
 
 
-                if(coinBottomViewModel.getLiveOrderType().getValue() == OrderType.SELL){
+                if(orderType == OrderType.SELL){
 
                     LiveData<CryptoAsset> liveAsset = coinBottomViewModel.getLiveCryptoAsset();
 
@@ -484,7 +524,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
                                     setAmountFromSlider((value / 100) * cryptoAsset.getAmount());
                                 }
 
-                                liveAsset.removeObserver(this::onChanged);
+                                liveAsset.removeObserver(this);
                             }
                         });
 
@@ -500,21 +540,20 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
                 } else {
 
                     float amount = 0;
-                    float price = Float.valueOf(coinBottomViewModel.getStringLimitPrice());
                     float balance = SharedPrefs.getInstance(getContext()).getBalance();
 
                     switch ((int)value) {
                         case 25:
-                            amount = CryptoCalculator.calcTwentyFivePercent(balance, price);
+                            amount = CryptoCalculator.calcTwentyFivePercent(balance, limitPrice);
                             break;
                         case 50:
-                            amount = CryptoCalculator.calcFiftyPercent(balance, price);
+                            amount = CryptoCalculator.calcFiftyPercent(balance, limitPrice);
                             break;
                         case 75:
-                            amount = CryptoCalculator.calcSeventyFivePercent(balance, price);
+                            amount = CryptoCalculator.calcSeventyFivePercent(balance, limitPrice);
                             break;
                         case 100:
-                            amount = CryptoCalculator.calcMaxPercent(balance, price);
+                            amount = CryptoCalculator.calcMaxPercent(balance, limitPrice);
                             break;
                         default:
                             amount = 0;
@@ -528,7 +567,6 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
             }
         });
-
 
         slider.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -544,30 +582,6 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         });
     }
 
-    private void displayCalculatedValues(float amount) {
-
-        float fPrice = Float.parseFloat(coinBottomViewModel.getStringLimitPrice());
-        float calcFee = CryptoCalculator.calcFee(fPrice, amount);
-
-        if(coinBottomViewModel.getLiveOrderType().getValue() == OrderType.SELL){
-            if(fPrice > 0) {
-
-                float totalMinusFee = CryptoCalculator.calcAmountMinusFEE(fPrice, amount);
-
-                total.setText(NumberFormatter.currency(totalMinusFee));
-                fee.setText(NumberFormatter.currency(calcFee));
-            }
-        } else {
-
-            float totalWithFee = CryptoCalculator.calcAmountWithFee(fPrice, amount);
-
-            if(fPrice > 0) {
-                total.setText(NumberFormatter.currency(totalWithFee));
-                fee.setText(NumberFormatter.currency(calcFee));
-            }
-        }
-
-    }
 
     private void setAmountFromSlider(float amount) {
         if(amount == 0)
@@ -579,90 +593,46 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         }
     }
 
-    private void confirmSellOrder(MarketUnit marketUnit) {
 
-        CryptoAsset cryptoAsset = coinBottomViewModel.getLiveCryptoAsset().getValue();
-        float balance = SharedPrefs.getInstance(getActivity().getApplication()).getBalance();
-        float currentPrice = Float.parseFloat(coinBottomViewModel.getStringLimitPrice());
+    private void displayCalculatedValues(float amount) {
 
-        if (cryptoAsset != null) {
+        float calcFee = CryptoCalculator.calcFee(limitPrice, amount);
 
-            float amount;
+        if(orderType == OrderType.SELL){
+            if(limitPrice > 0) {
 
-            if(isEmpty(amountEdit) || getFloat(amountEdit) == 0) {
-                showConfirmationMessage("Amount must be greater than 0");
-                return;
-            } else {
-                amount = getFloat(amountEdit);
+                float totalMinusFee = CryptoCalculator.calcAmountMinusFEE(limitPrice, amount);
+
+                total.setText(NumberFormatter.currency(totalMinusFee));
+                fee.setText(NumberFormatter.currency(calcFee));
             }
-
-            if(cryptoAsset.getAmount() < amount) {
-                showConfirmationMessage("Insufficient Balance: \n" +
-                        marketUnit.getCoinSymbol().toUpperCase() +
-                        " = " +
-                        NumberFormatter.getDecimalWithCommas(cryptoAsset.getAmount(), 3));
-
-                return;
-
-            } else if(CryptoCalculator.calcAmountWithFee(currentPrice, amount) < 1.2f) {
-                showConfirmationMessage("Amount must be greater than " + String.valueOf(NumberFormatter
-                        .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(currentPrice), 2)));
-
-                return;
-            }
-
-            if(coinBottomViewModel.getLiveTradingType().getValue() == TradingType.MARKET ||
-                    currentPrice == Float.parseFloat(coinBottomViewModel.getStringLimitPrice())) {
-
-                placeMarketOrder(marketUnit.getCoinID(), currentPrice, amount, balance);
-            } else {
-                placeLimitOrder(marketUnit.getCoinID(), currentPrice, amount, balance);
-            }
-
         } else {
-            LiveData<CryptoAsset> liveAsset = coinBottomViewModel.getLiveCryptoAsset();
 
-            liveAsset.observe(getViewLifecycleOwner(), new Observer<CryptoAsset>() {
-                @Override
-                public void onChanged(CryptoAsset cryptoAsset) {
-                    int a = 1;
-                    liveAsset.removeObservers(getViewLifecycleOwner());
-                }
-            });
+            float totalWithFee = CryptoCalculator.calcAmountWithFee(limitPrice, amount);
 
-            coinBottomViewModel.fetchCryptoAsset(coinID);
+            if(limitPrice > 0) {
+                total.setText(NumberFormatter.currency(totalWithFee));
+                fee.setText(NumberFormatter.currency(calcFee));
+            }
         }
 
-
-
     }
 
 
-    private boolean isEmpty(EditText etText) {
-        return etText.getText().toString().trim().length() == 0;
-    }
-
-    private float getFloat(EditText editText) {
-        return Float.parseFloat(editText.getText().toString());
-    }
 
     //if a market order is being placed, coinBottomViewModel.getStringLimitPrice() will
     //always be updated with marketPrice when observing coinBottomViewModel.liveTradingType
-    private void confirmBuyOrder(MarketUnit marketUnit) {
+    private void confirmBuyOrder(@Nullable CryptoAsset cryptoAsset) {
 
         float balance = SharedPrefs.getInstance(getActivity().getApplication()).getBalance();
-        float currentPrice = Float.parseFloat(coinBottomViewModel.getStringLimitPrice());
-        float maxAmount = CryptoCalculator.calcMaxPercent(balance, currentPrice);
-        float amount;
+        float maxAmount = CryptoCalculator.calcMaxPercent(balance, limitPrice);
+        float amount = getAmount();
 
-        if(amountEdit.getText().toString().isEmpty()) {
+        if(amount == 0) {
 
             showConfirmationMessage("Amount must be greater than " + String.valueOf(NumberFormatter
-                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(currentPrice), 2)));
+                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2)));
             return;
-
-        } else {
-            amount = Float.parseFloat(amountEdit.getText().toString());
         }
 
 
@@ -675,23 +645,143 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
             return;
 
-        } else if(CryptoCalculator.calcAmountWithFee(currentPrice, amount) < 1.2f) {
+        } else if(CryptoCalculator.calcAmountWithFee(limitPrice, amount) < 1.2f) {
 
             showConfirmationMessage("Amount must be greater than " + String.valueOf(NumberFormatter
-                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(currentPrice), 2)));
+                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2)));
 
             return;
         }
 
-        if(coinBottomViewModel.getLiveTradingType().getValue() == TradingType.MARKET ||
-                currentPrice == Float.parseFloat(coinBottomViewModel.getStringLimitPrice())) {
+        if(tradingType == TradingType.MARKET ||
+                limitPrice == Float.parseFloat(marketUnit.getCurrentPrice().replaceAll(",", ""))) {
 
-            placeMarketOrder(marketUnit.getCoinID(), currentPrice, amount, balance);
+            placeMarketBuyOrder(amount, balance, cryptoAsset);
         } else {
-
-            placeLimitOrder(marketUnit.getCoinID(), currentPrice, amount, balance);
+            placeLimitOrder(amount, balance, true);
         }
     }
+
+
+    private void placeMarketBuyOrder(float amount, float balance, @Nullable CryptoAsset cryptoAsset){
+
+
+        float newBalance = balance - CryptoCalculator.calcAmountWithFee(limitPrice, amount);
+
+        if(cryptoAsset == null) {
+            coinBottomViewModel.saveCryptoAssetDB(new CryptoAsset(marketUnit.getCoinID(), amount));
+        } else {
+            coinBottomViewModel.saveCryptoAssetDB(new CryptoAsset(marketUnit.getCoinID(), amount + cryptoAsset.getAmount()));
+        }
+
+        SharedPrefs.getInstance(getActivity().getApplication()).setBalance(newBalance);
+
+        coinBottomViewModel.setLiveTradingStage(TradingStage.COMPLETED);
+
+        showConfirmationMessage("Buy Order Completed \n" + amount + " " +
+                marketUnit.getCoinSymbol().toUpperCase() + "purchased");
+
+    }
+
+
+    private void confirmSellOrder(@Nullable CryptoAsset cryptoAsset) {
+
+        float amount = getAmount();
+        float balance = SharedPrefs.getInstance(getActivity().getApplication()).getBalance();
+
+        if(amount == 0) {
+            showConfirmationMessage("Amount must be greater than 0");
+            return;
+        }
+
+        if(cryptoAsset.getAmount() < amount) {
+            showConfirmationMessage("Insufficient Balance: \n" +
+                    marketUnit.getCoinSymbol().toUpperCase() +
+                    " = " +
+                    NumberFormatter.getDecimalWithCommas(cryptoAsset.getAmount(), 3));
+
+            return;
+
+        } else if(CryptoCalculator.calcAmountWithFee(limitPrice, amount) < 1.2f) {
+            showConfirmationMessage("Amount must be greater than " + String.valueOf(NumberFormatter
+                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2)));
+
+            return;
+        }
+
+        if(tradingType == TradingType.MARKET ||
+                limitPrice == Float.parseFloat(marketUnit.getCurrentPrice())) {
+
+            placeMarketSellOrder(amount, balance, cryptoAsset);
+        } else {
+            placeLimitOrder(amount, balance, false);
+        }
+
+    }
+
+
+    private void placeMarketSellOrder(float amount, float balance, @Nullable CryptoAsset cryptoAsset){
+
+        if(cryptoAsset == null || cryptoAsset.getAmount() < amount) {
+            showConfirmationMessage("Insufficient Crypto");
+        } else {
+
+            float newBalance = balance + CryptoCalculator.calcAmount(limitPrice, amount);
+            float cryptoDifference = cryptoAsset.getAmount() - amount;
+
+            if(cryptoDifference> 0) {
+                cryptoAsset.setAmount(cryptoDifference);
+                cryptoAsset.setAmountName(
+                        NumberFormatter.getDecimalWithCommas(cryptoDifference, 2) +
+                        " " + marketUnit.getCoinSymbol().toUpperCase());
+                coinBottomViewModel.saveCryptoAssetDB(cryptoAsset);
+            } else {
+                coinBottomViewModel.deleteCryptoAssetDB(cryptoAsset);
+            }
+
+
+            SharedPrefs.getInstance(getActivity().getApplication()).setBalance(newBalance);
+
+            coinBottomViewModel.setLiveTradingStage(TradingStage.COMPLETED);
+            showConfirmationMessage("Sell Order Completed \n" + amount + " " +
+                    marketUnit.getCoinSymbol().toUpperCase() + "sold");
+        }
+    }
+
+
+    //need to handle limitOrder at marketPrice and ask user to confirm price point
+    private void placeLimitOrder(float amount, float balance, boolean isBuyOrder) {
+
+        String value;
+
+        if(isBuyOrder) {
+            SharedPrefs.getInstance(getActivity().getApplication()).
+                    setBalance(balance - CryptoCalculator.calcAmountWithFee(limitPrice, amount));
+            value = NumberFormatter.currency(CryptoCalculator.calcAmountWithFee(limitPrice, amount));
+        } else {
+            value = NumberFormatter.currency(CryptoCalculator.calcAmountMinusFEE(limitPrice, amount));
+        }
+
+
+        LimitOrder limitOrder =
+                new LimitOrder(
+                        marketUnit.getCoinID(),
+                        marketUnit.getCoinName(),
+                        marketUnit.getCoinSymbol(),
+                        value,
+                        limitPrice,
+                        amount,
+                        isBuyOrder,
+                        System.currentTimeMillis());
+
+        coinBottomViewModel.addLimitOrder(limitOrder);
+        coinBottomViewModel.setLiveTradingStage(TradingStage.COMPLETED);
+        showConfirmationMessage("Limit Order Placed: \n" + amount + " " +
+                marketUnit.getCoinSymbol().toUpperCase() + " @" + NumberFormatter.currency(limitPrice));
+
+    }
+
+
 
 
     private void showConfirmationMessage(String message) {
@@ -704,24 +794,16 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     private void showBalanceMessage() {
 
         float balanceAmount = SharedPrefs.getInstance(getContext()).getBalance();
-        float price = Float.parseFloat(coinBottomViewModel.getStringLimitPrice());
-        float maxCryptoAmount = CryptoCalculator.calcMaxPercent(balanceAmount, price);
+        float maxCryptoAmount = CryptoCalculator.calcMaxPercent(balanceAmount, limitPrice);
 
-        if(price != 0) {
-
-            String coinName;
-
-            if(coinBottomViewModel.getLiveMarketUnit().getValue() != null)
-                coinName = coinBottomViewModel.getLiveMarketUnit().getValue().getCoinSymbol();
-            else
-                coinName = coinID;
+        if(limitPrice != 0) {
 
             messageBox.setText("Available Balance \n" +
                     NumberFormatter.currency(balanceAmount) +
                     " \u2248 " +
                     NumberFormatter.getDecimalWithCommas(maxCryptoAmount, 2) +
                     " " +
-                    coinName.toUpperCase());
+                    marketUnit.getCoinSymbol().toUpperCase());
         } else {
             messageBox.setText("Available Balance: " + NumberFormatter.currency(balanceAmount));
         }
@@ -730,98 +812,58 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
     private void showCryptoBalance() {
 
-        String coinName;
-
-        if(coinBottomViewModel.getLiveMarketUnit().getValue() != null)
-            coinName = coinBottomViewModel.getLiveMarketUnit().getValue().getCoinSymbol();
-        else
-            coinName = coinID;
-
+        String coinSymbol = marketUnit.getCoinSymbol().toUpperCase();
         LiveData<CryptoAsset> liveAsset = coinBottomViewModel.getLiveCryptoAsset();
 
-        liveAsset.observe(getViewLifecycleOwner(), new Observer<CryptoAsset>() {
-            @Override
-            public void onChanged(CryptoAsset cryptoAsset) {
+        if(liveAsset.getValue() != null) {
 
-                String message;
+            String cryptoMessage ="Available Crypto: \n" +
+                    coinSymbol + " = " +
+                    liveAsset.getValue().getAmount();
 
-                if(cryptoAsset != null) {
-                    message = "Available Crypto: \n" + coinName.toUpperCase() + " = " + cryptoAsset.getAmount();
-                } else {
-                    message = "Available Crypto: \n" + coinName.toUpperCase() + " = 0";
+            messageBox.setText(cryptoMessage);
+
+        } else {
+
+            liveAsset.observe(getViewLifecycleOwner(), new Observer<CryptoAsset>() {
+                @Override
+                public void onChanged(CryptoAsset cryptoAsset) {
+
+                    String message;
+
+                    if(cryptoAsset != null) {
+                        message = "Available Crypto: \n" + coinSymbol + " = " + cryptoAsset.getAmount();
+                    } else {
+                        message = "Available Crypto: \n" + coinSymbol + " = 0";
+                    }
+
+                    messageBox.setText(message);
+                    liveAsset.removeObserver(this);
                 }
+            });
 
-                messageBox.setText(message);
-                liveAsset.removeObserver(this::onChanged);
-            }
-        });
+            coinBottomViewModel.fetchCryptoAsset(coinID);
+        }
 
-        coinBottomViewModel.fetchCryptoAsset(coinID);
+
     }
 
 
 
+    private float getAmount() {
+        if(isEmpty(amountEdit) || getFloat(amountEdit) == 0) {
+            return 0f;
+        }
 
-
-    private void placeMarketOrder(String id, float currentPrice, float amount, float balance){
-
-       if(coinBottomViewModel.getLiveOrderType().getValue() == OrderType.BUY){
-
-           LiveData<CryptoAsset> liveAsset = coinBottomViewModel.getLiveCryptoAsset();
-
-           liveAsset.observe(getViewLifecycleOwner(), new Observer<CryptoAsset>() {
-               @Override
-               public void onChanged(CryptoAsset cryptoAsset) {
-
-                   float newBalance = balance - CryptoCalculator.calcAmountWithFee(currentPrice, amount);
-
-                   if(cryptoAsset == null) {
-                       coinBottomViewModel.saveCryptoAssetDB(new CryptoAsset(id, amount));
-                   } else {
-                       coinBottomViewModel.saveCryptoAssetDB(new CryptoAsset(id, amount + cryptoAsset.getAmount()));
-                   }
-
-                   SharedPrefs.getInstance(getActivity().getApplication()).setBalance(newBalance);
-                   coinBottomViewModel.setLiveTradingStage(TradingStage.CONFIRMATION);
-
-                   liveAsset.removeObserver(this::onChanged);
-               }
-           });
-
-           coinBottomViewModel.fetchCryptoAsset(coinID);
-
-       } else {
-
-           LiveData<CryptoAsset>liveData = coinBottomViewModel.getLiveCryptoAsset();
-
-           liveData.observe(getViewLifecycleOwner(), new Observer<CryptoAsset>() {
-               @Override
-               public void onChanged(CryptoAsset cryptoAsset) {
-
-                   if(cryptoAsset == null || cryptoAsset.getAmount() < amount) {
-                       showConfirmationMessage("Insufficient Crypto");
-                   } else {
-                       float newBalance = balance + CryptoCalculator.calcAmount(currentPrice, amount);
-                       coinBottomViewModel.deleteCryptoAssetDB(cryptoAsset);
-                       SharedPrefs.getInstance(getActivity().getApplication()).setBalance(newBalance);
-                       showConfirmationMessage("Sell Order Completed");
-                       liveData.removeObserver(this::onChanged);
-                   }
-
-                   liveData.removeObserver(this::onChanged);
-               }
-           });
-
-           coinBottomViewModel.fetchCryptoAsset(id);
-       }
-
+        return getFloat(amountEdit);
     }
 
+    private float getFloat(EditText editText) {
+        return Float.parseFloat(editText.getText().toString().replaceAll(",", ""));
+    }
 
-    private void placeLimitOrder(String id, float price, float amount, float balance){
-
-        float newBalance = balance - CryptoCalculator.calcAmountWithFee(price, amount);
-
+    private boolean isEmpty(EditText etText) {
+        return etText.getText().toString().trim().length() == 0;
     }
 
 
@@ -856,34 +898,3 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     }//end hideSystemUI
 
 }
-
-
-/*   private void placeOrder(MarketUnit marketUnit){
-
-        float amount = Float.parseFloat(amountEdit.getText().toString());
-        float balance = SharedPrefs.getInstance(getActivity().getApplication()).getBalance();
-        float currentPrice = Float.parseFloat(marketUnit.getCurrentPrice());
-
-
-
-        if(CryptoCalculator.calcMaxPercent(currentPrice, balance) < amount) {
-            showMessage("Insufficient Funds");
-            coinBottomViewModel.setLiveTradingStage(TradingStage.ORDER);
-            return;
-        } else if(CryptoCalculator.calcAmountWithFee(currentPrice, amount) < 1.2f) {
-            Toast.makeText(
-                    getContext(),
-                    "Amount must be greater than " + String.valueOf(CryptoCalculator.calcMinimumAmount(currentPrice)),
-                    Toast.LENGTH_SHORT
-            ).show();
-            return;
-        }
-
-        if(coinBottomViewModel.getLiveTradingType().getValue() == TradingType.MARKET ||
-                        currentPrice == Float.parseFloat(coinBottomViewModel.getStringLimitPrice())) {
-
-            placeMarketOrder(marketUnit.getCoinID(), currentPrice, amount, balance);
-        } else {
-            placeLimitOrder(marketUnit.getCoinID(), currentPrice, amount, balance);
-        }
-    }*/

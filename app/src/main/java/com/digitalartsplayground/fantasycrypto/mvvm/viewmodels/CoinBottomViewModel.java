@@ -9,6 +9,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
+import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 
@@ -31,20 +32,15 @@ public class CoinBottomViewModel extends AndroidViewModel {
     private MediatorLiveData<OrderType> liveOrderType = new MediatorLiveData<>();
     private MediatorLiveData<TradingType> liveTradingType = new MediatorLiveData<>();
     private MediatorLiveData<TradingStage> liveTradingStage = new MediatorLiveData<>();
+    private MediatorLiveData<String> liveLimitPrice = new MediatorLiveData<>();
 
     private Repository repository;
-    private String limitPrice = "0";
-    private String marketPrice = "0";
-    private float amount = 0;
-    private float fee = 0;
-    private float total = 0;
 
 
     public CoinBottomViewModel(@NonNull @NotNull Application application) {
         super(application);
 
         repository = Repository.getInstance(application);
-        liveOrderType.setValue(OrderType.BUY);
         liveTradingType.setValue(TradingType.MARKET);
     }
 
@@ -121,43 +117,15 @@ public class CoinBottomViewModel extends AndroidViewModel {
         liveTradingStage.setValue(tradingStage);
     }
 
-    public String getStringLimitPrice() {
-        return limitPrice;
+    public MediatorLiveData<String> getLiveLimitPrice() {
+        return liveLimitPrice;
     }
 
-    public void setLimitStringPrice(String limitPrice) {
-        this.limitPrice = limitPrice;
+    public void setLiveLimitPrice(String limitPrice) {
+        liveLimitPrice.setValue(limitPrice);
     }
 
-    public String getMarketPrice() {
-        return marketPrice;
-    }
-
-    public void setMarketStringPrice(String marketPrice) {
-        this.marketPrice = marketPrice;
-    }
-
-    public float getAmount() {
-        return amount;
-    }
-
-    public void setAmount(float amount) {
-        this.amount = amount;
-    }
-
-    public float getFee() {
-        return fee;
-    }
-
-    public void setFee(float fee) {
-        this.fee = fee;
-    }
-
-    public float getTotal() {
-        return total;
-    }
-
-    public void setTotal(float total) {
-        this.total = total;
+    public void addLimitOrder(LimitOrder limitOrder) {
+        repository.addLimitOrder(limitOrder);
     }
 }

@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.digitalartsplayground.fantasycrypto.R;
-import com.digitalartsplayground.fantasycrypto.interfaces.MarketItemClickedListener;
+import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.robinhood.spark.SparkView;
 
@@ -25,10 +25,10 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
 
     private List<MarketUnit> marketList = new ArrayList<>(1000);
     private List<MarketUnit> marketListFull;
-    private MarketItemClickedListener itemClickedListener;
+    private ItemClickedListener itemClickedListener;
 
 
-    public MarketAdapter(MarketItemClickedListener itemClickedListener) {
+    public MarketAdapter(ItemClickedListener itemClickedListener) {
         this.itemClickedListener = itemClickedListener;
     }
 

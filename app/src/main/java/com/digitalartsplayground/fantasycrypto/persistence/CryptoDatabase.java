@@ -12,7 +12,7 @@ import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.CryptoAssetDao;
-import com.digitalartsplayground.fantasycrypto.persistence.Dao.CryptoOrdersDao;
+import com.digitalartsplayground.fantasycrypto.persistence.Dao.LimitOrderDao;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.DeveloperDao;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.MarketDao;
 
@@ -42,6 +42,6 @@ public abstract class CryptoDatabase extends RoomDatabase {
 
     public abstract DeveloperDao getDeveloperDao();
 
-    public abstract CryptoOrdersDao getLimitDao();
+    public abstract LimitOrderDao getLimitDao();
 
 }

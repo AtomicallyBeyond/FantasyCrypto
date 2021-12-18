@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.digitalartsplayground.fantasycrypto.MarketFragment;
+import com.digitalartsplayground.fantasycrypto.fragments.MarketFragment;
 
 import org.jetbrains.annotations.NotNull;
 

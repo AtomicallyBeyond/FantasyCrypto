@@ -14,6 +14,9 @@ public class SharedPrefs {
     public static final String TIME_STAMP = "timeStamp";
     public static final String BALANCE = "balance";
     public static final String FIRST_TIME = "firstTime";
+    public static final String MARKET_DATA_FETCHER = "marketDataFetcher";
+    public static final String MARKET_DATA_FETCHER_COUNT = "marketDataFetcherCount";
+    public static final String LIMIT_UPDATE_TIME = "limitUpdateTime";
 
     private static SharedPrefs instance;
     private static SharedPreferences sharedPreferences;
@@ -54,4 +57,29 @@ public class SharedPrefs {
     public boolean getIsFirstTime() {
         return sharedPreferences.getBoolean(FIRST_TIME, true);
     }
+
+    public void setMarketDataTimeStamp(long timeStamp) {
+        editor.putLong(MARKET_DATA_FETCHER, timeStamp).apply();
+    }
+
+    public long getMarketDataTimeStamp() {
+        return sharedPreferences.getLong(MARKET_DATA_FETCHER, 0);
+    }
+
+    public void setMarketDataFetcherCount(int count) {
+        editor.putInt(MARKET_DATA_FETCHER_COUNT, count).apply();
+    }
+
+    public int getMarketDataFetcherCount() {
+        return sharedPreferences.getInt(MARKET_DATA_FETCHER_COUNT, 0);
+    }
+
+    public void setLimitUpdateTime(long timeStamp) {
+        editor.putLong(LIMIT_UPDATE_TIME, timeStamp).apply();
+    }
+
+    public long getLimitUpdateTime() {
+        return sharedPreferences.getLong(LIMIT_UPDATE_TIME, 0);
+    }
+
 }

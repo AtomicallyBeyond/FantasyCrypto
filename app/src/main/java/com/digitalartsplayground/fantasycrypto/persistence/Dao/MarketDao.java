@@ -26,6 +26,9 @@ public interface MarketDao {
     @Query("SELECT * FROM market_data WHERE coin_id=:id")
     LiveData<MarketUnit> getMarketUnit(String id);
 
+    @Query("SELECT * FROM market_data WHERE coin_id IN (:ids)")
+    LiveData<List<MarketUnit>> getAssetMarketUnits(List<String> ids);
+
     @Update
     void updateMarketUnits(MarketUnit... marketUnits);
 
