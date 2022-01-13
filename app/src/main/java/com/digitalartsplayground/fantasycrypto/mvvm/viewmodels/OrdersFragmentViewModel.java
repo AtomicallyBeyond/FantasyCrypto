@@ -8,6 +8,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
+import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 
@@ -38,6 +40,10 @@ public class OrdersFragmentViewModel extends AndroidViewModel {
         return repository.getFilledLimitOrders();
     }
 
+    public LimitOrder getLimitByTimeStamp(long timeStamp) {
+        return repository.getLimitByTimeStamp(timeStamp);
+    }
+
     public MediatorLiveData<Boolean> getLiveActiveOrdersState() {
         return liveActiveOrdersState;
     }
@@ -45,4 +51,13 @@ public class OrdersFragmentViewModel extends AndroidViewModel {
     public void setLiveActiveOrdersState(boolean isActiveOrders) {
         liveActiveOrdersState.setValue(isActiveOrders);
     }
+
+    public void updateCryptoAsset(String coinID, float amount) {
+        repository.updateCryptoAsset(coinID, amount);
+    }
+
+    public void deleteLimit(String coinID, long timeCreated) {
+        repository.deleteLimit(coinID, timeCreated);
+    }
+
 }

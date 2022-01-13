@@ -48,7 +48,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
 
         holder.cryptoName.setText(marketUnit.getCoinName());
         holder.cryptoSymbol.setText(marketUnit.getCoinSymbol());
-        holder.currentPrice.setText("$" + marketUnit.getCurrentPrice());
+        holder.currentPrice.setText(marketUnit.getPriceName());
 
         if(marketUnit.getOneDayPercentChange() != null){
             if(Float.parseFloat(marketUnit.getOneDayPercentChange()) >= 0) {

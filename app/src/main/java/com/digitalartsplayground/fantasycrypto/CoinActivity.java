@@ -24,11 +24,12 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.digitalartsplayground.fantasycrypto.fragments.CoinBottomFragment;
+import com.digitalartsplayground.fantasycrypto.fragments.LineChartFragment;
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinActivityViewModel;
-import com.digitalartsplayground.fantasycrypto.util.MyXAxisValueFormatter;
+import com.digitalartsplayground.fantasycrypto.util.DayXAxisValueFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.github.mikephil.charting.charts.CandleStickChart;
 import com.github.mikephil.charting.components.Legend;
@@ -49,7 +50,6 @@ public class CoinActivity extends AppCompatActivity {
     public static final String EXTRA_ID = "extraID";
 
     private String coinID;
-    private CandleStickChart candleStickChart;
     private CoinActivityViewModel coinActivityViewModel;
     private Button buyButton;
     private Button sellButton;
@@ -65,9 +65,18 @@ public class CoinActivity extends AppCompatActivity {
     private TextView coinName;
     private TextView currentPrice;
     private TextView coinInfo;
+    private TextView coinPriceDate;
     private ImageView coinImage;
     private ImageView backImage;
+    private String currentPriceString = "";
 
+    public void resetCurrentPrice() {
+        currentPrice.setText(currentPriceString);
+    }
+
+    public void setPriceDateVisibility(int visibility) {
+        coinPriceDate.setVisibility(visibility);
+    }
 
     @Override
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -75,12 +84,15 @@ public class CoinActivity extends AppCompatActivity {
         setContentView(R.layout.coin_layout);
         hideSystemUI();
         init();
+
+        LineChartFragment lineChartFragment =  LineChartFragment.newInstance(coinID);
+        getSupportFragmentManager().beginTransaction().replace(R.id.coin_fragment_graph_layout,
+                lineChartFragment).commit();
     }
 
     private void init() {
         coinID = getIntent().getStringExtra(EXTRA_ID);
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
-        candleStickChart = findViewById(R.id.coin_fragment_candlestick_graph);
         buyButton = findViewById(R.id.coin_buy_button);
         sellButton = findViewById(R.id.coin_sell_button);
 
@@ -94,29 +106,19 @@ public class CoinActivity extends AppCompatActivity {
         rank = findViewById(R.id.coin_toolbar_rank);
         coinName = findViewById(R.id.coin_toolbar_title);
         currentPrice = findViewById(R.id.coin_price_textview);
+        coinPriceDate = findViewById(R.id.price_date_textview);
         coinInfo = findViewById(R.id.coin_info);
         coinImage = findViewById(R.id.coin_toolbar_imageview);
         backImage = findViewById(R.id.coin_toolbar_back);
 
-        initCandleChart();
         setListeners();
         subscribeObservers();
-        setBackImage();
-
     }
 
-    private void setBackImage() {
-        backImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-    }
 
     private void initStats(MarketUnit marketUnit) {
-        if(marketUnit.getMarketCap() != null)
-            marketCap.setText(numberFormatter(marketUnit.getMarketCap()));
+        if(marketUnit.getMarketCap() > 0)
+            marketCap.setText(numberFormatter(String.valueOf(marketUnit.getMarketCap())));
         else
             marketCap.setText(" ");
 
@@ -166,11 +168,12 @@ public class CoinActivity extends AppCompatActivity {
         else
             coinName.setText(" ");
 
-        if(marketUnit.getCurrentPrice() != null)
-            currentPrice.setText("$" + marketUnit.getCurrentPrice());
+        if(marketUnit.getPriceName() != null){
+            currentPrice.setText(marketUnit.getPriceName());
+            currentPriceString = String.valueOf(marketUnit.getPriceName());
+        }
         else
             currentPrice.setText(" ");
-
 
         loadURLImage(marketUnit.getCoinImageURI());
     }
@@ -208,6 +211,13 @@ public class CoinActivity extends AppCompatActivity {
 
 
     private void setListeners(){
+
+        backImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
         buyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -226,18 +236,7 @@ public class CoinActivity extends AppCompatActivity {
 
 
     private void subscribeObservers() {
-        coinActivityViewModel.getLiveCandleData().observe(this, new Observer<Resource<CandleStickData>>() {
-            @Override
-            public void onChanged(Resource<CandleStickData> candleStickDataResource) {
-                if(candleStickDataResource.status == Resource.Status.SUCCESS) {
-                    if(candleStickDataResource.data != null) {
-                        loadCandleStickGraph(candleStickDataResource.data);
-                    }
-                }
-            }
-        });
 
-        coinActivityViewModel.fetchCandleStickData(coinID);
 
         coinActivityViewModel.getLiveMarketUnit().observe(this, new Observer<MarketUnit>() {
             @Override
@@ -275,74 +274,6 @@ public class CoinActivity extends AppCompatActivity {
 
     }
 
-    private void initCandleChart() {
-        candleStickChart.setMinOffset(0);
-        candleStickChart.setHighlightPerDragEnabled(true);
-        candleStickChart.setDrawBorders(false);
-        candleStickChart.requestDisallowInterceptTouchEvent(true);
-        candleStickChart.setDoubleTapToZoomEnabled(false);
-        candleStickChart.getDescription().setEnabled(false);
-
-        XAxis xAxis = candleStickChart.getXAxis();
-        xAxis.setTextColor(Color.WHITE);
-        xAxis.setDrawGridLines(false);
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setGranularity(21.6f);
-        xAxis.setGranularityEnabled(true);
-        xAxis.setAvoidFirstLastClipping(true);
-        xAxis.setValueFormatter(new MyXAxisValueFormatter());
-        xAxis.setAxisLineColor(Color.GRAY);
-
-        YAxis rightYAxis = candleStickChart.getAxisRight();
-        rightYAxis.setDrawGridLines(true);
-        rightYAxis.setGridLineWidth(0.5f);
-        rightYAxis.setGridColor(Color.BLACK);
-        rightYAxis.setTextColor(Color.WHITE);
-        rightYAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
-
-        YAxis yAxis = candleStickChart.getAxisLeft();
-        yAxis.setDrawGridLines(false);
-        yAxis.setDrawLabels(false);
-        yAxis.setAxisLineColor(Color.TRANSPARENT);
-
-
-        Legend legend = candleStickChart.getLegend();
-        legend.setEnabled(false);
-    }
-
-    private void loadCandleStickGraph(CandleStickData candleStickData) {
-
-        List<CandleEntry> candleEntries = new ArrayList<>(candleStickData.size());
-        CandleEntry tempEntry;
-
-        for(List<Float> candleUnit : candleStickData){
-            if(candleUnit.size() == 5) {
-
-                tempEntry = new CandleEntry(
-                        (candleUnit.get(0) / 1000000f),
-                        candleUnit.get(2),
-                        candleUnit.get(3),
-                        candleUnit.get(1),
-                        candleUnit.get(4)
-                );
-
-                candleEntries.add(tempEntry);
-            }
-        }
-
-        CandleDataSet cds = new CandleDataSet(candleEntries, "Entries");
-        cds.setShadowColor(Color.GRAY);
-        cds.setShadowWidth(0.8f);
-        cds.setDecreasingColor(Color.RED);
-        cds.setDecreasingPaintStyle(Paint.Style.FILL);
-        cds.setIncreasingColor(Color.GREEN);
-        cds.setIncreasingPaintStyle(Paint.Style.FILL);
-        cds.setNeutralColor(Color.GRAY);
-        cds.setDrawValues(false);
-        CandleData cd = new CandleData(cds);
-        candleStickChart.setData(cd);
-        candleStickChart.invalidate();
-    }
 
     @SuppressWarnings("deprecation")
     private void hideSystemUI() {

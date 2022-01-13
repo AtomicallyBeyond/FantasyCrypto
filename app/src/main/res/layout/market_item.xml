@@ -4,12 +4,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="65dp"
-    android:background="@drawable/ic_rounded_corners"
-    android:layout_marginBottom="8dp"
+    android:background="@color/transparent"
     android:paddingStart="4dp"
-    android:paddingEnd="4dp"
-    android:paddingTop="2dp"
-    android:paddingBottom="4dp">
+    android:paddingEnd="4dp">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/charcoal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/market_crypto_symbol"
+        app:layout_constraintVertical_bias="0"/>
 
 
     <TextView
@@ -21,7 +29,7 @@
         android:gravity="start|center"
         android:text="BTC"
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/market_crypto_symbol"
         app:layout_constraintEnd_toStartOf="@id/market_name_barrier"
@@ -38,8 +46,8 @@
         android:layout_marginEnd="20dp"
         android:gravity="start|center"
         android:text="USD"
-        android:textColor="@color/app_gray"
-        android:textSize="12sp"
+        android:textColor="@color/gray"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/market_name_barrier"
@@ -50,7 +58,7 @@
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/market_name_barrier"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:barrierDirection="end"
         app:constraint_referenced_ids="market_crypto_name,market_crypto_symbol" />
 
@@ -59,11 +67,12 @@
         android:id="@+id/market_graph"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:foregroundGravity="center_horizontal"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         app:layout_constraintEnd_toStartOf="@+id/market_price_barrier"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/market_name_barrier"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
         <TextView
             android:id="@+id/market_price"
@@ -74,7 +83,7 @@
             android:gravity="end|center"
             android:text="62,400"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@+id/market_price_barrier"
             app:layout_constraintTop_toTopOf="parent"
@@ -92,7 +101,7 @@
             android:gravity="end|center"
             android:text="4.2%"
             android:textColor="@color/white"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textStyle="bold|italic"
             app:layout_constraintStart_toEndOf="@+id/market_price_barrier"
             app:layout_constraintTop_toBottomOf="@+id/market_price"
@@ -103,7 +112,7 @@
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/market_price_barrier"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginEnd="8dp"
         app:barrierDirection="start"
         app:constraint_referenced_ids="market_price, market_percent"/>

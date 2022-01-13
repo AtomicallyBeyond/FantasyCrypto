@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/coin_main_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/coin_main_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="@drawable/background">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/coin_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/coin_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/black">
+            android:background="@color/transparent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -74,27 +75,25 @@
         </androidx.appcompat.widget.Toolbar>
 
         <include
-            android:id="@+id/appBar"
             layout="@layout/coin_header"
             android:visibility="gone" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/coin_nested_scrollview"
+        android:id="@+id/coin_nested_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/coin_buy_button"
-        app:layout_constraintEnd_toStartOf="@+id/coin_end_guideline"
-        app:layout_constraintStart_toEndOf="@+id/coin_start_guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/coin_app_bar">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/coin_nested_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/black">
+            android:background="@color/transparent">
 
 
             <TextView
@@ -105,12 +104,29 @@
                 android:layout_marginTop="8dp"
                 android:gravity="left"
                 android:text="$57,303.67 USD"
-                android:textColor="@color/white"
+                android:textColor="#FFFFFF"
                 android:textSize="24sp"
                 app:layout_constraintEnd_toStartOf="@+id/coin_percent_change_textview"
                 app:layout_constraintHorizontal_chainStyle="spread_inside"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/coin_start_guideline_second"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/price_date_textview"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="4dp"
+                android:gravity="left"
+                android:text="$57,303.67 USD"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toStartOf="@+id/coin_percent_change_textview"
+                app:layout_constraintStart_toEndOf="@+id/coin_start_guideline_second"
+                app:layout_constraintTop_toBottomOf="@+id/coin_price_textview" />
+
+
 
             <TextView
                 android:id="@+id/coin_percent_change_textview"
@@ -121,21 +137,13 @@
                 android:text="-0.55%"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/coin_end_guideline_second"
                 app:layout_constraintStart_toEndOf="@+id/coin_price_textview"
                 app:layout_constraintTop_toTopOf="parent" />
 
 
-            <ImageView
-                android:id="@+id/temp_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/coin_price_textview" />
-
-            <com.github.mikephil.charting.charts.CandleStickChart
-                android:id="@+id/coin_fragment_candlestick_graph"
+            <FrameLayout
+                android:id="@+id/coin_fragment_graph_layout"
                 android:layout_width="0dp"
                 android:layout_height="400dp"
                 android:layout_marginTop="20dp"
@@ -145,15 +153,13 @@
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/coin_stats_container"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/coin_fragment_candlestick_graph">
+                app:layout_constraintEnd_toStartOf="@+id/coin_end_guideline_second"
+                app:layout_constraintStart_toEndOf="@id/coin_start_guideline_second"
+                app:layout_constraintTop_toBottomOf="@+id/coin_fragment_graph_layout">
 
-                <include
-                    android:id="@+id/coin_stats"
-                    layout="@layout/coin_statistics" />
+                <include layout="@layout/coin_statistics" />
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -167,19 +173,36 @@
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@id/coin_start_guideline_second"
                 app:layout_constraintTop_toBottomOf="@+id/coin_stats_container" />
 
             <TextView
                 android:id="@+id/coin_info"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:text="Bitcoin is the first successful internet money based on peer-to-peer technology; whereby no central bank or authority is involved in the transaction and production of the Bitcoin currency. It was created by an anonymous individual/group under the name, Satoshi Nakamoto. The source code is available publicly as an open source project, anybody can look at it and be part of the developmental process.\r\n\r\nBitcoin is changing the way we see money as we speak. The idea was to produce a means of exchange, independent of any central authority, that could be transferred electronically in a secure, verifiable and immutable way. It is a decentralized peer-to-peer internet currency making mobile payment easy, very low transaction fees, protects your identity, and it works anywhere all the time with no central authority and banks.\r\n\r\nBitcoin is designed to have only 21 million BTC ever created, thus making it a deflationary currency. Bitcoin uses the hashing algorithm with an average transaction confirmation time of 10 minutes. Miners today are mining Bitcoin using ASIC chip dedicated to only mining Bitcoin, and the hash rate has shot up to peta hashes.\r\n\r\nBeing the first successful online cryptography currency, Bitcoin has inspired other alternative currencies such as , , , and so on.\r\n\r\nThe cryptocurrency then took off with the innovation of the turing-complete smart contract by  which led to the development of other amazing projects such as ."
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/coin_end_guideline_second"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toEndOf="@id/coin_start_guideline_second"
                 app:layout_constraintTop_toBottomOf="@+id/coin_info_title" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/coin_start_guideline_second"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="10dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/coin_end_guideline_second"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintGuide_end="10dp" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -191,9 +214,10 @@
         android:id="@+id/coin_buy_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
         android:backgroundTint="@color/green"
         android:text="BUY"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/coin_sell_button"
@@ -203,10 +227,10 @@
         android:id="@+id/coin_sell_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
         android:backgroundTint="@color/red"
         android:text="SELL"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/coin_end_guideline"

@@ -1,9 +1,11 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,15 +18,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.adapters.OrdersAdapter;
+import com.digitalartsplayground.fantasycrypto.interfaces.OrderClickedListener;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.OrdersFragmentViewModel;
+import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
+import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.tabs.TabLayout;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class OrdersFragments extends Fragment {
+public class OrdersFragments extends Fragment implements OrderClickedListener {
 
     private OrdersFragmentViewModel ordersViewModel;
     private RecyclerView ordersRecyclerView;
@@ -51,12 +57,16 @@ public class OrdersFragments extends Fragment {
         tabLayout = view.findViewById(R.id.orders_tabs);
         init();
 
+        Toast.makeText(getContext(), "Swipe Left To Cancel", Toast.LENGTH_SHORT).show();
+
         return view;
     }
 
+
+
     private void init() {
 
-        ordersAdapter = new OrdersAdapter();
+        ordersAdapter = new OrdersAdapter(this);
         LinearLayoutManager linearLayoutManager =
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         ordersRecyclerView.setLayoutManager(linearLayoutManager);
@@ -104,9 +114,7 @@ public class OrdersFragments extends Fragment {
 
 
                         }
-                    }); //observeActiveOrders
-
-
+                    });
 
                 } else {
 
@@ -160,4 +168,41 @@ public class OrdersFragments extends Fragment {
         }
     };
 
+    @Override
+    public void onOrderClicked(LimitOrder limitOrder, int position) {
+
+        SharedPrefs sharedPrefs = SharedPrefs.getInstance(getContext());
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+
+                if(ordersViewModel.getLimitByTimeStamp(limitOrder.getTimeCreated()).isActive()) {
+                    if(limitOrder.isBuyOrder()) {
+                        sharedPrefs.setBalance(sharedPrefs.getBalance() + limitOrder.getValue());
+                    } else {
+                        ordersViewModel.updateCryptoAsset(limitOrder.getCoinID(), limitOrder.getAmount());
+                    }
+
+                    ordersViewModel.deleteLimit(limitOrder.getCoinID(), limitOrder.getTimeCreated());
+
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            ordersAdapter.removeOrder(position);
+                        }
+                    });
+                } else {
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            ordersViewModel.setLiveActiveOrdersState(ordersViewModel.getLiveActiveOrdersState().getValue());
+                        }
+                    });
+                }
+
+
+            }
+        });
+    }
 }

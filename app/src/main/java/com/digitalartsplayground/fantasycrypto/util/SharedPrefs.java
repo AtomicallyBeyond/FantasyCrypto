@@ -11,12 +11,12 @@ import org.json.JSONTokener;
 
 public class SharedPrefs {
     public static final String SHARED_PREFS = "sharedPrefs";
-    public static final String TIME_STAMP = "timeStamp";
     public static final String BALANCE = "balance";
     public static final String FIRST_TIME = "firstTime";
     public static final String MARKET_DATA_FETCHER = "marketDataFetcher";
     public static final String MARKET_DATA_FETCHER_COUNT = "marketDataFetcherCount";
     public static final String LIMIT_UPDATE_TIME = "limitUpdateTime";
+    public static final String SCHEDULER_TIME = "schedulerTime";
 
     private static SharedPrefs instance;
     private static SharedPreferences sharedPreferences;
@@ -32,14 +32,6 @@ public class SharedPrefs {
     private SharedPrefs(@NotNull Context context) {
         sharedPreferences = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
-    }
-
-    public void setTimeStamp(String timeStamp) {
-        editor.putString(TIME_STAMP, timeStamp).apply();
-    }
-
-    public String getTimeStamp() {
-        return sharedPreferences.getString(TIME_STAMP, "-1");
     }
 
     public void setBalance(float balance) {
@@ -80,6 +72,14 @@ public class SharedPrefs {
 
     public long getLimitUpdateTime() {
         return sharedPreferences.getLong(LIMIT_UPDATE_TIME, 0);
+    }
+
+    public void setSchedulerTime(long timeStamp) {
+        editor.putLong(SCHEDULER_TIME, timeStamp).apply();
+    }
+
+    public long getSchedulerTime() {
+        return sharedPreferences.getLong(SCHEDULER_TIME, 0);
     }
 
 }

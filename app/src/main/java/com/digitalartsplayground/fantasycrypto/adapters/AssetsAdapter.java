@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -28,9 +27,9 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
     private CryptoAsset tempAsset;
     private ItemClickedListener itemClickedListener;
 
-    public AssetsAdapter(Context context) {
+    public AssetsAdapter(Context context, ItemClickedListener itemClickedListener) {
         this.context = context;
-        this.itemClickedListener = (ItemClickedListener)context;
+        this.itemClickedListener = itemClickedListener;
     }
 
     @NonNull
@@ -64,7 +63,7 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
         }
 
         holder.coinName.setText(tempAsset.getFullName());
-        holder.coinPercent.setText(tempAsset.getPercent());
+        holder.coinPercent.setText(tempAsset.getPercentString());
         holder.coinAmount.setText(tempAsset.getAmountName());
         holder.totalValue.setText(tempAsset.getTotalStringValue());
 

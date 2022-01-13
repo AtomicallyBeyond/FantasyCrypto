@@ -5,8 +5,10 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
+import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 
 import java.util.List;
 
@@ -27,4 +29,7 @@ public interface CryptoAssetDao{
 
     @Query("DELETE FROM assets WHERE id = :coinId")
     void deleteAsset(String coinId);
+
+    @Query("UPDATE assets SET amount = amount + :amount WHERE id =:id")
+    void updateAmount(String id, float amount);
 }

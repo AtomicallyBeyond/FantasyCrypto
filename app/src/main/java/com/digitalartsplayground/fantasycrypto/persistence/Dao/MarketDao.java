@@ -17,14 +17,17 @@ public interface MarketDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long[] insertMarketUnits(MarketUnit... marketUnit);
 
-    @Query("SELECT * FROM market_data")
+    @Query("SELECT * FROM market_data ORDER BY market_cap DESC")
     LiveData<List<MarketUnit>> getMarketData();
 
     @Query("SELECT coin_id FROM market_data")
     List<String> getAllIds();
 
     @Query("SELECT * FROM market_data WHERE coin_id=:id")
-    LiveData<MarketUnit> getMarketUnit(String id);
+    LiveData<MarketUnit> getLiveMarketUnit(String id);
+
+    @Query("SELECT * FROM market_data WHERE coin_id=:id")
+    MarketUnit getMarketUnit(String id);
 
     @Query("SELECT * FROM market_data WHERE coin_id IN (:ids)")
     LiveData<List<MarketUnit>> getAssetMarketUnits(List<String> ids);

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
+import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
 
@@ -42,5 +43,12 @@ public interface CoinGeckoApi {
 
     @GET("coins/{id}")
     LiveData<ApiResponse<DeveloperUnit>> getDeveloperData(@Path("id") String id);
+
+    @GET("coins/{id}/market_chart/range")
+    LiveData<ApiResponse<LineGraphData>> getLineGraphData(
+            @Path("id") String id,
+            @Query("vs_currency")String currency,
+            @Query("from")String from,
+            @Query("to")String to);
 
 }

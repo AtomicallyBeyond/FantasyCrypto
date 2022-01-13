@@ -21,13 +21,16 @@ public class CryptoAsset {
     private float totalValue;
 
     @Ignore
+    private float percent;
+
+    @Ignore
     String fullName;
 
     @Ignore
     private String imageURL;
 
     @Ignore
-    String percent;
+    String percentString;
 
     @Ignore
     String totalStringValue;
@@ -76,12 +79,12 @@ public class CryptoAsset {
         this.imageURL = imageURL;
     }
 
-    public String getPercent() {
-        return percent;
+    public String getPercentString() {
+        return percentString;
     }
 
-    public void setPercent(String percent) {
-        this.percent = percent;
+    public void setPercentString(String percentString) {
+        this.percentString = percentString;
     }
 
     public String getTotalStringValue() {
@@ -106,5 +109,13 @@ public class CryptoAsset {
 
     public void setTotalValue(float totalValue) {
         this.totalValue = totalValue;
+    }
+
+    public float getPercent() {
+        return percent;
+    }
+
+    public void setPercent(float percent) {
+        this.percent = percent;
     }
 }

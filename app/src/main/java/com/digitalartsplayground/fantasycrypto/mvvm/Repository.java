@@ -9,8 +9,11 @@ import androidx.lifecycle.LiveData;
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
+import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
+import com.digitalartsplayground.fantasycrypto.mvvm.requests.CoinDataFetcher;
+import com.digitalartsplayground.fantasycrypto.mvvm.requests.MarketDataFetcher;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.CryptoAssetDao;
 import com.digitalartsplayground.fantasycrypto.persistence.CryptoDatabase;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.DeveloperDao;
@@ -24,7 +27,6 @@ import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Repository {
@@ -72,6 +74,10 @@ public class Repository {
 
     }
 
+    public void deleteLimit(String coinID, long timeCreated) {
+        limitOrderDao.deleteByTimeCreated(coinID, timeCreated);
+    }
+
     public void updateLimitOrder(LimitOrder limitOrder) {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
@@ -79,6 +85,18 @@ public class Repository {
                 limitOrderDao.updateLimit(limitOrder);
             }
         });
+    }
+
+    public void cleanInactiveLimitHistory(){
+        limitOrderDao.cleanInactiveLimitHistory();
+    }
+
+    public int getActiveLimitCount() {
+        return limitOrderDao.getActiveCount();
+    }
+
+    public int getInactiveLimitCount() {
+        return limitOrderDao.getInactiveLimitCount();
     }
 
     public LiveData<List<LimitOrder>> getActiveLimitOrders() {
@@ -89,10 +107,30 @@ public class Repository {
         return limitOrderDao.getBackgroundActiveOrders();
     }
 
+    public List<LimitOrder> getBuyActiveOrders() {
+        return limitOrderDao.getActiveBuyOrders();
+    }
+
+    public List<LimitOrder> getSellActiveOrders() {
+        return limitOrderDao.getActiveSellOrders();
+    }
+
+    public LimitOrder getLimitByTimeStamp(long timeStamp) {
+        return limitOrderDao.getLimitByTimeStamp(timeStamp);
+    }
+
     public LiveData<List<LimitOrder>> getFilledLimitOrders() {
         return limitOrderDao.getFilledOrders();
     }
 
+    public LimitOrder getBackgroundLimitOrder(String coinID) {
+        return limitOrderDao.getBackgroundLimitOrder(coinID);
+    }
+
+
+    public void updateCryptoAsset(String coinID, float amount) {
+        cryptoAssetDao.updateAmount(coinID, amount);
+    }
 
     public void addCryptoAsset(CryptoAsset cryptoAsset) {
 
@@ -122,7 +160,11 @@ public class Repository {
         return marketDao.getAssetMarketUnits(coinIDs);
     }
 
-    public LiveData<MarketUnit> getDatabaseMarketUnit(String id) {
+    public LiveData<MarketUnit> getLiveMarketUnit(String id) {
+        return marketDao.getLiveMarketUnit(id);
+    }
+
+    public MarketUnit getMarketUnit(String id) {
         return marketDao.getMarketUnit(id);
     }
 
@@ -182,8 +224,6 @@ public class Repository {
             @Override
             protected void saveCallResult(@NonNull @NotNull List<MarketUnit> item) {
 
-                String timeStamp = sharedPrefs.getTimeStamp();
-
                 int length = item.size();
 
                 for(int i = 0; i < length; i++) {
@@ -192,7 +232,7 @@ public class Repository {
                         item.remove(i);
                         length = length - 1;
                     } else {
-                        item.get(i).setTimeStamp(timeStamp);
+                        item.get(i).setTimeStamp(sharedPrefs.getMarketDataTimeStamp());
                     }
 
                 }
@@ -208,15 +248,15 @@ public class Repository {
             @Override
             protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable List<MarketUnit> data) {
 
-                Long secondsTime = System.currentTimeMillis()/1000;
                 int count = sharedPrefs.getMarketDataFetcherCount();
-                boolean fiveMinutesPassed = secondsTime - sharedPrefs.getMarketDataTimeStamp() > 300;
+                Long time = System.currentTimeMillis();
+                boolean fiveMinutesPassed = time - sharedPrefs.getMarketDataTimeStamp() > (300 * 1000);
 
                 if(fiveMinutesPassed || count < 8) {
 
                     if(fiveMinutesPassed) {
                         count = 0;
-                        sharedPrefs.setMarketDataTimeStamp(secondsTime);
+                        sharedPrefs.setMarketDataTimeStamp(time);
                     }
 
                     sharedPrefs.setMarketDataFetcherCount(count + 1);
@@ -251,44 +291,48 @@ public class Repository {
 
 
     public LiveData<Resource<CandleStickData>> getCandleStickData(String id, String currency, String days) {
-        return new CoinDataFetcher(AppExecutors.getInstance()) {
+        return new CoinDataFetcher<CandleStickData>(id, AppExecutors.getInstance()) {
+
             @NonNull
             @NotNull
             @Override
             protected LiveData<ApiResponse<CandleStickData>> createCall() {
                 return ServiceGenerator.getCryptoApi().getCandleStickData(id, currency, days);
             }
+
+            @Override
+            protected CandleStickData processResponse(ApiResponse.ApiSuccessResponse response) {
+                CandleStickData candleStickData = (CandleStickData) response.getBody();
+                candleStickData.setCoinID(id);
+
+                return candleStickData;
+            }
+
+
         }.getAsLiveData();
     }
 
-    public LiveData<CryptoAsset> getAssetByID(String id){
-        return cryptoAssetDao.getCryptoAsset(id);
-    }
 
+    public LiveData<Resource<LineGraphData>> getLineGraphData(String id, String currency, String from, String to, LineGraphData.TimeSpan timeSpan) {
+        return new CoinDataFetcher<LineGraphData>(id, AppExecutors.getInstance()) {
 
-
-
-    private String getCoinIDString(){
-        final List<String> temp = new ArrayList<>(250);
-
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @NonNull
+            @NotNull
             @Override
-            public void run() {
-                temp.addAll(marketDao.getAllIds());
-
+            protected LiveData<ApiResponse<LineGraphData>> createCall() {
+                return ServiceGenerator.getCryptoApi().getLineGraphData(id, currency, from, to);
             }
-        });
 
-        String coinIds = "";
+            @Override
+            protected LineGraphData processResponse(ApiResponse.ApiSuccessResponse response) {
 
-        for(String aString : temp) {
-            if(coinIds.length() == 0) {
-                coinIds = aString;
-            } else
-                coinIds = coinIds + "," + aString;
-        }
+                LineGraphData lineGraphData = (LineGraphData)response.getBody();
+                lineGraphData.setTimeSpan(timeSpan);
 
-        return coinIds;
+                return lineGraphData;
+            }
+
+        }.getAsLiveData();
     }
 
 }

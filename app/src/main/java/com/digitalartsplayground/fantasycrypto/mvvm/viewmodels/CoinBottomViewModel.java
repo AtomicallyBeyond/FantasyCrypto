@@ -32,7 +32,7 @@ public class CoinBottomViewModel extends AndroidViewModel {
     private MediatorLiveData<OrderType> liveOrderType = new MediatorLiveData<>();
     private MediatorLiveData<TradingType> liveTradingType = new MediatorLiveData<>();
     private MediatorLiveData<TradingStage> liveTradingStage = new MediatorLiveData<>();
-    private MediatorLiveData<String> liveLimitPrice = new MediatorLiveData<>();
+    private MediatorLiveData<Float> liveLimitPrice = new MediatorLiveData<>();
 
     private Repository repository;
 
@@ -46,7 +46,7 @@ public class CoinBottomViewModel extends AndroidViewModel {
 
     public void fetchMarketUnit(String id) {
 
-        LiveData<MarketUnit> liveMarketData = repository.getDatabaseMarketUnit(id);
+        LiveData<MarketUnit> liveMarketData = repository.getLiveMarketUnit(id);
 
         liveMarketUnit.addSource(liveMarketData, new Observer<MarketUnit>() {
             @Override
@@ -63,18 +63,6 @@ public class CoinBottomViewModel extends AndroidViewModel {
         return liveMarketUnit;
     }
 
-    public void fetchCryptoAsset(String coinID) {
-
-        LiveData<CryptoAsset> liveData = repository.getCryptoAsset(coinID);
-
-        liveCryptoAsset.addSource(liveData, new Observer<CryptoAsset>() {
-            @Override
-            public void onChanged(CryptoAsset cryptoAsset) {
-                liveCryptoAsset.setValue(cryptoAsset);
-            }
-        });
-
-    }
 
 
     public void saveCryptoAssetDB(CryptoAsset cryptoAsset) {
@@ -89,7 +77,18 @@ public class CoinBottomViewModel extends AndroidViewModel {
     }
 
 
-    public LiveData<CryptoAsset> getLiveCryptoAsset() {
+    public LiveData<CryptoAsset> getLiveCryptoAsset(String coinID) {
+
+        LiveData<CryptoAsset> liveData = repository.getCryptoAsset(coinID);
+
+        liveCryptoAsset.addSource(liveData, new Observer<CryptoAsset>() {
+            @Override
+            public void onChanged(CryptoAsset cryptoAsset) {
+                liveCryptoAsset.removeSource(liveData);
+                liveCryptoAsset.setValue(cryptoAsset);
+            }
+        });
+
         return liveCryptoAsset;
     }
 
@@ -117,11 +116,15 @@ public class CoinBottomViewModel extends AndroidViewModel {
         liveTradingStage.setValue(tradingStage);
     }
 
-    public MediatorLiveData<String> getLiveLimitPrice() {
+    public int getActiveLimitCount() {
+        return repository.getActiveLimitCount();
+    }
+
+    public MediatorLiveData<Float> getLiveLimitPrice() {
         return liveLimitPrice;
     }
 
-    public void setLiveLimitPrice(String limitPrice) {
+    public void setLiveLimitPrice(float limitPrice) {
         liveLimitPrice.setValue(limitPrice);
     }
 

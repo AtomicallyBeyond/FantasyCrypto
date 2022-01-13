@@ -3,6 +3,7 @@ package com.digitalartsplayground.fantasycrypto.models;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.digitalartsplayground.fantasycrypto.adapters.SparkLineAdapter;
@@ -14,7 +15,7 @@ import com.google.gson.annotations.SerializedName;
 public class MarketUnit {
 
     @ColumnInfo(name = "time_stamp")
-    private String timeStamp;
+    private long timeStamp;
 
     @SerializedName("name")
     @Expose
@@ -41,12 +42,15 @@ public class MarketUnit {
     @SerializedName("current_price")
     @Expose
     @ColumnInfo(name = "current_price")
-    private String currentPrice;
+    private float currentPrice;
+
+    @Ignore
+    private String priceName;
 
     @SerializedName("market_cap")
     @Expose
     @ColumnInfo(name = "market_cap")
-    private String marketCap;
+    private long marketCap;
 
     @SerializedName("market_cap_rank")
     @Expose
@@ -127,15 +131,23 @@ public class MarketUnit {
         this.coinImageURI = coinImageURI;
     }
 
-    public void setCurrentPrice(String currentPrice) {
+    public void setCurrentPrice(float currentPrice) {
 
-        float price = Float.valueOf(currentPrice);
-
-        if(price < 0.0001) {
-            this.currentPrice = NumberFormatter.roundToLastDecimalDigits(price, 3);
+        if(currentPrice < 0.0001) {
+            priceName = "$" + NumberFormatter.roundToLastDecimalDigits(currentPrice, 3);
         } else {
-            this.currentPrice = currentPrice;
+            priceName = NumberFormatter.currency(currentPrice);
         }
+
+        this.currentPrice = currentPrice;
+    }
+
+    public String getPriceName() {
+        return priceName;
+    }
+
+    public void setPriceName(String priceName) {
+        this.priceName = priceName;
     }
 
     public void setOneDayPercentChange(String oneDayPercentChange) {
@@ -162,7 +174,7 @@ public class MarketUnit {
     }
 
 
-    public String getCurrentPrice() {
+    public float getCurrentPrice() {
         return currentPrice;
     }
 
@@ -170,11 +182,11 @@ public class MarketUnit {
         return oneDayPercentChange;
     }
 
-    public String getMarketCap() {
+    public long getMarketCap() {
         return marketCap;
     }
 
-    public void setMarketCap(String marketCap) {
+    public void setMarketCap(long marketCap) {
         this.marketCap = marketCap;
     }
 
@@ -226,11 +238,11 @@ public class MarketUnit {
         this.maxSupply = maxSupply;
     }
 
-    public String getTimeStamp() {
+    public long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(String timeStamp) {
+    public void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
 

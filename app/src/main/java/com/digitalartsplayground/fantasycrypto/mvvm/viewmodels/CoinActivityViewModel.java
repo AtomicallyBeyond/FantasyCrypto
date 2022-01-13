@@ -9,7 +9,6 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
-import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
@@ -20,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 public class CoinActivityViewModel extends AndroidViewModel {
 
     private Repository repository;
-    private MediatorLiveData<Resource<CandleStickData>> liveCandleData = new MediatorLiveData<>();
+/*    private MediatorLiveData<Resource<CandleStickData>> liveCandleData = new MediatorLiveData<>();*/
     private MediatorLiveData<MarketUnit> liveMarketUnit = new MediatorLiveData<>();
     private MediatorLiveData<Resource<DeveloperUnit>> liveDeveloperData = new MediatorLiveData<>();
 
@@ -32,7 +31,7 @@ public class CoinActivityViewModel extends AndroidViewModel {
 
     }
 
-    public void fetchCandleStickData(String id) {
+/*    public void fetchCandleStickData(String id) {
 
         LiveData<Resource<CandleStickData>> liveData = repository.getCandleStickData(id, "usd", "1");
 
@@ -47,12 +46,12 @@ public class CoinActivityViewModel extends AndroidViewModel {
 
     public LiveData<Resource<CandleStickData>> getLiveCandleData(){
         return liveCandleData;
-    }
+    }*/
 
 
     public void fetchMarketUnit(String id) {
 
-        LiveData<MarketUnit> liveMarketData = repository.getDatabaseMarketUnit(id);
+        LiveData<MarketUnit> liveMarketData = repository.getLiveMarketUnit(id);
 
         liveMarketUnit.addSource(liveMarketData, new Observer<MarketUnit>() {
             @Override

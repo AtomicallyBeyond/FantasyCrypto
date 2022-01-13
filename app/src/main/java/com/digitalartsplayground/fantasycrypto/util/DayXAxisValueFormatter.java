@@ -7,13 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MyXAxisValueFormatter extends IndexAxisValueFormatter {
+public class DayXAxisValueFormatter extends IndexAxisValueFormatter {
 
     @Override
     public String getAxisLabel(float value, AxisBase axis) {
 
-        long temp = (long)(value * 1000000f);
-        String string = new SimpleDateFormat("H:mm", Locale.getDefault()).format(temp);
+        String string = new SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(value);
         return string;
     }
 }

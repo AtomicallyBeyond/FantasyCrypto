@@ -6,10 +6,11 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="white">#C0C0C0</color>
     <color name="app_gray">#A9A9A9</color>
     <color name="charcoal">#36454f</color>
-    <color name="green">#008000</color>
-    <color name="red">#db3236</color>
+    <color name="green">#00220d</color>
+    <color name="red">#3c0c1b</color>
     <color name="gray">#a9a9a9</color>
+    <color name="transparent">#00000000</color>
 </resources>

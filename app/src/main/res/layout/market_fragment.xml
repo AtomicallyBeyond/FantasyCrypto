@@ -4,23 +4,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="@drawable/background">
 
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/market_appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/black"
+        android:background="@color/transparent"
+        app:elevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/portfolio_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/black"
+            android:background="@color/transparent"
             app:title="Markets"
             app:titleTextAppearance="@style/Toolbar.TitleText"
             app:titleTextColor="@color/white">
@@ -29,36 +30,36 @@
                 android:id="@+id/market_balance_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="10dp"
-                android:text="$52,000"
-                android:textSize="14sp"
-                android:textColor="@color/white"
+                android:layout_gravity="right"
+                android:layout_marginEnd="14dp"
                 android:gravity="center"
-                android:layout_gravity="right"/>
+                android:text="$10,000"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_gravity="right"
                 android:layout_marginEnd="10dp"
-                android:text="Available Balance:"
-                android:textSize="14sp"
-                android:textColor="@color/white"
                 android:gravity="center"
-                android:layout_gravity="right"/>
+                android:text="Available Balance:"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
 
 
         </androidx.appcompat.widget.Toolbar>
 
-
         <androidx.appcompat.widget.SearchView
             android:id="@+id/market_searchView"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="44dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="20dp"
-            android:background="@drawable/ic_rounded_corners"
-            app:defaultQueryHint="Search" />
+            android:background="@drawable/rounded_corners_dark"
+            app:defaultQueryHint="Search"
+            app:iconifiedByDefault="false"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -67,9 +68,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:text="MARKET"
-        android:textColor="@color/app_gray"
-        android:textSize="12sp"
+        android:text="Market"
+        android:textColor="@color/white"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/market_graph_name"
         app:layout_constraintHorizontal_bias="0.0"
@@ -81,10 +82,10 @@
         android:id="@+id/market_graph_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SEVEN DAY SPARKLINE"
-        android:textColor="@color/app_gray"
-        android:textSize="12sp"
-        android:textStyle="bold"
+        android:text="Seven Day Sparkline"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:textStyle="bold|italic"
         app:layout_constraintEnd_toStartOf="@+id/market_price_name"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/market_fiat_name"
@@ -95,9 +96,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
-        android:text="PRICE/24h"
-        android:textColor="@color/app_gray"
-        android:textSize="12sp"
+        android:text="Price/24h"
+        android:textColor="@color/white"
+        android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"
@@ -109,8 +110,10 @@
         android:id="@+id/market_recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="8dp"
-        android:background="@color/black"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

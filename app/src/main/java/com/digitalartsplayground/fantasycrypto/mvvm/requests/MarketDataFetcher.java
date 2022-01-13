@@ -1,4 +1,4 @@
-package com.digitalartsplayground.fantasycrypto.mvvm;
+package com.digitalartsplayground.fantasycrypto.mvvm.requests;
 
 import android.util.Log;
 
@@ -129,7 +129,7 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
                             results.addSource(loadFromDb(), new Observer<CacheObject>() {
                                 @Override
                                 public void onChanged(@Nullable CacheObject cacheObject) {
-                                    setValue(Resource.success(cacheObject));
+                                    setValue(Resource.error("Error: Unable to connect with server, check internet connection.", cacheObject));
                                 }
                             });
                         }
@@ -150,7 +150,7 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
                                             if(cacheObject == null)
                                                 setValue(Resource.error("Data does not exist in database", null));
                                             else
-                                                setValue(Resource.success(cacheObject));
+                                                setValue(Resource.error("Error: Unable to connect with server, check internet connection.", cacheObject));
                                         }
                                     });
                                 }

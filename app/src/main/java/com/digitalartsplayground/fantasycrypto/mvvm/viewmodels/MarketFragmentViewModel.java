@@ -78,4 +78,22 @@ public class MarketFragmentViewModel extends AndroidViewModel {
         }
     }
 
+    public List<LimitOrder> getBackgroundActiveLimitOrders() {
+        return repository.getBackgroundActiveLimitOrders();
+    }
+
+    public void updateLimitOrder(LimitOrder limitOrder){
+        repository.addLimitOrder(limitOrder);
+    }
+
+
+    public LiveData<Resource<CandleStickData>> fetchCandleStickData(String id, String days) {
+
+        return repository.getCandleStickData(id, "usd", days);
+    }
+
+    public void saveCryptoAssetDB(CryptoAsset cryptoAsset) {
+        repository.addCryptoAsset(cryptoAsset);
+    }
+
 }

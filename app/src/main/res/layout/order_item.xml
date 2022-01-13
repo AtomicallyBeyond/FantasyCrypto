@@ -1,98 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/ic_rounded_corners"
-    android:layout_marginBottom="8dp"
-    android:paddingStart="10dp"
-    android:paddingEnd="10dp"
-    android:paddingBottom="10dp">
-
-    <TextView
-        android:id="@+id/limit_coin_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Bitcoin"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        app:layout_constraintStart_toEndOf="@+id/limit_start_barrier"
-        app:layout_constraintTop_toBottomOf="@+id/limit_top_barrier"/>
-
-    <TextView
-        android:id="@+id/limit_sell_type"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="20dp"
-        android:text="BUY"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/limit_top_barrier"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/limit_start_barrier"/>
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/limit_fill_date"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_gravity="top"
+        android:background="@color/transparent"
+        android:gravity="left"
+        android:paddingStart="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
         android:text="Jul 25, 2021"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/limit_top_barrier"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:textColor="@color/gray"
+        android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/limit_price"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$58,423.00"
-        android:textColor="@color/white"
-        android:textSize="12sp"
-        app:layout_constraintStart_toEndOf="@+id/limit_start_barrier"
-        app:layout_constraintTop_toBottomOf="@+id/limit_coin_name" />
 
-    <TextView
-        android:id="@+id/limit_amount"
-        android:layout_width="wrap_content"
+    <com.digitalartsplayground.fantasycrypto.SwipeLayout
+        android:id="@+id/limit_swipe_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="21.05 BTC"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@+id/limit_top_barrier"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_marginBottom="2dp"
+        app:draggedItem="@id/limit_main_layout"
+        app:isEnabledSwipe="false"
+        app:isFreeDragAfterOpen="false"
+        app:rightItem="@id/limit_left_cancel_order"
+        app:swipeDirection="left">
 
-    <TextView
-        android:id="@+id/limit_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$1,000,234.00"
-        android:textColor="@color/white"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/limit_amount" />
+        <ImageView
+            android:id="@+id/limit_left_cancel_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|top"
+            android:background="@color/transparent"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:src="@drawable/delete"
+            android:clickable="true"/>
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/limit_start_barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="right"
-        app:constraint_referenced_ids="limit_sell_type" />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/limit_top_barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="limit_fill_date"
-        tools:layout_editor_absoluteX="10dp"
-        tools:layout_editor_absoluteY="10dp" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/limit_main_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_corners_dark"
+            android:paddingStart="15dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="15dp"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/limit_coin_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bitcoin"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:layout_constraintStart_toEndOf="@+id/limit_start_barrier"
+                app:layout_constraintTop_toBottomOf="@+id/limit_top_barrier" />
+
+            <TextView
+                android:id="@+id/limit_sell_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BUY"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toTopOf="@+id/limit_trade_type"
+                app:layout_constraintEnd_toEndOf="@+id/limit_trade_type"
+                app:layout_constraintStart_toStartOf="@+id/limit_trade_type"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/limit_trade_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="15dp"
+                android:text="Market"
+                android:textColor="@color/charcoal"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/limit_start_barrier"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/limit_sell_type"/>
+
+
+            <TextView
+                android:id="@+id/limit_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$58,423.00"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintStart_toEndOf="@+id/limit_start_barrier"
+                app:layout_constraintTop_toBottomOf="@+id/limit_coin_name" />
+
+            <TextView
+                android:id="@+id/limit_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="21.05 BTC"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/limit_top_barrier" />
+
+            <TextView
+                android:id="@+id/limit_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$1,000,234.00"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/limit_amount" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/limit_start_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="right"
+                app:constraint_referenced_ids="limit_sell_type" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/limit_top_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.digitalartsplayground.fantasycrypto.SwipeLayout>
+
+</LinearLayout>
