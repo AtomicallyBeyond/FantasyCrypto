@@ -15,7 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import com.digitalartsplayground.fantasycrypto.R;
+
 
 /**
  * This project provides an opportunity to perform swipe for any layout,

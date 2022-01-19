@@ -81,6 +81,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
     private boolean isBuyOrder;
     private boolean sliderAdjusted = false;
+    private boolean resetSlider = false;
 
     private float limitPrice;
     private int activeOrdersCount = 0;
@@ -173,7 +174,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             @NotNull
             @Override
             public String getFormattedValue(float value) {
-                return String.valueOf((int)value) + "%";
+                return (int)value + "%";
             }
         });
 
@@ -243,7 +244,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
                 float amount = getAmount();
 
                 if(amount != 0) {
-                    displayCalculatedValues(Float.valueOf(amount));
+                    displayCalculatedValues(amount);
                 }
             }
         });
@@ -438,6 +439,14 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             @Override
             public void onTextChanged(EditText target, Editable s) {
 
+                if(slider.getValue() != 0 && !sliderAdjusted) {
+                    resetSlider = true;
+                    slider.setValue(0);
+                }
+
+                if(sliderAdjusted)
+                    sliderAdjusted = false;
+
                 String temp = s.toString();
 
                 if(temp.length() == 1 && temp.contains(".")) {
@@ -520,7 +529,9 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getDialog().dismiss();
+                if(getDialog() != null) {
+                    getDialog().dismiss();
+                }
             }
         });
 
@@ -529,11 +540,16 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             @Override
             public void onValueChange(@NonNull @NotNull Slider slider, float value, boolean fromUser) {
 
+                if(resetSlider) {
+                    resetSlider = false;
+                    return;
+                }
+
                 sliderAdjusted = true;
 
                 if(isBuyOrder){
 
-                    float amount = 0;
+                    float amount;
                     float balance = SharedPrefs.getInstance(getContext()).getBalance();
 
                     switch ((int)value) {
@@ -575,16 +591,6 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     private void showMessageDialog(String title, String message) {
         MessageDialogFragment dialogFragment = MessageDialogFragment.getInstance(title, message);
         dialogFragment.showNow(getChildFragmentManager(), "message");
-    }
-
-    private boolean updatePrice() {
-        long currentTimeSeconds = System.currentTimeMillis();
-        long timeDifference = currentTimeSeconds - marketUnit.getTimeStamp();
-
-        if(timeDifference > 300 * 1000)
-            return true;
-        return false;
-
     }
 
 
@@ -632,14 +638,20 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     //always be updated with marketPrice when observing coinBottomViewModel.liveTradingType
     private void confirmBuyOrder() {
 
-        float balance = SharedPrefs.getInstance(getActivity().getApplication()).getBalance();
+        float balance;
+
+        if(requireActivity().getApplication() != null)
+            balance = SharedPrefs.getInstance(requireActivity().getApplication()).getBalance();
+        else
+            balance = SharedPrefs.getInstance(getActivity()).getBalance();
+
         float maxAmount = CryptoCalculator.calcMaxPercent(balance, limitPrice);
         float amount = getAmount();
 
         if(amount == 0) {
 
-            showMessage("Amount must be greater than " + String.valueOf(NumberFormatter
-                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2)));
+            showMessage("Amount must be greater than " + NumberFormatter
+                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2));
             return;
         }
 
@@ -655,8 +667,8 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
         } else if(CryptoCalculator.calcAmountWithFee(limitPrice, amount) < 1.2f) {
 
-            showMessage("Amount must be greater than " + String.valueOf(NumberFormatter
-                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2)));
+            showMessage("Amount must be greater than " + NumberFormatter
+                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2));
 
             return;
         }
@@ -720,8 +732,8 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             return;
 
         } else if(CryptoCalculator.calcAmountWithFee(limitPrice, amount) < 1.2f) {
-            showMessage("Amount must be greater than " + String.valueOf(NumberFormatter
-                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2)));
+            showMessage("Amount must be greater than " + NumberFormatter
+                    .getDecimalWithCommas(CryptoCalculator.calcMinimumAmount(limitPrice), 2));
 
             return;
         }

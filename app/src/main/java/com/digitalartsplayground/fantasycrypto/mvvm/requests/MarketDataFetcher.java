@@ -9,10 +9,10 @@ import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
-
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
+
 
 // CacheObject: Type for the Resource data. (database cache)
 // RequestObject: Type for the API response. (network request)
@@ -113,7 +113,8 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
                                     results.addSource(loadFromDb(), new Observer<CacheObject>() {
                                         @Override
                                         public void onChanged(@Nullable CacheObject cacheObject) {
-                                            setValue(Resource.success(cacheObject));
+                                            if(cacheObject != null)
+                                                setValue(Resource.success(cacheObject));
                                         }
                                     });
                                 }
@@ -204,5 +205,5 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
     // in the base class.
     public final LiveData<Resource<CacheObject>> getAsLiveData(){
         return results;
-    };
+    }
 }

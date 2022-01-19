@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/transparent"
-        app:tabTextAppearance="@style/TabLayoutStyle"
+        app:tabTextAppearance="@style/GraphStyle"
         app:tabTextColor="@color/white"
         app:tabSelectedTextColor="#F4B400"
         app:tabIndicatorColor="#F4B400"

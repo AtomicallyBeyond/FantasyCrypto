@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/background">
 
-
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/market_appBarLayout"
         android:layout_width="match_parent"
@@ -19,12 +18,13 @@
 
 
         <androidx.appcompat.widget.Toolbar
+            android:id="@+id/market_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/transparent"
             app:title="Markets"
-            app:titleTextAppearance="@style/Toolbar.TitleText"
-            app:titleTextColor="@color/white">
+            app:popupTheme="@style/MyTheme.PopupOverlay"
+            app:titleTextAppearance="@style/Toolbar.TitleText">
 
             <TextView
                 android:id="@+id/market_balance_textview"
@@ -58,6 +58,7 @@
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="20dp"
             android:background="@drawable/rounded_corners_dark"
+            app:theme="@style/AppSearchView"
             app:defaultQueryHint="Search"
             app:iconifiedByDefault="false"/>
 
@@ -119,6 +120,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/market_fiat_name"
         app:layout_constraintVertical_bias="0.0" />
+
+    <ProgressBar
+        android:id="@+id/market_progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dp"
+        android:background="@drawable/background"
+        android:indeterminateOnly="true"
+        android:indeterminateDrawable="@drawable/progressbar_custom"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+        android:id="@+id/market_loading_textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:text="Resetting Game..."
+        android:textSize="30sp"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

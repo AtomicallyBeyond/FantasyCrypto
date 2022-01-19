@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
                 android:text="Market"
-                android:textColor="@color/charcoal"
+                android:textColor="@color/gray"
                 android:textSize="10sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/limit_start_barrier"

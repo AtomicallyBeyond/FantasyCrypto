@@ -1,23 +1,20 @@
 package com.digitalartsplayground.fantasycrypto.mvvm.viewmodels;
 
 import android.app.Application;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
-
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
+
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -51,7 +48,8 @@ public class MainViewModel extends AndroidViewModel {
             liveMarketData.addSource(liveData, new Observer<Resource<List<MarketUnit>>>() {
                 @Override
                 public void onChanged(Resource<List<MarketUnit>> listResource) {
-                    if(listResource.status == Resource.Status.SUCCESS)
+                    if(listResource.status == Resource.Status.SUCCESS ||
+                            listResource.status == Resource.Status.ERROR)
                         liveMarketData.removeSource(liveData);
                 }
             });
@@ -72,7 +70,8 @@ public class MainViewModel extends AndroidViewModel {
                 @Override
                 public void onChanged(Resource<List<MarketUnit>> listResource) {
 
-                    if(listResource.status == Resource.Status.SUCCESS) {
+                    if(listResource.status == Resource.Status.SUCCESS ||
+                            listResource.status == Resource.Status.ERROR) {
                         liveMarketData.removeSource(lastLiveData);
                     }
 
@@ -81,6 +80,10 @@ public class MainViewModel extends AndroidViewModel {
             });
 
         }
+    }
+
+    public MarketUnit getMarketUnit(String coinID) {
+        return repository.getMarketUnit(coinID);
     }
 
     public void cleanInactiveLimitHistory() {

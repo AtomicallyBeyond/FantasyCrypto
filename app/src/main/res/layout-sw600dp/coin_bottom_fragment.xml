@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#001522">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/top_rounded"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="30dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/rounded_corners_white" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/coin_bottom_back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="8dp"
+                android:background="@color/transparent"
+                android:src="@drawable/back"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@+id/coin_bottom_buy_button"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_confirm_textView"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="1" />
+
+            <TextView
+                android:id="@+id/coin_bottom_confirm_textView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center|bottom"
+                android:text="Confirm Order"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@+id/coin_bottom_buy_button"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_amount_crypto"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_back_button"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <com.skydoves.powerspinner.PowerSpinnerView
+                android:id="@+id/coin_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/transparent"
+                android:gravity="center"
+                android:hint="Market"
+                android:padding="10dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
+                android:textSize="24sp"
+                app:layout_constraintStart_toEndOf="@id/start_guideline"
+                app:layout_constraintTop_toTopOf="parent"
+                app:spinner_arrow_gravity="end"
+                app:spinner_arrow_padding="8dp"
+                app:spinner_divider_color="@color/charcoal"
+                app:spinner_divider_show="true"
+                app:spinner_divider_size="0.4dp"
+                app:spinner_item_array="@array/tradingTypes"
+                app:spinner_popup_animation="dropdown"
+                app:spinner_popup_background="@color/black"
+                app:spinner_popup_elevation="14dp" />
+
+            <ImageButton
+                android:id="@+id/coin_bottom_close_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:background="@color/transparent"
+                android:src="@drawable/close"
+                app:layout_constraintBottom_toBottomOf="@+id/coin_bottom_buy_button"
+                app:layout_constraintEnd_toEndOf="@id/end_guideline"
+                app:layout_constraintTop_toTopOf="@id/coin_spinner"
+                app:layout_constraintVertical_bias="0" />
+
+            <Button
+                android:id="@+id/coin_bottom_buy_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/green"
+                android:text="BUY"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_sell_button"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_spinner" />
+
+            <Button
+                android:id="@+id/coin_bottom_sell_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/charcoal"
+                android:text="SELL"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                app:layout_constraintEnd_toStartOf="@+id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_buy_button"
+                app:layout_constraintTop_toBottomOf="@id/coin_spinner" />
+
+
+            <TextView
+                android:id="@+id/coin_bottom_limit_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/left_rounded"
+                android:padding="4dp"
+                android:paddingStart="10dp"
+                android:text="Limit Price"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toTopOf="@+id/coin_bottom_amount_title"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_limit_editText"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_back_button" />
+
+            <EditText
+                android:id="@+id/coin_bottom_limit_editText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@color/black"
+                android:gravity="right"
+                android:hint="0"
+                android:inputType="numberDecimal"
+                android:maxLength="15"
+                android:maxLines="1"
+                android:padding="4dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/gray"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_limit_currency"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_limit_title"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_back_button" />
+
+            <TextView
+                android:id="@+id/coin_bottom_limit_currency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/right_rounded"
+                android:padding="4dp"
+                android:paddingEnd="10dp"
+                android:text="USD"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toStartOf="@id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_limit_editText"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_back_button" />
+
+            <TextView
+                android:id="@+id/coin_bottom_amount_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/left_rounded"
+                android:padding="4dp"
+                android:paddingStart="10dp"
+                android:text="Amount"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_amount_editText"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_limit_title" />
+
+            <EditText
+                android:id="@+id/coin_bottom_amount_editText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@color/black"
+                android:gravity="right"
+                android:hint="0"
+                android:inputType="numberDecimal"
+                android:maxLength="15"
+                android:maxLines="1"
+                android:padding="4dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/gray"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_amount_crypto"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_amount_title"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_limit_title" />
+
+
+            <TextView
+                android:id="@+id/coin_bottom_amount_crypto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/right_rounded"
+                android:padding="4dp"
+                android:paddingEnd="10dp"
+                android:text="BTC"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toStartOf="@id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_amount_editText"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_limit_title" />
+
+
+            <TextView
+                android:id="@+id/coin_bottom_total_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/left_top_rounded"
+                android:padding="4dp"
+                android:paddingStart="10dp"
+                android:text="Total"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_total"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_amount_title" />
+
+            <TextView
+                android:id="@+id/coin_bottom_total"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/right_top_rounded"
+                android:gravity="right"
+                android:hint="0"
+                android:maxLines="1"
+                android:padding="4dp"
+                android:paddingEnd="10dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toStartOf="@+id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_total_title"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_amount_title" />
+
+
+            <TextView
+                android:id="@+id/coin_bottom_fee_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/black"
+                android:padding="4dp"
+                android:paddingStart="10dp"
+                android:text="Fee"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_fee"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_total_title" />
+
+            <TextView
+                android:id="@+id/coin_bottom_fee"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/black"
+                android:gravity="right"
+                android:hint="0"
+                android:maxLines="1"
+                android:padding="4dp"
+                android:paddingEnd="10dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@+id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/coin_bottom_fee_title"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_total_title" />
+
+            <TextView
+                android:id="@+id/coin_bottom_availableBalance"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bottom_rounded"
+                android:gravity="center"
+                android:paddingStart="4dp"
+                android:paddingBottom="4dp"
+                android:text="Available Balance: 42,000 USD = 0.040000 BTC"
+                android:textColor="#F4B400"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toTopOf="@+id/coin_slider"
+                app:layout_constraintEnd_toStartOf="@+id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_fee_title"
+                app:layout_constraintVertical_bias="0" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/coin_slider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:stepSize="25"
+                android:valueFrom="0"
+                android:valueTo="100"
+                app:layout_constraintBottom_toTopOf="@+id/coin_bottom_oder_button"
+                app:layout_constraintEnd_toStartOf="@+id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_bottom_availableBalance"
+                app:thumbColor="@color/white"
+                app:tickColor="@color/black"
+                app:trackColor="@color/white" />
+
+            <Button
+                android:id="@+id/coin_bottom_oder_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/green"
+                android:padding="4dp"
+                android:text="Buy Order"
+                android:textColor="@color/white"
+                android:textSize="26sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_slider" />
+
+            <Button
+                android:id="@+id/coin_bottom_confirm_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/red"
+                android:padding="4dp"
+                android:text="CONFIRM"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toStartOf="@+id/end_guideline"
+                app:layout_constraintStart_toEndOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/coin_slider" />
+
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/start_guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="30dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/end_guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintGuide_end="30dp"
+                app:layout_constraintStart_toStartOf="parent" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

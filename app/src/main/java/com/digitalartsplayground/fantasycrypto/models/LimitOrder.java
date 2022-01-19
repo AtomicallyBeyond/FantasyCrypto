@@ -1,6 +1,5 @@
 package com.digitalartsplayground.fantasycrypto.models;
 
-import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -34,13 +33,16 @@ public class LimitOrder {
     private boolean isBuyOrder;
 
     @ColumnInfo(name = "is_active")
-    private boolean isActive = true;
+    private boolean isActive;
 
     @ColumnInfo(name = "is_market_order")
-    private boolean isMarketOrder = true;
+    private boolean isMarketOrder;
+
+    @ColumnInfo(name = "fill_date_string")
+    private String fillDateString;
 
     @ColumnInfo(name = "fill_date")
-    private String fillDate;
+    private long fillDate;
 
     @ColumnInfo(name = "value_string")
     private String valueString;
@@ -83,7 +85,7 @@ public class LimitOrder {
         candleCheckTime = timeCreated;
 
         DateFormat formatter = new SimpleDateFormat("MMMM  dd, yyyy", Locale.getDefault());
-        fillDate = formatter.format(new Date(timeCreated));
+        fillDateString = formatter.format(new Date(timeCreated));
         timeCreatedString = formatter.format(new Date(timeCreated));
     }
 
@@ -144,12 +146,12 @@ public class LimitOrder {
         this.coinSymbol = coinSymbol;
     }
 
-    public String getFillDate() {
-        return fillDate;
+    public String getFillDateString() {
+        return fillDateString;
     }
 
-    public void setFillDate(String fillDate) {
-        this.fillDate = fillDate;
+    public void setFillDateString(String fillDateString) {
+        this.fillDateString = fillDateString;
     }
 
     public String getValueString() {
@@ -198,5 +200,13 @@ public class LimitOrder {
 
     public void setMarketOrder(boolean marketOrder) {
         isMarketOrder = marketOrder;
+    }
+
+    public long getFillDate() {
+        return fillDate;
+    }
+
+    public void setFillDate(long fillDate) {
+        this.fillDate = fillDate;
     }
 }

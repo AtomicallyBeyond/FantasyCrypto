@@ -21,6 +21,7 @@ import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.LineChartFragmentViewModel;
 import com.digitalartsplayground.fantasycrypto.util.DayXAxisValueFormatter;
+import com.digitalartsplayground.fantasycrypto.util.DeviceTypeCheck;
 import com.digitalartsplayground.fantasycrypto.util.MonthXAxisValueFormatter;
 import com.digitalartsplayground.fantasycrypto.util.MyYAxisValueFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
@@ -258,8 +259,13 @@ public class LineChartFragment extends Fragment {
         lineDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
         lineDataSet.setDrawFilled(true);
         lineDataSet.setFillColor(Color.BLACK);
-        lineDataSet.setValueTextSize(12f);
         lineDataSet.setDrawValues(false);
+
+        if(DeviceTypeCheck.isTablet(getContext()))
+            lineDataSet.setValueTextSize(18f);
+        else
+            lineDataSet.setValueTextSize(12f);
+
 
         LineData data = new LineData(lineDataSet);
         lineChart.setData(data);
@@ -314,7 +320,7 @@ public class LineChartFragment extends Fragment {
         final YAxis yAxis = lineChart.getAxisLeft();
         yAxis.setLabelCount(10,true);
         yAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
-        yAxis.setTextColor(Color.CYAN);
+        yAxis.setTextColor(Color.LTGRAY);
         yAxis.setTextSize(12f);
         yAxis.setGridColor(Color.argb(102,255,255,255));
         yAxis.setAxisLineColor(Color.TRANSPARENT);

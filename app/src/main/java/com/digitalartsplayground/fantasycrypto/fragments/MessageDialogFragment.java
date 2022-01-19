@@ -1,23 +1,17 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-
 import com.digitalartsplayground.fantasycrypto.R;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.util.Objects;
 
 public class MessageDialogFragment extends DialogFragment {
@@ -54,6 +48,7 @@ public class MessageDialogFragment extends DialogFragment {
     @org.jetbrains.annotations.Nullable
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        @SuppressLint("InflateParams")
         View view = inflater.inflate(R.layout.message_dialog, null);
         closeButton = view.findViewById(R.id.message_dialog_close_button);
         titleView = view.findViewById(R.id.message_dialog_title);

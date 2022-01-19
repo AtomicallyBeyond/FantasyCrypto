@@ -5,11 +5,9 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
-
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
-
 import java.util.List;
+
 
 @Dao
 public interface LimitOrderDao {
@@ -17,20 +15,16 @@ public interface LimitOrderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLimit(LimitOrder limitOrder);
 
-    @Query("SELECT * FROM limit_orders")
-    LiveData<List<LimitOrder>> getLimitOrders();
 
     @Query("SELECT * FROM limit_orders where is_active=1 ORDER BY time_created DESC")
     LiveData<List<LimitOrder>> getActiveOrders();
 
-    @Query("SELECT * FROM limit_orders where is_active=0 ORDER BY time_created DESC")
+    @Query("SELECT * FROM limit_orders where is_active=0 ORDER BY fill_date DESC")
     LiveData<List<LimitOrder>> getFilledOrders();
-
-    @Update()
-    void updateLimit(LimitOrder limitOrder);
 
     @Query("DELETE FROM limit_orders WHERE coin_id = :id AND time_created = :timeCreated")
     void deleteByTimeCreated(String id, long timeCreated);
+
 
     //Queries done on background thread
 

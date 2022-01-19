@@ -6,23 +6,19 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.Observer;
-
-import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
-import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
+
 
 public class OrdersFragmentViewModel extends AndroidViewModel {
 
-    private Repository repository;
-    private MediatorLiveData<Boolean> liveActiveOrdersState = new MediatorLiveData<>();
-    private MediatorLiveData<List<LimitOrder>> liveActiveOrders = new MediatorLiveData<>();
-    private MediatorLiveData<List<LimitOrder>> liveFilledOrders = new MediatorLiveData<>();
+    private final Repository repository;
+    private boolean isDeleteState = false;
+    private final MediatorLiveData<Boolean> liveActiveOrdersState = new MediatorLiveData<>();
+    private final MediatorLiveData<List<LimitOrder>> liveActiveOrders = new MediatorLiveData<>();
+    private final MediatorLiveData<List<LimitOrder>> liveFilledOrders = new MediatorLiveData<>();
 
     public OrdersFragmentViewModel(@NonNull @NotNull Application application) {
         super(application);
@@ -60,4 +56,11 @@ public class OrdersFragmentViewModel extends AndroidViewModel {
         repository.deleteLimit(coinID, timeCreated);
     }
 
+    public boolean isDeleteState() {
+        return isDeleteState;
+    }
+
+    public void setDeleteState(boolean deleteState) {
+        isDeleteState = deleteState;
+    }
 }

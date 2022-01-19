@@ -13,7 +13,6 @@ import retrofit2.Retrofit;
 
 public class LiveDataCallAdapterFactory extends CallAdapter.Factory {
 
-
     /**
      * This method performs a number of checks and then returns the Response type for the Retrofit requests.
      * (@bodyType is the ResponseType. It can be RecipeResponse or RecipeSearchResponse)

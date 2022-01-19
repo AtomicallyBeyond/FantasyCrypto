@@ -1,19 +1,17 @@
 package com.digitalartsplayground.fantasycrypto.mvvm.viewmodels;
 
 import android.app.Application;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
-
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
-
 import org.jetbrains.annotations.NotNull;
+
 
 public class CoinBottomViewModel extends AndroidViewModel {
 
@@ -23,18 +21,13 @@ public class CoinBottomViewModel extends AndroidViewModel {
 
     public enum TradingStage {ORDER, CONFIRMATION, COMPLETED}
 
-    private OrderType orderType = OrderType.BUY;
-    private TradingType tradingType = TradingType.MARKET;
-    private TradingStage tradingStage = TradingStage.ORDER;
-
-    private MediatorLiveData<MarketUnit> liveMarketUnit = new MediatorLiveData<>();
-    private MediatorLiveData<CryptoAsset> liveCryptoAsset = new MediatorLiveData<>();
-    private MediatorLiveData<OrderType> liveOrderType = new MediatorLiveData<>();
-    private MediatorLiveData<TradingType> liveTradingType = new MediatorLiveData<>();
-    private MediatorLiveData<TradingStage> liveTradingStage = new MediatorLiveData<>();
-    private MediatorLiveData<Float> liveLimitPrice = new MediatorLiveData<>();
-
-    private Repository repository;
+    private final MediatorLiveData<MarketUnit> liveMarketUnit = new MediatorLiveData<>();
+    private final MediatorLiveData<CryptoAsset> liveCryptoAsset = new MediatorLiveData<>();
+    private final MediatorLiveData<OrderType> liveOrderType = new MediatorLiveData<>();
+    private final MediatorLiveData<TradingType> liveTradingType = new MediatorLiveData<>();
+    private final MediatorLiveData<TradingStage> liveTradingStage = new MediatorLiveData<>();
+    private final MediatorLiveData<Float> liveLimitPrice = new MediatorLiveData<>();
+    private final Repository repository;
 
 
     public CoinBottomViewModel(@NonNull @NotNull Application application) {

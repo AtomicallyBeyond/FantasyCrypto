@@ -109,7 +109,7 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
                 @Override
                 public void onClick(View view) {
                     itemClickedListener.onItemClicked(
-                            AssetsAdapter.this.cryptoAssets.get(ViewHolder.this.getAdapterPosition()).getId());
+                            AssetsAdapter.this.cryptoAssets.get(ViewHolder.this.getLayoutPosition()).getId());
                 }
             });
         }

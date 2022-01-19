@@ -2,15 +2,8 @@ package com.digitalartsplayground.fantasycrypto;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.text.Html;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -21,28 +14,20 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
 import com.digitalartsplayground.fantasycrypto.fragments.CoinBottomFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.LineChartFragment;
-import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinActivityViewModel;
-import com.digitalartsplayground.fantasycrypto.util.DayXAxisValueFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
-import com.github.mikephil.charting.charts.CandleStickChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.CandleData;
-import com.github.mikephil.charting.data.CandleDataSet;
-import com.github.mikephil.charting.data.CandleEntry;
-
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class CoinActivity extends AppCompatActivity {
 
@@ -117,6 +102,7 @@ public class CoinActivity extends AppCompatActivity {
 
 
     private void initStats(MarketUnit marketUnit) {
+
         if(marketUnit.getMarketCap() > 0)
             marketCap.setText(numberFormatter(String.valueOf(marketUnit.getMarketCap())));
         else
@@ -153,18 +139,26 @@ public class CoinActivity extends AppCompatActivity {
             percentChange.setTextColor(Color.RED);
         }
 
-        if(marketUnit.getOneDayPercentChange() != null)
-            percentChange.setText(marketUnit.getOneDayPercentChange() + "%");
+        if(marketUnit.getOneDayPercentChange() != null){
+            String temp = marketUnit.getOneDayPercentChange() + "%";
+            percentChange.setText(temp);
+        }
         else
             percentChange.setText(" ");
 
-        if(marketUnit.getRank() != null)
-            rank.setText("Rank #" + marketUnit.getRank());
+        if(marketUnit.getRank() != null) {
+            String temp = "Rank #" + marketUnit.getRank();
+            rank.setText(temp);
+        }
+
         else
             rank.setText(" ");
 
-        if(marketUnit.getCoinName() != null || marketUnit.getCoinSymbol() != null)
-            coinName.setText(marketUnit.getCoinName() + "(" + marketUnit.getCoinSymbol().toUpperCase() + ")");
+        if(marketUnit.getCoinName() != null || marketUnit.getCoinSymbol() != null) {
+            String temp = marketUnit.getCoinName() + "(" + marketUnit.getCoinSymbol().toUpperCase() + ")";
+            coinName.setText(temp);
+        }
+
         else
             coinName.setText(" ");
 
@@ -179,7 +173,7 @@ public class CoinActivity extends AppCompatActivity {
     }
 
     private static String numberFormatter(String number) {
-        Double parsedNumber = Double.parseDouble(number);
+        double parsedNumber = Double.parseDouble(number);
 
         if(Math.abs(parsedNumber / 1000000000) >= 1)
             return prettyCount(parsedNumber);
@@ -191,7 +185,7 @@ public class CoinActivity extends AppCompatActivity {
 
     public static String prettyCount(Double number) {
         DecimalFormat df = new DecimalFormat("#.##");
-        String numberString = "";
+        String numberString;
 
         if(Math.abs(number / 1000000000000d) >= 1)
             numberString = df.format(number / 1000000000000.00) + "T";
@@ -255,13 +249,11 @@ public class CoinActivity extends AppCompatActivity {
 
                 if(developerUnitResource.status == Resource.Status.SUCCESS) {
 
-                    if(developerUnitResource.data != null) {
-                        String temp = developerUnitResource.data.getCoinDescription().getEnglishDescription();
-                        temp = temp.replaceAll("\\r\\n", "<p>");
-                        Spanned policy = Html.fromHtml(temp);
-                        coinInfo.setText(policy);
-                        coinInfo.setMovementMethod(LinkMovementMethod.getInstance());
-                    }
+                    String temp = developerUnitResource.data.getCoinDescription().getEnglishDescription();
+                    temp = temp.replaceAll("\\r\\n", "<p>");
+                    Spanned policy = Html.fromHtml(temp);
+                    coinInfo.setText(policy);
+                    coinInfo.setMovementMethod(LinkMovementMethod.getInstance());
 
                 } else if(developerUnitResource.status == Resource.Status.ERROR) {
 

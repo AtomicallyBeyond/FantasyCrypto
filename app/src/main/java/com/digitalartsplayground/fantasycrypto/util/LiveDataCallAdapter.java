@@ -1,15 +1,13 @@
 package com.digitalartsplayground.fantasycrypto.util;
 
 import androidx.lifecycle.LiveData;
-
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
-
 import java.lang.reflect.Type;
-
 import retrofit2.Call;
 import retrofit2.CallAdapter;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class LiveDataCallAdapter<R> implements CallAdapter<R, LiveData<ApiResponse<R>>> {
 

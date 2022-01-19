@@ -5,8 +5,6 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-
-import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 
 @Dao
@@ -17,7 +15,4 @@ public interface DeveloperDao {
 
     @Query("SELECT * FROM developer_data WHERE coin_id=:id")
     LiveData<DeveloperUnit> getDeveloperLiveUnit(String id);
-
-    @Query("SELECT * FROM developer_data WHERE coin_id=:id")
-    DeveloperUnit getDeveloperUnit(String id);
 }

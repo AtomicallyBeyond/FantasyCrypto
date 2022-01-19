@@ -3,19 +3,34 @@ package com.digitalartsplayground.fantasycrypto.util;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 
+
 public class MyYAxisValueFormatter extends ValueFormatter {
 
     @Override
     public String getAxisLabel(float value, AxisBase axis) {
 
-        if(Math.abs(axis.mAxisMaximum - value) < 0.01)
-            return "";
+        if(axis.mEntries != null) {
 
-        if(axis.mAxisMinimum == value)
-            return "";
+            int decimalPlaces = 2;
+            float min = axis.mEntries[0];
+            float max = axis.mEntries[axis.mEntries.length - 1];
 
-        return NumberFormatter.getDecimalWithCommas(value, 2);
+            if(min < 1)
+                decimalPlaces = 3;
 
+
+            if(max == value)
+                return "";
+
+            if(min == value)
+                return "";
+
+            String temp = NumberFormatter.getDecimalWithCommas(value, decimalPlaces);
+
+            return temp;
+        }
+
+        return "";
     }
 
 }

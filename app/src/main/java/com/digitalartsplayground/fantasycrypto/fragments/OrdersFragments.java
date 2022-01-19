@@ -1,33 +1,37 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
-import android.graphics.Paint;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
+import android.widget.ImageButton;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.digitalartsplayground.fantasycrypto.MainActivity;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.adapters.OrdersAdapter;
 import com.digitalartsplayground.fantasycrypto.interfaces.OrderClickedListener;
-import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.OrdersFragmentViewModel;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.tabs.TabLayout;
-
 import org.jetbrains.annotations.NotNull;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrdersFragments extends Fragment implements OrderClickedListener {
@@ -36,12 +40,99 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
     private RecyclerView ordersRecyclerView;
     private OrdersAdapter ordersAdapter;
     private TabLayout tabLayout;
+    private ImageButton returnDelete;
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ordersAdapter.destroyOrderAdapter();
+    }
+
+    @SuppressLint("RestrictedApi")
+    @Override
+    public void onCreateOptionsMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater inflater) {
+        inflater.inflate(R.menu.orders_options, menu);
+
+        if(menu instanceof MenuBuilder) {
+            ((MenuBuilder) menu).setOptionalIconsVisible(true);
+        }
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull @NotNull MenuItem item) {
+
+        if(item.getItemId() == R.id.delete_orders) {
+            setDeleteState();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setDeleteState() {
+        int count = ordersRecyclerView.getChildCount();
+
+        if(count > 0) {
+            setMenuVisibility(false);
+            returnDelete.setVisibility(View.VISIBLE);
+
+            ordersViewModel.setDeleteState(true);
+            ordersAdapter.setAllowAllItemSwipe(true);
+
+            final List<RecyclerView.ViewHolder> viewHolders = new ArrayList<>(ordersRecyclerView.getChildCount());
+
+            for (int childCount = ordersRecyclerView.getChildCount(), i = 0; i < childCount; ++i) {
+                viewHolders.add(ordersRecyclerView.getChildViewHolder(ordersRecyclerView.getChildAt(i)));
+            }
+
+            //ordersAdapter.swipeOpenItem(viewHolders);
+            ordersAdapter.setDeleteState(true);
+            //ordersAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void cancelDeleteState() {
+        ordersViewModel.setDeleteState(false);
+        ordersAdapter.setAllowAllItemSwipe(false);
+        returnDelete.setVisibility(View.GONE);
+        setMenuVisibility(true);
+
+        final List<RecyclerView.ViewHolder> viewHolders = new ArrayList<>(ordersRecyclerView.getChildCount());
+
+        for (int childCount = ordersRecyclerView.getChildCount(), i = 0; i < childCount; ++i) {
+            viewHolders.add(ordersRecyclerView.getChildViewHolder(ordersRecyclerView.getChildAt(i)));
+            ordersAdapter.swipeCloseItem(viewHolders);
+        }
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+
+                if(ordersViewModel.isDeleteState()) {
+                    cancelDeleteState();
+                } else {
+                    this.setEnabled(false);
+                    requireActivity().onBackPressed();
+                }
+            }
+        };
+
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+    }
+
+
 
     @Override
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ordersViewModel = new ViewModelProvider(getActivity())
+        ordersViewModel = new ViewModelProvider(requireActivity())
                 .get(OrdersFragmentViewModel.class);
     }
 
@@ -52,16 +143,27 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
         View view = inflater.inflate(R.layout.orders_fragment, container, false);
 
+        returnDelete = view.findViewById(R.id.orders_delete_return);
         ordersRecyclerView = view.findViewById(R.id.orders_recyclerView);
         ordersRecyclerView.setHasFixedSize(true);
         tabLayout = view.findViewById(R.id.orders_tabs);
         init();
 
-        Toast.makeText(getContext(), "Swipe Left To Cancel", Toast.LENGTH_SHORT).show();
-
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Toolbar toolbar = view.findViewById(R.id.orders_toolbar);
+        ((MainActivity)requireActivity()).setSupportActionBar(toolbar);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
 
 
     private void init() {
@@ -87,6 +189,14 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         }
 
         subscribeObservers();
+
+        returnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                requireActivity().onBackPressed();
+            }
+        });
+
 
     }
 
@@ -135,6 +245,7 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
                 } //end else statement
 
+
             } //end onChanged OrderState
 
         }); //observeOrderState
@@ -149,9 +260,13 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         public void onTabSelected(TabLayout.Tab tab) {
             switch (tab.getPosition()) {
                 case 0:
+                    setMenuVisibility(true);
                     ordersViewModel.setLiveActiveOrdersState(true);
                     break;
                 case 1:
+                    if(ordersViewModel.isDeleteState())
+                        cancelDeleteState();
+                    setMenuVisibility(false);
                     ordersViewModel.setLiveActiveOrdersState(false);
                     break;
             }
@@ -196,7 +311,8 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
                     AppExecutors.getInstance().mainThread().execute(new Runnable() {
                         @Override
                         public void run() {
-                            ordersViewModel.setLiveActiveOrdersState(ordersViewModel.getLiveActiveOrdersState().getValue());
+                            if(ordersViewModel.getLiveActiveOrdersState().getValue() != null)
+                                ordersViewModel.setLiveActiveOrdersState(ordersViewModel.getLiveActiveOrdersState().getValue());
                         }
                     });
                 }

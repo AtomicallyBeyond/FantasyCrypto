@@ -1,12 +1,5 @@
 package com.digitalartsplayground.fantasycrypto;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,10 +10,16 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import com.digitalartsplayground.fantasycrypto.fragments.MarketFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.OrdersFragments;
 import com.digitalartsplayground.fantasycrypto.fragments.PortfolioFragment;
@@ -36,9 +35,7 @@ import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,8 +53,13 @@ public class MainActivity extends AppCompatActivity {
     private SharedPrefs sharedPrefs;
     private ScheduledExecutorService scheduleTaskExecutor;
     private TextView errorView;
+    private TextView refreshTextView;
+    private ImageButton refreshButton;
+    private ImageView loadingImage;
     private ProgressBar progressBar;
     private BottomNavigationView bottomNavigationView;
+    private boolean isErrorScreen = false;
+    private boolean isLoadingScreen = true;
 
 
     @Override
@@ -69,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
         sharedPrefs = SharedPrefs.getInstance(getApplication());
         errorView = findViewById(R.id.main_error_view);
         progressBar = findViewById(R.id.main_progress_bar);
+        refreshButton = findViewById(R.id.main_refresh_button);
+        refreshTextView = findViewById(R.id.main_refresh_textview);
+        loadingImage = findViewById(R.id.main_loading_logo);
 
         init();
         subscribeObservers();
@@ -109,9 +114,26 @@ public class MainActivity extends AppCompatActivity {
 
         hideSystemUI();
 
+        setListeners();
         mainViewModel.fetchMarketData(6);
         sharedPrefs.setSchedulerTime(System.currentTimeMillis());
         cleanLimitHistory();
+    }
+
+    private void setListeners(){
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(isErrorScreen) {
+                    hideErrorScreen();
+                    isErrorScreen = false;
+                }
+
+                showLoadingScreen();
+                isLoadingScreen = true;
+                mainViewModel.fetchMarketData(6);
+            }
+        });
     }
 
     private void cleanLimitHistory() {
@@ -126,6 +148,48 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void hideErrorScreen() {
+        if(errorView.getVisibility() == View.VISIBLE)
+            errorView.setVisibility(View.GONE);
+
+        if(refreshButton.getVisibility() == View.VISIBLE)
+            refreshButton.setVisibility(View.GONE);
+
+        if(refreshTextView.getVisibility() == View.VISIBLE)
+            refreshTextView.setVisibility(View.GONE);
+
+
+    }
+
+    private void hideLoadingScreen() {
+        if(progressBar.getVisibility() == View.VISIBLE)
+            progressBar.setVisibility(View.GONE);
+
+        if(loadingImage.getVisibility() == View.VISIBLE)
+            loadingImage.setVisibility(View.GONE);
+
+        if(bottomNavigationView.getVisibility() == View.INVISIBLE)
+            bottomNavigationView.setVisibility(View.VISIBLE);
+    }
+
+    private void showLoadingScreen() {
+        if(bottomNavigationView.getVisibility() == View.VISIBLE)
+            bottomNavigationView.setVisibility(View.INVISIBLE);
+
+        progressBar.setVisibility(View.VISIBLE);
+        loadingImage.setVisibility(View.VISIBLE);
+        bottomNavigationView.setVisibility(View.INVISIBLE);
+    }
+
+    private void showErrorScreen() {
+
+        if(bottomNavigationView.getVisibility() == View.VISIBLE)
+            bottomNavigationView.setVisibility(View.INVISIBLE);
+
+        errorView.setVisibility(View.VISIBLE);
+        refreshButton.setVisibility(View.VISIBLE);
+        refreshTextView.setVisibility(View.VISIBLE);
+    }
 
     private void subscribeObservers() {
 
@@ -140,19 +204,18 @@ public class MainActivity extends AppCompatActivity {
 
                 if(listResource.status == Resource.Status.SUCCESS) {
 
-                    if(errorView.getVisibility() == View.VISIBLE)
-                        errorView.setVisibility(View.GONE);
+                    if(isErrorScreen) {
+                        hideErrorScreen();
+                        isErrorScreen = false;
+                    }
 
-                    if(progressBar.getVisibility() == View.VISIBLE)
-                        progressBar.setVisibility(View.GONE);
+                    if(isLoadingScreen) {
+                        hideLoadingScreen();
+                        isLoadingScreen = false;
+                    }
 
-                    if(bottomNavigationView.getVisibility() == View.INVISIBLE)
-                        bottomNavigationView.setVisibility(View.VISIBLE);
-
-
-                    Toast.makeText(MainActivity.this, "Market Check = " + counter, Toast.LENGTH_SHORT).show();
                     counter++;
-                    checkLimitsWithMarket(listResource.data);
+                    checkLimitsWithMarket();
 
                     long timeDifference =  System.currentTimeMillis() - sharedPrefs.getLimitUpdateTime();
                     boolean checkWithCandleData = timeDifference > (30 * 60 * 1000);
@@ -162,17 +225,15 @@ public class MainActivity extends AppCompatActivity {
                         sharedPrefs.setLimitUpdateTime(System.currentTimeMillis());
                     }
 
-                } else if(listResource.status == Resource.Status.LOADING) {
-
-                    Toast.makeText(MainActivity.this, "loading...", Toast.LENGTH_SHORT).show();
-
                 } else if(listResource.status == Resource.Status.ERROR) {
 
-                    if(progressBar.getVisibility() == View.VISIBLE)
-                        progressBar.setVisibility(View.GONE);
+                    if(isLoadingScreen) {
+                        hideLoadingScreen();
+                        isLoadingScreen = false;
+                    }
 
-
-                    errorView.setVisibility(View.VISIBLE);
+                    showErrorScreen();
+                    isErrorScreen = true;
                 }
             }
         });
@@ -187,7 +248,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(Resource<CandleStickData> candleStickDataResource) {
 
-                Toast.makeText(MainActivity.this, "Candle Check = " + counter, Toast.LENGTH_SHORT).show();
                 counter++;
 
                 if(candleStickDataResource.status == Resource.Status.SUCCESS) {
@@ -273,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if(limitOrder != null) {
 
-                    long limitFilledTime = 0;
+                    long limitFilledTime;
 
                     if(limitOrder.isBuyOrder()) {
                         limitFilledTime = LimitHelper.verifyBuyLimit(limitOrder, candleStickData);
@@ -313,12 +373,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    private void checkLimitsWithMarket(List<MarketUnit> marketUnits) {
+    private void checkLimitsWithMarket() {
 
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
-
-            HashMap<String, MarketUnit> marketMap = new HashMap<>(marketUnits.size());
 
             @Override
             public void run() {
@@ -327,13 +384,9 @@ public class MainActivity extends AppCompatActivity {
 
                 if(limitOrders != null) {
 
-                    for(MarketUnit marketUnit : marketUnits) {
-                        marketMap.put(marketUnit.getCoinID(), marketUnit);
-                    }
-
                     for(LimitOrder limitOrder : limitOrders) {
 
-                        MarketUnit marketUnit = marketMap.get(limitOrder.getCoinID());
+                        MarketUnit marketUnit = mainViewModel.getMarketUnit(limitOrder.getCoinID());
 
                         if(marketUnit != null) {
                             float marketPrice = marketUnit.getCurrentPrice();
@@ -374,7 +427,8 @@ public class MainActivity extends AppCompatActivity {
         DateFormat formatter = new SimpleDateFormat("MMMM  dd, yyyy", Locale.getDefault());
         limitOrder.setActive(false);
         limitOrder.setCandleCheckTime(time);
-        limitOrder.setFillDate(formatter.format(new Date(time)));
+        limitOrder.setFillDate(time);
+        limitOrder.setFillDateString(formatter.format(new Date(time)));
         mainViewModel.updateLimitOrder(limitOrder);
     }
 
@@ -432,18 +486,30 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
 
-            getWindow().setDecorFitsSystemWindows(false);
+            getWindow().setDecorFitsSystemWindows(true);
             WindowInsetsController controller = getWindow().getInsetsController();
 
             if (controller != null) {
-                controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                controller.hide(WindowInsets.Type.statusBars());
                 controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             getWindow().getAttributes().layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; }
     }
 
 }
+
+/*                controller.addOnControllableInsetsChangedListener(new WindowInsetsController.OnControllableInsetsChangedListener() {
+                    @Override
+                    public void onControllableInsetsChanged(@NonNull WindowInsetsController windowInsetsController, int i) {
+                        InputMethodManager imm = ((InputMethodManager)(MainActivity.this).getSystemService(Context.INPUT_METHOD_SERVICE));
+                        if (imm.isAcceptingText()) {
+                            int a = 1;
+                        } else {
+                            int b = 1;
+                        }
+                    }
+                });*/

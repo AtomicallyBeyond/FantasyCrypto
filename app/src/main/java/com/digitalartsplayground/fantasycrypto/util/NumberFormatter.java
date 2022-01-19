@@ -52,13 +52,22 @@ public class NumberFormatter {
         return "0";
     }
 
-    private static String round(float d) {
-        DecimalFormat formatter = new DecimalFormat("#,###,###.##");
+    private static String round(float number, int decimalPlaces) {
+/*        DecimalFormat formatter = new DecimalFormat("#,###,###.##");
 
         BigDecimal bd = new BigDecimal(Float.toString(d));
-        bd = bd.setScale(3, BigDecimal.ROUND_HALF_UP);
-        return formatter.format(bd);
-        //return bd.toPlainString();
+        bd = bd.setScale(3, BigDecimal.ROUND_HALF_DOWN);
+        String temp = formatter.format(d);
+        return temp;
+        //return bd.toPlainString();*/
+
+        NumberFormat formatter;
+        formatter = NumberFormat.getNumberInstance();
+        formatter.setMinimumFractionDigits(decimalPlaces);
+        formatter.setMaximumFractionDigits(decimalPlaces);
+
+        String decimalValue = formatter.format(number);
+        return decimalValue;
     }
 
     public static String getDecimalWithCommas(float number, int decimalPlaces) {
@@ -72,7 +81,7 @@ public class NumberFormatter {
             return "0";
         }
 
-        return round(number);
+        return round(number, decimalPlaces);
     }
 
     public static String currency(float number) {

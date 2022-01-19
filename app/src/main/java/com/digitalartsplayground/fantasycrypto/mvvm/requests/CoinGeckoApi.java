@@ -7,9 +7,7 @@ import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
-
 import java.util.List;
-
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;

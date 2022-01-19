@@ -5,11 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
-
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
-import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
-
 import java.util.List;
 
 @Dao
@@ -18,11 +14,11 @@ public interface CryptoAssetDao{
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertCryptoAsset(CryptoAsset cryptoAsset);
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAllCryptoAssets(CryptoAsset... cryptoAssets);
-
     @Query("SELECT * FROM assets")
     LiveData<List<CryptoAsset>> getAllCryptoAsset();
+
+    @Query("SELECT * FROM assets")
+    List<CryptoAsset> getAllAssets();
 
     @Query("SELECT * FROM assets WHERE id=:id")
     LiveData<CryptoAsset> getCryptoAsset(String id);

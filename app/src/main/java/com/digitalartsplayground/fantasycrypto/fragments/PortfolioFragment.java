@@ -7,17 +7,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.digitalartsplayground.fantasycrypto.CoinActivity;
+import com.digitalartsplayground.fantasycrypto.MainActivity;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.adapters.AssetsAdapter;
 import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
@@ -27,6 +25,7 @@ import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.PortfolioFragmentViewModel;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Colors;
+import com.digitalartsplayground.fantasycrypto.util.DeviceTypeCheck;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.github.mikephil.charting.charts.PieChart;
@@ -36,9 +35,8 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
@@ -57,7 +55,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        portfolioViewModel = new ViewModelProvider(getActivity())
+        portfolioViewModel = new ViewModelProvider(requireActivity())
                 .get(PortfolioFragmentViewModel.class);
 
         assetsAdapter = new AssetsAdapter(requireContext(), this);
@@ -82,12 +80,23 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     }
 
     @Override
+    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Toolbar toolbar = view.findViewById(R.id.portfolio_tool_bar);
+        ((MainActivity)requireActivity()).setSupportActionBar(toolbar);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
-        tempBalance = SharedPrefs.getInstance(getContext().getApplicationContext()).getBalance();
+        if(getContext().getApplicationContext() != null)
+            tempBalance = SharedPrefs.getInstance(getContext().getApplicationContext()).getBalance();
+        else
+            tempBalance = SharedPrefs.getInstance(getContext()).getBalance();
+
         balance.setText(NumberFormatter.currency(tempBalance));
-        subscribeObservers();
+        updatePortfolioWithAssets();
     }
 
     private void initPortfolio() {
@@ -100,79 +109,57 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
     }
 
-    private void subscribeObservers() {
+    private void updatePortfolioWithAssets() {
 
-        LiveData<List<CryptoAsset>> liveCryptoAssets = portfolioViewModel.fetchCryptoAssets();
-
-        liveCryptoAssets.observe(getViewLifecycleOwner(), new Observer<List<CryptoAsset>>() {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
-            public void onChanged(List<CryptoAsset> cryptoAssets) {
-                if(cryptoAssets != null) {
-                    observeMarketData(cryptoAssets);
-                    liveCryptoAssets.removeObservers(getViewLifecycleOwner());
-                }
+            public void run() {
+                List<CryptoAsset> assets = portfolioViewModel.getAllAssets();
+
+                if(assets != null)
+                    initWithAssets(assets);
             }
         });
     }
 
-    private void observeMarketData(List<CryptoAsset> cryptoAssets) {
-
-        List<String> coinIDs = new ArrayList<>(cryptoAssets.size());
+    private void initWithAssets(List<CryptoAsset> cryptoAssets) {
+        
+        float tempPrice;
+        MarketUnit tempUnit;
+        totalAssetValue = 0;
 
         for(CryptoAsset asset : cryptoAssets) {
-            coinIDs.add(asset.getId());
+
+            tempUnit = portfolioViewModel.fetchMarketUnit(asset.getId());
+
+            asset.setFullName(tempUnit.getCoinName());
+            asset.setImageURL(tempUnit.getCoinImageURI());
+            asset.setAmountName(NumberFormatter.getDecimalWithCommas(asset.getAmount(), 2) +
+                    " "  + tempUnit.getCoinSymbol().toUpperCase());
+
+            tempPrice = tempUnit.getCurrentPrice() * asset.getAmount();
+            asset.setTotalValue(tempPrice);
+            asset.setTotalStringValue(NumberFormatter.currency(tempPrice));
+            totalAssetValue += tempPrice;
         }
 
-        LiveData<List<MarketUnit>> liveMarketData = portfolioViewModel.fetchMarketData(coinIDs);
+        updateBalances();
 
-        liveMarketData.observe(getViewLifecycleOwner(), new Observer<List<MarketUnit>>() {
+        for(CryptoAsset asset : cryptoAssets) {
+            tempPrice = (asset.getTotalValue() / totalAssetValue) * 100f;
+            tempPrice = (float)Math.round(tempPrice * 100) / 100;
+            asset.setPercent(tempPrice);
+            asset.setPercentString(tempPrice + "%");
+        }
+
+        AppExecutors.getInstance().mainThread().execute(new Runnable() {
             @Override
-            public void onChanged(List<MarketUnit> marketUnits) {
-
-                if(marketUnits != null){
-
-                    Map<String, MarketUnit> marketHashMap = new HashMap<>();
-
-                    for(MarketUnit unit : marketUnits) {
-                        marketHashMap.put(unit.getCoinID(), unit);
-                    }
-
-                    MarketUnit tempUnit;
-                    float tempPrice;
-                    totalAssetValue = 0;
-
-                    for(CryptoAsset asset : cryptoAssets) {
-                        tempUnit = marketHashMap.get(asset.getId());
-
-                        asset.setFullName(tempUnit.getCoinName());
-                        asset.setImageURL(tempUnit.getCoinImageURI());
-                        asset.setAmountName(NumberFormatter.getDecimalWithCommas(asset.getAmount(), 2) +
-                                " "  + tempUnit.getCoinSymbol().toUpperCase());
-
-                        tempPrice = tempUnit.getCurrentPrice() * asset.getAmount();
-                        asset.setTotalValue(tempPrice);
-                        asset.setTotalStringValue(NumberFormatter.currency(tempPrice));
-                        totalAssetValue += tempPrice;
-                    }
-
-                    updateBalances();
-
-                    for(CryptoAsset asset : cryptoAssets) {
-                        tempPrice = (asset.getTotalValue() / totalAssetValue) * 100f;
-                        tempPrice = (float)Math.round(tempPrice * 100) / 100;
-                        asset.setPercent(tempPrice);
-                        asset.setPercentString(String.valueOf(tempPrice) + "%");
-                    }
-
-                    assetsAdapter.setCryptoAssets(cryptoAssets);
-                    initPieGraph(cryptoAssets);
-
-                    liveMarketData.removeObservers(getViewLifecycleOwner());
-
-                }//end first if statement
-
-            } //end onChanged
+            public void run() {
+                assetsAdapter.setCryptoAssets(cryptoAssets);
+            }
         });
+
+        initPieGraph(cryptoAssets);
     }
 
     private void updateBalances() {
@@ -202,7 +189,8 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
                         orders.setText(NumberFormatter.currency(value));
                         assets.setText(NumberFormatter.currency(totalAssetValue));
                         float totalValue = totalAssetValue + tempBalance + value;
-                        total.setText("Total Value: " + NumberFormatter.currency(totalValue));
+                        String totalString = "Total Value: " + NumberFormatter.currency(totalValue);
+                        total.setText(totalString);
                     }
                 });
             }
@@ -224,29 +212,29 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         PieDataSet pieDataSet = new PieDataSet(pieEntries,label);
 
-        pieDataSet.setValueTextSize(10f);
+        if(DeviceTypeCheck.isTablet(getContext())) {
+            pieDataSet.setValueTextSize(14f);
+            pieChart.setEntryLabelTextSize(14f);
+        }
+        else {
+            pieDataSet.setValueTextSize(12f);
+            pieChart.setEntryLabelTextSize(12f);
+        }
+
+
         pieDataSet.setValueTextColor(getContext().getResources().getColor(R.color.white));
-
-
         pieDataSet.setColors(Colors.COLOR_LIST);
         PieData pieData = new PieData(pieDataSet);
         pieData.setValueFormatter(new PercentFormatter(pieChart));
         pieData.setDrawValues(true);
-
         pieDataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-        //pieDataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         pieChart.setExtraOffsets(30, 0, 30, 0);
-
-/*        pieChart.setDrawEntryLabels(false);
-        pieChart.getLegend().setTextSize(12f);
-        pieChart.getLegend().setWordWrapEnabled(true);*/
         pieChart.getLegend().setEnabled(false);
         pieChart.setEntryLabelColor(getContext().getResources().getColor(R.color.white));
         pieChart.getDescription().setEnabled(false);
         pieChart.setUsePercentValues(true);
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(Color.TRANSPARENT);
-
         pieChart.setData(pieData);
         pieChart.invalidate();
     }

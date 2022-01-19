@@ -1,13 +1,10 @@
 package com.digitalartsplayground.fantasycrypto.util;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+
 
 public class SharedPrefs {
     public static final String SHARED_PREFS = "sharedPrefs";
@@ -29,6 +26,7 @@ public class SharedPrefs {
         return instance;
     }
 
+    @SuppressLint("CommitPrefEdits")
     private SharedPrefs(@NotNull Context context) {
         sharedPreferences = context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();

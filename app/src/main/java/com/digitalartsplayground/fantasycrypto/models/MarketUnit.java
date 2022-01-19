@@ -5,11 +5,11 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-
-import com.digitalartsplayground.fantasycrypto.adapters.SparkLineAdapter;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.Locale;
 
 @Entity(tableName = "market_data")
 public class MarketUnit {
@@ -27,7 +27,7 @@ public class MarketUnit {
     @Expose
     @ColumnInfo(name = "coin_id")
     @NonNull
-    private String coinID;
+    private String coinID = "";
 
     @SerializedName("symbol")
     @Expose
@@ -99,15 +99,10 @@ public class MarketUnit {
 
     public void setSparkLineData(Sparkline sparkLineData) {
         this.sparkLineData = sparkLineData;
-        this.sparkLineData.loadSparkLine();
     }
 
     public Sparkline getSparkLineData() {
         return sparkLineData;
-    }
-
-    public SparkLineAdapter getSparkLineAdapter() {
-        return sparkLineData.getSparkLineAdapter();
     }
 
     public String getCoinName() {
@@ -118,7 +113,7 @@ public class MarketUnit {
         this.coinName = coinName;
     }
 
-    public void setCoinID(String coinID) {
+    public void setCoinID(@NonNull String coinID) {
         this.coinID = coinID;
     }
 
@@ -153,12 +148,12 @@ public class MarketUnit {
     public void setOneDayPercentChange(String oneDayPercentChange) {
 
         if(oneDayPercentChange != null) {
-            int a = 1;
-            this.oneDayPercentChange = String.format("%.2f", Double.parseDouble(oneDayPercentChange));
+            this.oneDayPercentChange = String.format(Locale.ENGLISH, "%.2f", Double.parseDouble(oneDayPercentChange));
         }
 
     }
 
+    @NonNull
     public String getCoinID() {
         return coinID;
     }

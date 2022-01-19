@@ -16,18 +16,19 @@ public class DeveloperUnit {
     @ColumnInfo(name = "coin_id")
     @SerializedName("id")
     @Expose
-    private String coinID;
+    private String coinID = "";
 
     @SerializedName("description")
     @Expose
     @ColumnInfo(name = "description")
     private CoinDescription coinDescription;
 
+    @NonNull
     public String getCoinID() {
         return coinID;
     }
 
-    public void setCoinID(String coinID) {
+    public void setCoinID(@NonNull String coinID) {
         this.coinID = coinID;
     }
 

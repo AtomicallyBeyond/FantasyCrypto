@@ -26,6 +26,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
     private List<MarketUnit> marketList = new ArrayList<>(1000);
     private List<MarketUnit> marketListFull;
     private ItemClickedListener itemClickedListener;
+    private boolean isSearching = false;
 
 
     public MarketAdapter(ItemClickedListener itemClickedListener) {
@@ -57,7 +58,8 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
                 holder.priceChange.setTextColor(Color.RED);
             }
 
-            holder.priceChange.setText(marketUnit.getOneDayPercentChange() + "%");
+            String percentString = marketUnit.getOneDayPercentChange() + "%";
+            holder.priceChange.setText(percentString);
 
         } else {
             holder.priceChange.setText(" ");
@@ -72,7 +74,8 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
             }
         }
 
-        holder.chart.setAdapter(marketUnit.getSparkLineAdapter());
+        ((SparkLineAdapter)holder.chart.getAdapter()).setData(marketUnit.getSparkLineData());
+        holder.chart.invalidate();
     }
 
     @Override
@@ -84,6 +87,12 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
         this.marketList = marketList;
         marketListFull = new ArrayList<>(marketList);
         notifyDataSetChanged();
+    }
+
+    public void destroyAdapter() {
+        marketList = null;
+        marketListFull = null;
+        itemClickedListener = null;
     }
 
     @Override
@@ -108,6 +117,8 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
                         filteredList.add(marketUnit);
                     }
                 }
+
+                isSearching = true;
             }
 
             FilterResults results = new FilterResults();
@@ -124,6 +135,17 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
             notifyDataSetChanged();
         }
     };
+
+    public void resetList() {
+
+        if(isSearching) {
+            isSearching = false;
+            marketList.clear();
+            marketList.addAll(marketListFull);
+            notifyDataSetChanged();
+        }
+
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -143,6 +165,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
             chart = itemView.findViewById(R.id.market_graph);
             chart.setLineWidth(2f);
             chart.setLineColor(Color.CYAN);
+            chart.setAdapter(new SparkLineAdapter());
 
             setOnClickListener(itemView);
         }
@@ -153,7 +176,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
                 @Override
                 public void onClick(View view) {
                     itemClickedListener.onItemClicked(
-                            MarketAdapter.this.marketList.get(ViewHolder.this.getAdapterPosition()).getCoinID());
+                            MarketAdapter.this.marketList.get(ViewHolder.this.getLayoutPosition()).getCoinID());
                 }
             });
         }

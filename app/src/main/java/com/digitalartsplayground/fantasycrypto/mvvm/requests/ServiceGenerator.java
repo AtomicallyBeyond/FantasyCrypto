@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ServiceGenerator {
 
-    private static OkHttpClient client = new OkHttpClient.Builder()
+    private static final OkHttpClient client = new OkHttpClient.Builder()
 
             // establish connection to server
             .connectTimeout(Constants.CONNECTION_TIMEOUT, TimeUnit.SECONDS)
@@ -27,16 +27,16 @@ public class ServiceGenerator {
             .build();
 
 
-    private static Retrofit.Builder retrofitBuilder =
+    private static final Retrofit.Builder retrofitBuilder =
             new Retrofit.Builder()
                     .baseUrl(Constants.BASE_URL)
                     .client(client)
                     .addCallAdapterFactory(new LiveDataCallAdapterFactory())
                     .addConverterFactory(GsonConverterFactory.create());
 
-    private static Retrofit retrofit = retrofitBuilder.build();
+    private static final Retrofit retrofit = retrofitBuilder.build();
 
-    private static CoinGeckoApi cryptoApi = retrofit.create(CoinGeckoApi.class);
+    private static final CoinGeckoApi cryptoApi = retrofit.create(CoinGeckoApi.class);
 
     public static CoinGeckoApi getCryptoApi(){
         return cryptoApi;

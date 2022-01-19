@@ -13,9 +13,7 @@ import com.digitalartsplayground.fantasycrypto.interfaces.OrderClickedListener;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.SwipeLayout;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,12 +21,21 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
 
     private List<LimitOrder> ordersList = new ArrayList<>();
     private LimitOrder tempOrder;
-    private boolean isFilledList = false;
     private SwipeLayout currentSwiped;
     private OrderClickedListener clickedListener;
+    private boolean isFilledList = false;
+    private boolean allowAllItemSwipe = false;
+    private boolean deleteState = false;
 
     public OrdersAdapter(OrderClickedListener orderClickedListener) {
         clickedListener = orderClickedListener;
+    }
+
+    public void destroyOrderAdapter() {
+        ordersList = null;
+        tempOrder = null;
+        currentSwiped = null;
+        clickedListener = null;
     }
 
     @NonNull
@@ -40,7 +47,9 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
                 .from(parent.getContext())
                 .inflate(R.layout.order_item, parent,false);
 
-        return new OrdersAdapter.ViewHolder(view);
+
+        OrdersAdapter.ViewHolder holder = new OrdersAdapter.ViewHolder(view);
+        return holder;
     }
 
     @Override
@@ -57,7 +66,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         }
 
         if(isFilledList) {
-            holder.date.setText(tempOrder.getFillDate());
+            holder.date.setText(tempOrder.getFillDateString());
         } else {
             holder.date.setText(tempOrder.getTimeCreatedString());
         }
@@ -84,6 +93,20 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         holder.price.setText(NumberFormatter.currency(tempOrder.getLimitPrice()));
         holder.value.setText(tempOrder.getValueString());
 
+        if(deleteState) {
+            if(holder.swipeLayout.isClosed()) {
+/*                holder.swipeLayout.openRight();
+                boolean check = holder.swipeLayout.isLaidOut();
+                holder.swipeLayout.setEnabledSwipe(false);*/
+            }
+
+        }
+
+    }
+
+    public void setDeleteState(boolean isDeleteState) {
+        deleteState = isDeleteState;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -104,6 +127,31 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         this.isFilledList = isFillDate;
         this.ordersList = ordersList;
         notifyDataSetChanged();
+    }
+
+    public void swipeOpenItem(List<RecyclerView.ViewHolder> viewHolders) {
+
+        if(viewHolders != null) {
+            ViewHolder holder;
+            for(RecyclerView.ViewHolder tempHolder : viewHolders) {
+                holder = (ViewHolder)tempHolder;
+                holder.swipeLayout.openRight();
+            }
+        }
+    }
+
+    public void swipeCloseItem(List<RecyclerView.ViewHolder> viewHolders) {
+        if(viewHolders != null) {
+            ViewHolder holder;
+            for(RecyclerView.ViewHolder tempHolder : viewHolders) {
+                holder = (ViewHolder)tempHolder;
+                holder.swipeLayout.close(true);
+            }
+        }
+    }
+
+    public void setAllowAllItemSwipe(boolean allowAllSwipes) {
+        allowAllItemSwipe = allowAllSwipes;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -141,16 +189,17 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
                 public void onOpen(int direction, boolean isContinuous) {
                     if(direction == SwipeLayout.LEFT) {
 
-                        if(currentSwiped != null && currentSwiped != swipeLayout) {
+/*                        if(currentSwiped != null && currentSwiped != swipeLayout && !allowAllItemSwipe) {
                             currentSwiped.close();
                         }
 
-                        currentSwiped = swipeLayout;
+                        currentSwiped = swipeLayout;*/
                     }
                 }
 
                 @Override
                 public void onClose() {
+
                 }
             });
         }

@@ -1,27 +1,32 @@
 package com.digitalartsplayground.fantasycrypto.adapters;
 
+import com.digitalartsplayground.fantasycrypto.models.Sparkline;
 import com.robinhood.spark.SparkAdapter;
+
+import java.util.List;
 
 public class SparkLineAdapter extends SparkAdapter {
 
-    private float[] priceData;
+    private List<Float> data;
 
     @Override
     public int getCount() {
-        return priceData.length;
+        return data.size();
     }
 
     @Override
     public Object getItem(int index) {
-        return priceData[index];
+        return data.get(index);
     }
 
     @Override
     public float getY(int index) {
-        return priceData[index];
+        return data.get(index);
     }
 
-    public SparkLineAdapter(float[] priceData){
-        this.priceData = priceData;
+    public SparkLineAdapter() {}
+
+    public void setData(Sparkline sparkline){
+        this.data = sparkline.price;
     }
 }

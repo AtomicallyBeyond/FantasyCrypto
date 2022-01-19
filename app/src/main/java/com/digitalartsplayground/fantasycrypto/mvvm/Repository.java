@@ -1,11 +1,9 @@
 package com.digitalartsplayground.fantasycrypto.mvvm;
 
 import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
-
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
@@ -24,20 +22,19 @@ import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiRespon
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
+
 
 public class Repository {
 
 
     private static Repository instance;
-    private MarketDao marketDao;
-    private CryptoAssetDao cryptoAssetDao;
-    private DeveloperDao developerDao;
-    private LimitOrderDao limitOrderDao;
-    private SharedPrefs sharedPrefs;
+    private final MarketDao marketDao;
+    private final CryptoAssetDao cryptoAssetDao;
+    private final DeveloperDao developerDao;
+    private final LimitOrderDao limitOrderDao;
+    private final SharedPrefs sharedPrefs;
 
 
 
@@ -59,10 +56,6 @@ public class Repository {
         sharedPrefs = SharedPrefs.getInstance(context);
     }
 
-    public LiveData<List<LimitOrder>> getLimitOrders() {
-        return limitOrderDao.getLimitOrders();
-    }
-
     public void addLimitOrder(LimitOrder limitOrder) {
 
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
@@ -76,15 +69,6 @@ public class Repository {
 
     public void deleteLimit(String coinID, long timeCreated) {
         limitOrderDao.deleteByTimeCreated(coinID, timeCreated);
-    }
-
-    public void updateLimitOrder(LimitOrder limitOrder) {
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                limitOrderDao.updateLimit(limitOrder);
-            }
-        });
     }
 
     public void cleanInactiveLimitHistory(){
@@ -152,8 +136,12 @@ public class Repository {
         });
     }
 
-    public LiveData<List<CryptoAsset>> getAllCryptoAssets() {
-        return cryptoAssetDao.getAllCryptoAsset();
+    public List<CryptoAsset> getAllAssets() {
+        return cryptoAssetDao.getAllAssets();
+    }
+
+    public LiveData<CryptoAsset> getCryptoAsset(String coinID) {
+        return cryptoAssetDao.getCryptoAsset(coinID);
     }
 
     public LiveData<List<MarketUnit>> getAssetMarketUnits(List<String> coinIDs) {
@@ -169,17 +157,12 @@ public class Repository {
     }
 
 
-    public LiveData<CryptoAsset> getCryptoAsset(String coinID) {
-        return cryptoAssetDao.getCryptoAsset(coinID);
-    }
-
-
     public LiveData<Resource<DeveloperUnit>> getDeveloperUnit(String coinId) {
         return new MarketDataFetcher<DeveloperUnit, DeveloperUnit>(AppExecutors.getInstance()) {
             @Override
             protected void saveCallResult(@NonNull @NotNull DeveloperUnit item) {
 
-                if(item.getCoinDescription() != null || item.getCoinID() != null) {
+                if(item.getCoinDescription() != null) {
                     developerDao.insertDeveloperUnit(item);
                 }
 
@@ -188,9 +171,7 @@ public class Repository {
             @Override
             protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable DeveloperUnit data) {
 
-                if(data == null || data.getCoinDescription() == null)
-                    return true;
-                return false;
+                return data == null || data.getCoinDescription() == null;
             }
 
             @NonNull
@@ -249,7 +230,7 @@ public class Repository {
             protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable List<MarketUnit> data) {
 
                 int count = sharedPrefs.getMarketDataFetcherCount();
-                Long time = System.currentTimeMillis();
+                long time = System.currentTimeMillis();
                 boolean fiveMinutesPassed = time - sharedPrefs.getMarketDataTimeStamp() > (300 * 1000);
 
                 if(fiveMinutesPassed || count < 8) {

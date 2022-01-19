@@ -1,66 +1,66 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.view.ViewCompat;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.os.Handler;
-import android.os.Looper;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.digitalartsplayground.fantasycrypto.CoinActivity;
 import com.digitalartsplayground.fantasycrypto.MainActivity;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.adapters.MarketAdapter;
 import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
-import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
-import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
-import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.MainViewModel;
-import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.MarketFragmentViewModel;
-import com.digitalartsplayground.fantasycrypto.util.CryptoCalculator;
-import com.digitalartsplayground.fantasycrypto.util.LimitHelper;
+import com.digitalartsplayground.fantasycrypto.persistence.CryptoDatabase;
+import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 public class MarketFragment extends Fragment implements ItemClickedListener {
 
     private MainViewModel marketViewModel;
-    private SearchView marketSearchView;
-    private RecyclerView marketRecyclerView;
     private MarketAdapter marketAdapter;
     private TextView marketBalance;
+    private TextView loadingTextView;
     private SharedPrefs sharedPrefs;
+    private ProgressBar progressBar;
+    private SearchView marketSearchView;
+    private SearchView.OnQueryTextListener searchListener;
 
 
+    @SuppressLint("RestrictedApi")
+    @Override
+    public void onCreateOptionsMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater inflater) {
+        inflater.inflate(R.menu.main_options, menu);
+
+        if(menu instanceof MenuBuilder) {
+            ((MenuBuilder) menu).setOptionalIconsVisible(true);
+        }
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     @Override
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -70,34 +70,97 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
                 .get(MainViewModel.class);
 
         marketAdapter = new MarketAdapter(this);
-
         sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        marketAdapter.destroyAdapter();
+        searchListener = null;
+        marketSearchView.setOnQueryTextListener(null);
+        marketSearchView = null;
+    }
+
+
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.market_fragment, container, false);
         marketBalance = view.findViewById(R.id.market_balance_textview);
+        progressBar = view.findViewById(R.id.market_progress_bar);
+        loadingTextView = view.findViewById(R.id.market_loading_textView);
         initMarket(view);
         subscribeObservers();
-
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Toolbar toolbar = view.findViewById(R.id.market_toolbar);
+        ((MainActivity)requireActivity()).setSupportActionBar(toolbar);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull @NotNull MenuItem item) {
+
+        if(item.getItemId() == R.id.renew_game) {
+            progressBar.setVisibility(View.VISIBLE);
+            loadingTextView.setVisibility(View.VISIBLE);
+            resetGame();
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void resetGame() {
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+
+                (getActivity().findViewById(R.id.bottomNavigationView)).setVisibility(View.INVISIBLE);
+                sharedPrefs.setBalance(10000);
+                sharedPrefs.setSchedulerTime(0);
+                sharedPrefs.setLimitUpdateTime(0);
+                sharedPrefs.setMarketDataFetcherCount(0);
+                sharedPrefs.setMarketDataTimeStamp(0);
+
+                CryptoDatabase.getInstance(getContext()).clearAllTables();
+
+                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        marketViewModel.fetchMarketData(6);
+                        marketBalance.setText(NumberFormatter.currency(10000));
+                    }
+                });
+            }
+        });
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
         float balance = sharedPrefs.getBalance();
         marketBalance.setText(NumberFormatter.currency(balance));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        marketAdapter.resetList();
     }
 
     private void initMarket(View view){
         marketSearchView = view.findViewById(R.id.market_searchView);
         setSearchViewListener(marketSearchView);
-        marketRecyclerView = view.findViewById(R.id.market_recyclerView);
+        RecyclerView marketRecyclerView = view.findViewById(R.id.market_recyclerView);
         marketRecyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager =
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
@@ -107,7 +170,8 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
 
 
     private void setSearchViewListener(SearchView searchView) {
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+        searchListener = new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 return false;
@@ -118,7 +182,9 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
                 marketAdapter.getFilter().filter(newText);
                 return false;
             }
-        });
+        };
+
+        searchView.setOnQueryTextListener(searchListener);
     }
 
 
@@ -127,17 +193,19 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
         marketViewModel.getLiveMarketData().observe(getViewLifecycleOwner(), new Observer<Resource<List<MarketUnit>>>() {
             @Override
             public void onChanged(Resource<List<MarketUnit>> listResource) {
+
+                if(progressBar.getVisibility() == View.VISIBLE && listResource.status != Resource.Status.LOADING) {
+                    progressBar.setVisibility(View.GONE);
+                    loadingTextView.setVisibility(View.GONE);
+                    (getActivity().findViewById(R.id.bottomNavigationView)).setVisibility(View.VISIBLE);
+                }
+
+
                 if(listResource.status == Resource.Status.SUCCESS) {
                     marketAdapter.setMarketList(listResource.data);
-                } else if(listResource.status == Resource.Status.ERROR) {
-                    Toast.makeText(getContext(),listResource.message, Toast.LENGTH_LONG).show();
                 }
             }
         });
-
-/*        if(marketViewModel.getLiveMarketData().getValue() == null){
-            marketViewModel.fetchMarketData(6);
-        }*/
     }
 
 

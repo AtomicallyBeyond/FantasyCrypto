@@ -12,7 +12,7 @@ public class CryptoAsset {
     @NonNull
     @PrimaryKey
     @ColumnInfo(name = "id")
-    private String id;
+    private String id = "";
 
     @ColumnInfo(name = "amount")
     private float amount;
@@ -42,16 +42,17 @@ public class CryptoAsset {
 
     }
 
-    public CryptoAsset(String id, float amount) {
+    public CryptoAsset(@NonNull String id, float amount) {
         this.id = id;
         this.amount = amount;
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NonNull String id) {
         this.id = id;
     }
 

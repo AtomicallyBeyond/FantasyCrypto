@@ -1,19 +1,17 @@
 package com.digitalartsplayground.fantasycrypto.mvvm.viewmodels;
 
 import android.app.Application;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
-
 import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
-
 import org.jetbrains.annotations.NotNull;
+
 
 public class LineChartFragmentViewModel extends AndroidViewModel {
 

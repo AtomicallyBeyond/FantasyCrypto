@@ -6,13 +6,9 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
-
-import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
-import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
-import com.github.mikephil.charting.charts.LineChart;
 
 
 public abstract class CoinDataFetcher<RequestObject> {

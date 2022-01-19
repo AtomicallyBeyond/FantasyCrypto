@@ -2,13 +2,8 @@ package com.digitalartsplayground.fantasycrypto.util;
 
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+
 
 public class LimitHelper {
 
@@ -41,32 +36,23 @@ public class LimitHelper {
 
     public static long verifyBuyLimit(LimitOrder limitOrder, CandleStickData candleStickData) {
 
-        DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.US);
-
         float limitPrice = limitOrder.getLimitPrice();
         long limitCheckTime = limitOrder.getCandleCheckTime();
-        String limitCheckTimeString = formatter.format(new Date(limitCheckTime));
-        String candleTimeString;
         float candlePrice;
 
+
         for(List<Float> candleEvent : candleStickData.getCandleStickData()) {
-
-            candleTimeString = formatter.format(new Date(candleEvent.get(0).longValue()));
             candlePrice = candleEvent.get(3);
-
-
             if(limitCheckTime <= candleEvent.get(0).longValue()) {
 
                 if(limitPrice >= candlePrice) {
                     return candleEvent.get(0).longValue();
                 }
-
             }
-
         }//end for loop
 
-        return 0;
 
+        return 0;
     }// end verifyBuyLimit
 
 
