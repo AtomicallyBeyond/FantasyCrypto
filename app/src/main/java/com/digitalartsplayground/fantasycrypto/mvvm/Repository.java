@@ -12,6 +12,7 @@ import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.CoinDataFetcher;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.MarketDataFetcher;
+import com.digitalartsplayground.fantasycrypto.mvvm.requests.MarketDataLoader;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.CryptoAssetDao;
 import com.digitalartsplayground.fantasycrypto.persistence.CryptoDatabase;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.DeveloperDao;
@@ -35,7 +36,6 @@ public class Repository {
     private final DeveloperDao developerDao;
     private final LimitOrderDao limitOrderDao;
     private final SharedPrefs sharedPrefs;
-
 
 
     public static Repository getInstance(Context context){
@@ -148,6 +148,14 @@ public class Repository {
         return marketDao.getAssetMarketUnits(coinIDs);
     }
 
+    public void cleanMarketListCache(long timeLimit) {
+        marketDao.cleanMarketListCache(timeLimit);
+    }
+
+    public LiveData<List<MarketUnit>> getLiveMarketData() {
+        return marketDao.getMarketData();
+    }
+
     public LiveData<MarketUnit> getLiveMarketUnit(String id) {
         return marketDao.getLiveMarketUnit(id);
     }
@@ -205,46 +213,21 @@ public class Repository {
             @Override
             protected void saveCallResult(@NonNull @NotNull List<MarketUnit> item) {
 
-                int length = item.size();
+                long timeStamp = System.currentTimeMillis();
 
-                for(int i = 0; i < length; i++) {
-
-                    if(item.get(i).getOneDayPercentChange() == null) {
-                        item.remove(i);
-                        length = length - 1;
-                    } else {
-                        item.get(i).setTimeStamp(sharedPrefs.getMarketDataTimeStamp());
-                    }
-
+                for(MarketUnit marketUnit : item) {
+                    marketUnit.setTimeStamp(timeStamp);
                 }
 
                 MarketUnit[] marketUnits = item.toArray(new MarketUnit[item.size()]);
+                marketDao.insertMarketUnits(marketUnits);
 
-                if(Integer.parseInt(pageNumber) < 5)
-                    marketDao.insertMarketUnits(marketUnits);
-                else
-                    marketDao.updateMarketUnits(marketUnits);
+                sharedPrefs.setMarketDataTimeStamp(timeStamp);
             }
 
             @Override
             protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable List<MarketUnit> data) {
-
-                int count = sharedPrefs.getMarketDataFetcherCount();
-                long time = System.currentTimeMillis();
-                boolean fiveMinutesPassed = time - sharedPrefs.getMarketDataTimeStamp() > (300 * 1000);
-
-                if(fiveMinutesPassed || count < 8) {
-
-                    if(fiveMinutesPassed) {
-                        count = 0;
-                        sharedPrefs.setMarketDataTimeStamp(time);
-                    }
-
-                    sharedPrefs.setMarketDataFetcherCount(count + 1);
-                    return true;
-                }
-
-                return false;
+                return true;
             }
 
             @NonNull
@@ -266,6 +249,75 @@ public class Repository {
                         pageNumber,
                         sparkline,
                         priceChangeRange);
+            }
+        }.getAsLiveData();
+    }
+
+    public LiveData<Resource<List<MarketUnit>>> loadMarketData(
+            String currency,
+            String order,
+            String perPage,
+            String pageNumber,
+            String sparkline,
+            String priceChangeRange) {
+
+        return new MarketDataLoader<List<MarketUnit>>(AppExecutors.getInstance()) {
+            @Override
+            protected void saveCallResult(@NonNull @NotNull List<MarketUnit> item) {
+                long timeStamp = System.currentTimeMillis();
+
+                for(MarketUnit marketUnit : item) {
+                    marketUnit.setTimeStamp(timeStamp);
+                }
+
+                MarketUnit[] marketUnits = item.toArray(new MarketUnit[item.size()]);
+                marketDao.insertMarketUnits(marketUnits);
+
+                sharedPrefs.setMarketDataTimeStamp(timeStamp);
+            }
+
+            @NonNull
+            @NotNull
+            @Override
+            protected LiveData<ApiResponse<List<MarketUnit>>> createCall() {
+
+                return ServiceGenerator.getCryptoApi().getMarketData(
+                        currency,
+                        order,
+                        perPage,
+                        pageNumber,
+                        sparkline,
+                        priceChangeRange);
+            }
+        }.getAsLiveData();
+
+    }
+
+    public LiveData<Resource<MarketUnit>> getMarketUnitLive(String id, String currency) {
+        return new CoinDataFetcher<MarketUnit>(id, AppExecutors.getInstance()) {
+            @Override
+            protected MarketUnit processResponse(ApiResponse.ApiSuccessResponse response) {
+
+                MarketUnit marketUnit = (MarketUnit) response.getBody();
+                if(marketUnit != null) {
+                    if(marketUnit.getOneDayPercentChange() == null) {
+                        marketUnit.setOneDayPercentChange("0");
+                    }
+                    marketUnit.setTimeStamp(System.currentTimeMillis());
+
+                    marketDao.updateMarketUnits(marketUnit);
+
+                    return marketUnit;
+                }
+
+                return null;
+            }
+
+            @NonNull
+            @NotNull
+            @Override
+            protected LiveData<ApiResponse<MarketUnit>> createCall() {
+                return ServiceGenerator.getCryptoApi().getMarketUnit(currency, id, "desc", "true", "24h");
             }
         }.getAsLiveData();
     }

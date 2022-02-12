@@ -1,6 +1,7 @@
 package com.digitalartsplayground.fantasycrypto;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,21 +13,35 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.text.HtmlCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
+import com.digitalartsplayground.fantasycrypto.fragments.CandleStickFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.CoinBottomFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.LineChartFragment;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinActivityViewModel;
+import com.digitalartsplayground.fantasycrypto.util.Constants;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
+import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
+import com.google.android.material.tabs.TabLayout;
+import com.ironsource.mediationsdk.ISBannerSize;
+import com.ironsource.mediationsdk.IronSource;
+import com.ironsource.mediationsdk.IronSourceBannerLayout;
+import com.ironsource.mediationsdk.logger.IronSourceError;
+import com.ironsource.mediationsdk.sdk.BannerListener;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.concurrent.TimeUnit;
 
 
 public class CoinActivity extends AppCompatActivity {
@@ -34,11 +49,13 @@ public class CoinActivity extends AppCompatActivity {
 
     public static final String EXTRA_ID = "extraID";
 
-    private String coinID;
     private CoinActivityViewModel coinActivityViewModel;
+    private TabLayout tabLayout;
+
+    private String coinID;
+    private String currentPriceString = "";
     private Button buyButton;
     private Button sellButton;
-
     private TextView marketCap;
     private TextView fullyDiluted;
     private TextView volume;
@@ -53,34 +70,84 @@ public class CoinActivity extends AppCompatActivity {
     private TextView coinPriceDate;
     private ImageView coinImage;
     private ImageView backImage;
-    private String currentPriceString = "";
+    public ConstraintLayout candleHeader;
+    public FrameLayout coinBannerContainer;
+    public static int counter = 0;
+    private IronSourceBannerLayout banner;
+    private SharedPrefs sharedPrefs;
 
-    public void resetCurrentPrice() {
-        currentPrice.setText(currentPriceString);
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        IronSource.onResume(this);
+        loadIronSourceBanner();
+        checkAdServingTimeLimit();
+
+        if(SharedPrefs.getInstance(this).getMarketDataTimeStamp()  > Constants.FETCH_TIME_CONSTANT) {
+            coinActivityViewModel.updateMarketUnit(coinID);
+        }
     }
 
-    public void setPriceDateVisibility(int visibility) {
-        coinPriceDate.setVisibility(visibility);
+    @Override
+    protected void onPause() {
+        super.onPause();
+        IronSource.onPause(this);
+        destroyBanner();
     }
 
     @Override
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.coin_layout);
-        hideSystemUI();
+        sharedPrefs = SharedPrefs.getInstance(getApplication());
         init();
+    }
 
-        LineChartFragment lineChartFragment =  LineChartFragment.newInstance(coinID);
-        getSupportFragmentManager().beginTransaction().replace(R.id.coin_fragment_graph_layout,
-                lineChartFragment).commit();
+    private void checkAdServingTimeLimit(){
+        counter = sharedPrefs.getCounter();
+
+        if(sharedPrefs.getExpireDate() < System.currentTimeMillis()) {
+            sharedPrefs.resetAdPrefs();
+            counter = 0;
+        }
+    }
+
+    private void destroyBanner(){
+
+        IronSource.destroyBanner(banner);
+
+        banner.setBannerListener(null);
+
+        if(coinBannerContainer != null) {
+            coinBannerContainer.removeView(banner);
+        }
+    }
+
+    private void loadIronSourceBanner() {
+        if(banner == null || banner.isDestroyed()) {
+            if(counter < 5) {
+                banner = IronSource.createBanner(this, ISBannerSize.SMART);
+                coinBannerContainer.addView(banner);
+
+                if(banner != null) {
+                    IronSource.loadBanner(banner);
+                    banner.setBannerListener(bannerListener);
+                }
+            }
+        }
     }
 
     private void init() {
+
+        IronSource.init(this, "133802ab1",IronSource.AD_UNIT.BANNER);
+
         coinID = getIntent().getStringExtra(EXTRA_ID);
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
+
+        tabLayout = findViewById(R.id.coin_tab_layout);
         buyButton = findViewById(R.id.coin_buy_button);
         sellButton = findViewById(R.id.coin_sell_button);
-
         marketCap = findViewById(R.id.coin_market_cap);
         fullyDiluted = findViewById(R.id.coin_fully_dilluted);
         volume = findViewById(R.id.coin_volume);
@@ -95,7 +162,10 @@ public class CoinActivity extends AppCompatActivity {
         coinInfo = findViewById(R.id.coin_info);
         coinImage = findViewById(R.id.coin_toolbar_imageview);
         backImage = findViewById(R.id.coin_toolbar_back);
+        candleHeader = findViewById(R.id.coin_candle_stats);
+        coinBannerContainer = findViewById(R.id.coin_banner_container);
 
+        initTabLayout();
         setListeners();
         subscribeObservers();
     }
@@ -133,15 +203,15 @@ public class CoinActivity extends AppCompatActivity {
         else
             maxSupply.setText(" ");
 
-        if(Double.parseDouble(marketUnit.getOneDayPercentChange()) >= 0) {
-            percentChange.setTextColor(Color.GREEN);
-        } else {
-            percentChange.setTextColor(Color.RED);
-        }
-
         if(marketUnit.getOneDayPercentChange() != null){
             String temp = marketUnit.getOneDayPercentChange() + "%";
             percentChange.setText(temp);
+
+            if(Double.parseDouble(marketUnit.getOneDayPercentChange()) >= 0) {
+                percentChange.setTextColor(Color.GREEN);
+            } else {
+                percentChange.setTextColor(Color.RED);
+            }
         }
         else
             percentChange.setText(" ");
@@ -156,7 +226,10 @@ public class CoinActivity extends AppCompatActivity {
 
         if(marketUnit.getCoinName() != null || marketUnit.getCoinSymbol() != null) {
             String temp = marketUnit.getCoinName() + "(" + marketUnit.getCoinSymbol().toUpperCase() + ")";
-            coinName.setText(temp);
+            if(temp.length() > 19)
+                coinName.setText(marketUnit.getCoinSymbol().toUpperCase());
+            else
+                coinName.setText(temp);
         }
 
         else
@@ -251,7 +324,7 @@ public class CoinActivity extends AppCompatActivity {
 
                     String temp = developerUnitResource.data.getCoinDescription().getEnglishDescription();
                     temp = temp.replaceAll("\\r\\n", "<p>");
-                    Spanned policy = Html.fromHtml(temp);
+                    Spanned policy = HtmlCompat.fromHtml(temp, HtmlCompat.FROM_HTML_MODE_LEGACY);
                     coinInfo.setText(policy);
                     coinInfo.setMovementMethod(LinkMovementMethod.getInstance());
 
@@ -264,47 +337,161 @@ public class CoinActivity extends AppCompatActivity {
 
         coinActivityViewModel.fetchDeveloperData(coinID);
 
+        coinActivityViewModel.getIsLineChart().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(aBoolean) {
+                    LineChartFragment lineChartFragment =  LineChartFragment.newInstance(coinID);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.coin_fragment_graph_layout,
+                            lineChartFragment).commit();
+                } else {
+                    CandleStickFragment candleStickFragment = CandleStickFragment.newInstance(coinID);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.coin_fragment_graph_layout,
+                            candleStickFragment).commit();
+                }
+            }
+        });
+
+    }
+
+    private void initTabLayout() {
+        tabLayout.addTab(tabLayout.newTab().setText("Line Graph"), 0);
+        tabLayout.addTab(tabLayout.newTab().setText("Candle Graph"), 1);
+        tabLayout.addOnTabSelectedListener(tabSelectedListener);
     }
 
 
-    @SuppressWarnings("deprecation")
-    private void hideSystemUI() {
-
-        if(Build.VERSION.SDK_INT < 30) {
-
-            @SuppressLint("WrongConstant") final int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().getDecorView().setSystemUiVisibility(flags);
-
-            final View decorView = getWindow().getDecorView();
-            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int i) {
-                    if((i & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        decorView.setSystemUiVisibility(flags);
-                    }
-                }
-            });
-
-        } else {
-
-            getWindow().setDecorFitsSystemWindows(false);
-            WindowInsetsController controller = getWindow().getDecorView().getWindowInsetsController();
-
-            if (controller != null) {
-                controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    TabLayout.OnTabSelectedListener tabSelectedListener = new TabLayout.OnTabSelectedListener() {
+        @Override
+        public void onTabSelected(TabLayout.Tab tab) {
+            switch (tab.getPosition()) {
+                case 0:
+                    coinActivityViewModel.setIsLineChart(true);
+                    break;
+                default:
+                    coinActivityViewModel.setIsLineChart(false);
+                    break;
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            getWindow().getAttributes().layoutInDisplayCutoutMode =
-                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; }
+        @Override
+        public void onTabUnselected(TabLayout.Tab tab) {
+
+        }
+
+        @Override
+        public void onTabReselected(TabLayout.Tab tab) {
+
+        }
+    };
+
+
+    public void resetCurrentPrice() {
+        currentPrice.setText(currentPriceString);
+    }
+
+    public void setLineChartVisibility(int visibility) {
+
+        coinPriceDate.setVisibility(visibility);
+
+        if(visibility == View.VISIBLE)
+            tabLayout.setVisibility(View.INVISIBLE);
+        else
+            tabLayout.setVisibility(View.VISIBLE);
+    }
+
+    public void setCandleChartVisibility(int visibility) {
+
+        candleHeader.setVisibility(visibility);
+
+        TextView textview = ((TextView)candleHeader.findViewById(R.id.coin_open_value));
+        textview.setText("BOB");
+
+        if(visibility == View.VISIBLE) {
+            currentPrice.setVisibility(View.INVISIBLE);
+            percentChange.setVisibility(View.INVISIBLE);
+            tabLayout.setVisibility(View.INVISIBLE);
+        }
+        else {
+            currentPrice.setVisibility(View.VISIBLE);
+            percentChange.setVisibility(View.VISIBLE);
+            tabLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    BannerListener bannerListener = new BannerListener() {
+        @Override
+        public void onBannerAdLoaded() {
+        }
+
+        @Override
+        public void onBannerAdLoadFailed(IronSourceError ironSourceError) {
+            // Called after a banner has attempted to load an ad but failed.
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    coinBannerContainer.removeAllViews();
+                }
+            });
+        }
+
+        @Override
+        public void onBannerAdClicked() {
+
+            counter++;
+            sharedPrefs.setCounter(counter);
+            sharedPrefs.setExpireDate(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
+
+            if(counter > 4) {
+                destroyBanner();
+            }
+
+        }
+
+        @Override
+        public void onBannerAdScreenPresented() {
+        }
+
+        @Override
+        public void onBannerAdScreenDismissed() {
+        }
+
+        @Override
+        public void onBannerAdLeftApplication() {
+
+        }
+    };
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        coinActivityViewModel = null;
+        tabLayout = null;
+
+        coinID = null;
+        currentPriceString = null;
+        buyButton = null;
+        sellButton = null;
+        marketCap = null;
+        fullyDiluted = null;
+        volume = null;
+        circulatingSupply = null;
+        totalSupply = null;
+        maxSupply = null;
+        percentChange = null;
+        rank = null;
+        coinName = null;
+        currentPrice = null;
+        coinInfo = null;
+        coinPriceDate = null;
+        coinImage = null;
+        backImage = null;
+        candleHeader = null;
+        coinBannerContainer = null;
+        banner = null;
+        sharedPrefs = null;
     }
 }

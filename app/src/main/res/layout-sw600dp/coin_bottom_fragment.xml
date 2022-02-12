@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#001522">
+    android:background="@color/dialog">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -40,7 +40,7 @@
 
             <TextView
                 android:id="@+id/coin_bottom_confirm_textView"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center|bottom"
                 android:text="Confirm Order"
@@ -48,8 +48,8 @@
                 android:textSize="24sp"
                 android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="@+id/coin_bottom_buy_button"
-                app:layout_constraintEnd_toStartOf="@+id/coin_bottom_amount_crypto"
-                app:layout_constraintStart_toEndOf="@+id/coin_bottom_back_button"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
 

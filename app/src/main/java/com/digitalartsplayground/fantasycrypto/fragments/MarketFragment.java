@@ -30,6 +30,7 @@ import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.MainViewModel;
 import com.digitalartsplayground.fantasycrypto.persistence.CryptoDatabase;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
+import com.digitalartsplayground.fantasycrypto.util.Constants;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
@@ -83,7 +84,6 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
     }
 
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -127,7 +127,6 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
                 sharedPrefs.setBalance(10000);
                 sharedPrefs.setSchedulerTime(0);
                 sharedPrefs.setLimitUpdateTime(0);
-                sharedPrefs.setMarketDataFetcherCount(0);
                 sharedPrefs.setMarketDataTimeStamp(0);
 
                 CryptoDatabase.getInstance(getContext()).clearAllTables();
@@ -135,7 +134,7 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
                 AppExecutors.getInstance().mainThread().execute(new Runnable() {
                     @Override
                     public void run() {
-                        marketViewModel.fetchMarketData(6);
+                        marketViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
                         marketBalance.setText(NumberFormatter.currency(10000));
                     }
                 });
@@ -155,6 +154,8 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
     public void onPause() {
         super.onPause();
         marketAdapter.resetList();
+        marketSearchView.setQuery("", false);
+        marketSearchView.clearFocus();
     }
 
     private void initMarket(View view){
@@ -211,118 +212,11 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
 
     @Override
     public void onItemClicked(String id) {
+
+        if(getActivity() != null)
+            ((MainActivity)getActivity()).destroyBanner();
         Intent intent = new Intent(getContext(), CoinActivity.class);
         intent.putExtra(CoinActivity.EXTRA_ID, id);
         startActivity(intent);
     }
 }
-
-
-/*
-    private void scheduleLimitsUpdater() {
-
-        scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
-
-        scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-
-                List<LimitOrder> limitOrders = marketViewModel.getBackgroundActiveLimitOrders();
-
-                long timeDifference =  System.currentTimeMillis() - sharedPrefs.getLimitUpdateTime();
-                boolean scheduleUpdate = timeDifference > (30 * 60 * 1000);
-
-                if(scheduleUpdate) {
-                    limitCandleUpdate(limitOrders);
-                }
-
-
-            }
-        },0, 5, TimeUnit.MINUTES);
-    }
-
-    private void limitCandleUpdate(List<LimitOrder> limitOrders) {
-
-        final Handler handler = new Handler(Looper.getMainLooper());
-
-        if(limitOrders != null) {
-
-            int time = 0;
-            for(LimitOrder order : limitOrders) {
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        checkLimit(order);
-                    }
-                };
-                handler.postDelayed(runnable, time);
-                time = time + 200;
-            }//end for loop
-        }//end if(limitOrders != null)
-    }
-
-
-    private void checkLimit(LimitOrder limitOrder) {
-
-
-        int days = LimitHelper.getCandleStickDays(limitOrder);
-
-        LiveData<Resource<CandleStickData>> liveCandleData =
-                marketViewModel.fetchCandleStickData(limitOrder.getCoinID(), String.valueOf(days));
-
-        liveCandleData.observe(this, new Observer<Resource<CandleStickData>>() {
-            @Override
-            public void onChanged(Resource<CandleStickData> candleStickDataResource) {
-                if(candleStickDataResource.status == Resource.Status.SUCCESS) {
-
-                    verifyLimitWithCandle(limitOrder, candleStickDataResource.data);
-                    liveCandleData.removeObserver(this);
-
-                } else if(candleStickDataResource.status == Resource.Status.ERROR) {
-                    liveCandleData.removeObserver(this);
-                }
-            }
-        });
-    }
-
-
-    private void verifyLimitWithCandle(LimitOrder order, CandleStickData candleStickData) {
-
-        long limitFilledTime = 0;
-
-        if(order.isBuyOrder()) {
-            limitFilledTime = LimitHelper.verifyBuyLimit(order, candleStickData);
-        }  else  {
-            limitFilledTime = LimitHelper.verifySellLimit(order, candleStickData);
-        }
-
-
-        if(limitFilledTime > 0) {
-
-            if(order.isBuyOrder()) {
-                CryptoAsset asset = new CryptoAsset(order.getCoinID(), order.getAmount());
-                marketViewModel.saveCryptoAssetDB(asset);
-
-            } else {
-                float balance = sharedPrefs.getBalance();
-
-                balance = balance + CryptoCalculator
-                        .calcAmountMinusFEE(order.getLimitPrice(), order.getAmount());
-
-                sharedPrefs.setBalance(balance);
-            }
-
-            DateFormat formatter = new SimpleDateFormat("MMMM  dd, yyyy", Locale.getDefault());
-
-            order.setActive(false);
-            order.setCandleCheckTime(limitFilledTime);
-            order.setFillDate(formatter.format(new Date(limitFilledTime)));
-            marketViewModel.updateLimitOrder(order);
-
-        } else {
-            int index = candleStickData.size() - 1;
-            long newTime = candleStickData.get(index).get(0).longValue();
-            order.setCandleCheckTime(newTime);
-            marketViewModel.updateLimitOrder(order);
-        }
-    }*/

@@ -17,7 +17,8 @@ public class LineChartFragmentViewModel extends AndroidViewModel {
 
     private long currentTimeStamp;
     private long currentTimeSeconds;
-    public final long MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
+    private
+    final long MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
     public final long oneDayAgo;
     public final long sevenDaysAgo;
     public final long oneMonthAgo;
@@ -155,24 +156,3 @@ public class LineChartFragmentViewModel extends AndroidViewModel {
         liveTimeSpan.setValue(timeSpan);
     }
 }
-
-
-/*        String startTime;
-
-        switch (timeSpan) {
-            case DAY:
-                startTime = String.valueOf(oneDayAgo);
-                break;
-            case SEVENDAY:
-                startTime = String.valueOf(sevenDaysAgo);
-                break;
-            case MONTH:
-                startTime = String.valueOf(oneMonthAgo);
-                break;
-            case THREEMONTH:
-                startTime = String.valueOf(threeMonthsAgo);
-                break;
-            default:
-                startTime = String.valueOf(oneYearAgo);
-                break;
-        }*/

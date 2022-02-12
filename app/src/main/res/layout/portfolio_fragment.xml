@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--    androidx.constraintlayout.motion.widget.MotionLayout-->
-<androidx.constraintlayout.motion.widget.MotionLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:motion="http://schemas.android.com/tools"
@@ -20,7 +20,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:title="Portfolio"
-        app:titleTextAppearance="@style/Toolbar.TitleText"/>
+        app:titleTextAppearance="@style/Toolbar.TitleText">
+
+        <ImageButton
+            android:id="@+id/portfolio_reward_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="end"
+            android:background="@color/transparent"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_reward_icon"
+            android:visibility="visible" />
+
+    </androidx.appcompat.widget.Toolbar>
 
     <TextView
         android:id="@+id/portfolio_value"
@@ -29,9 +43,9 @@
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:text="Total Value: $100,000.00"
+        android:text="Portfolio Value: $100,000.00"
         android:textColor="@color/white"
-        android:textSize="20dp"
+        android:textSize="@dimen/size_16sp"
         app:layout_constraintBottom_toTopOf="@+id/portfolio_info_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,6 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/rounded_corners_dark"
         android:padding="10dp"
         app:layout_constraintBottom_toTopOf="@+id/portfolio_pie_chart"
@@ -135,10 +150,10 @@
         android:id="@+id/portfolio_pie_chart"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/portfolio_info_layout"
         app:layout_constraintBottom_toTopOf="@+id/portfolio_graph_guideline"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/portfolio_info_layout" />
 
 
     <TextView
@@ -146,6 +161,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="14dp"
+        android:layout_marginTop="10dp"
         android:text="ASSETS"
         android:textColor="@color/white"
         android:textStyle="bold"
@@ -172,10 +188,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.65"/>
+        app:layout_constraintGuide_percent="0.65" />
 
 
-</androidx.constraintlayout.motion.widget.MotionLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
 
     <!--
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"-->

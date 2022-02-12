@@ -20,6 +20,7 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
 
     private static final String TAG = "NetworkBoundResource";
 
+    private int fetchCount = 0;
     private AppExecutors appExecutors;
     private MediatorLiveData<Resource<CacheObject>> results = new MediatorLiveData<>();
 
@@ -72,7 +73,7 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
      */
     private void fetchFromNetwork(final LiveData<CacheObject> dbSource){
 
-        Log.d(TAG, "fetchFromNetwork: called.");
+/*        Log.d(TAG, "fetchFromNetwork: called.");
 
         // update LiveData for loading status
         results.addSource(dbSource, new Observer<CacheObject>() {
@@ -80,7 +81,7 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
             public void onChanged(@Nullable CacheObject cacheObject) {
                 setValue(Resource.loading(cacheObject));
             }
-        });
+        });*/
 
         final LiveData<ApiResponse<RequestObject>> apiResponse = createCall();
 
@@ -99,6 +100,8 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
 
                 if(requestObjectApiResponse instanceof ApiResponse.ApiSuccessResponse){
                     Log.d(TAG, "onChanged: ApiSuccessResponse.");
+
+                    fetchCount = 0;
 
                     appExecutors.diskIO().execute(new Runnable() {
                         @Override
@@ -137,6 +140,13 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
                     });
                 }
                 else if(requestObjectApiResponse instanceof ApiResponse.ApiErrorResponse){
+
+                    if(fetchCount < 2) {
+                        fetchFromNetwork(dbSource);
+                        fetchCount++;
+                        return;
+                    }
+
                     Log.d(TAG, "onChanged: ApiErrorResponse.");
                     results.addSource(dbSource, new Observer<CacheObject>() {
                         @Override
@@ -156,17 +166,6 @@ public abstract class MarketDataFetcher<CacheObject, RequestObject> {
                                     });
                                 }
                             });
-
-
-/*                            String temp = ((ApiResponse.ApiErrorResponse) requestObjectApiResponse).getErrorMessage();
-                            setValue(
-                                    Resource.error(
-                                            ((ApiResponse.ApiErrorResponse) requestObjectApiResponse).getErrorMessage(),
-                                            cacheObject
-                                    )
-                            );
-                            results.removeSource(dbSource);
-                            fetchFromNetwork(dbSource);*/
                         }
                     });
                 }

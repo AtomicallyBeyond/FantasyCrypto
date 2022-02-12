@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--    androidx.constraintlayout.motion.widget.MotionLayout-->
 <androidx.constraintlayout.motion.widget.MotionLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -19,7 +20,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:title="Portfolio"
-        app:titleTextAppearance="@style/Toolbar.TitleText"/>
+        app:titleTextAppearance="@style/Toolbar.TitleText">
+
+        <ImageButton
+            android:id="@+id/portfolio_reward_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="end"
+            android:background="@color/transparent"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_reward_icon"
+            android:visibility="visible"/>
+
+    </androidx.appcompat.widget.Toolbar>
 
     <TextView
         android:id="@+id/portfolio_value"
@@ -27,7 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        android:text="Total Value: $100,000.00"
+        android:text="Portfolio Value: $100,000.00"
         android:textSize="22dp"
         android:textColor="@color/white"
         android:gravity="center"
@@ -57,53 +72,53 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:text="Balance"
-            android:textSize="20sp"
             android:textColor="@color/teal_700"
+            android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/portfolio_balance"
             app:layout_constraintEnd_toStartOf="@+id/portfolio_assets_title"
-            app:layout_constraintHorizontal_chainStyle="spread_inside" />
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/portfolio_balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="$1,700,000.00"
-            android:textSize="18sp"
             android:textColor="@color/white"
+            android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/portfolio_title_balance"
-            app:layout_constraintTop_toBottomOf="@+id/portfolio_title_balance"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/portfolio_title_balance"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintStart_toStartOf="@+id/portfolio_title_balance"
+            app:layout_constraintTop_toBottomOf="@+id/portfolio_title_balance" />
 
         <TextView
             android:id="@+id/portfolio_assets_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Assets"
-            android:textSize="20sp"
             android:textColor="@color/teal_700"
+            android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@+id/portfolio_title_balance"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/portfolio_assets"
-            app:layout_constraintEnd_toStartOf="@+id/portfolio_orders_title" />
+            app:layout_constraintEnd_toStartOf="@+id/portfolio_orders_title"
+            app:layout_constraintStart_toEndOf="@+id/portfolio_title_balance"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/portfolio_assets"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="$1,2000,000.00"
-            android:textSize="18sp"
             android:textColor="@color/white"
+            android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/portfolio_assets_title"
-            app:layout_constraintTop_toBottomOf="@+id/portfolio_assets_title"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/portfolio_assets_title"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintStart_toStartOf="@+id/portfolio_assets_title"
+            app:layout_constraintTop_toBottomOf="@+id/portfolio_assets_title" />
 
         <TextView
             android:id="@+id/portfolio_orders_title"
@@ -111,27 +126,26 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="30dp"
             android:text="On Order"
-            android:textSize="20sp"
             android:textColor="@color/teal_700"
+            android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@+id/portfolio_assets_title"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/portfolio_orders"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/portfolio_orders"/>
+            app:layout_constraintStart_toEndOf="@+id/portfolio_assets_title"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/portfolio_orders"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="$1,200,000.00"
-            android:textSize="18sp"
             android:textColor="@color/white"
+            android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@+id/portfolio_orders_title"
-            app:layout_constraintTop_toBottomOf="@+id/portfolio_orders_title"
             app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/portfolio_orders_title" />
-
+            app:layout_constraintEnd_toEndOf="@+id/portfolio_orders_title"
+            app:layout_constraintStart_toStartOf="@+id/portfolio_orders_title"
+            app:layout_constraintTop_toBottomOf="@+id/portfolio_orders_title" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -154,7 +168,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="20dp"
         android:text="ASSETS"
         android:textSize="20sp"
         android:textColor="@color/white"
@@ -183,7 +197,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.65"/>
-
 
 </androidx.constraintlayout.motion.widget.MotionLayout>
 

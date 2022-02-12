@@ -10,11 +10,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
@@ -30,9 +32,15 @@ import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.OrdersFragmentVie
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.tabs.TabLayout;
+import com.ironsource.mediationsdk.IronSource;
+import com.ironsource.mediationsdk.logger.IronSourceError;
+import com.ironsource.mediationsdk.model.Placement;
+import com.ironsource.mediationsdk.sdk.RewardedVideoListener;
+
 import org.jetbrains.annotations.NotNull;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
 
 public class OrdersFragments extends Fragment implements OrderClickedListener {
 
@@ -40,13 +48,15 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
     private RecyclerView ordersRecyclerView;
     private OrdersAdapter ordersAdapter;
     private TabLayout tabLayout;
-    private ImageButton returnDelete;
+    private ImageButton deleteButton;
+    private ConstraintLayout selectAllLayout;
+    private ImageView selectAllFilled;
+    private MenuItem deleteOption;
+    private MenuItem cancelOption;
+    private ImageButton rewardButton;
+    private int rewardAmount = 100;
+    private SharedPrefs sharedPrefs;
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        ordersAdapter.destroyOrderAdapter();
-    }
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -57,52 +67,66 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
             ((MenuBuilder) menu).setOptionalIconsVisible(true);
         }
 
+        MenuItem item = menu.findItem(R.id.menu_cancel_delete);
+        item.setVisible(false);
+
+        deleteOption = menu.findItem(R.id.menu_delete_orders);
+        cancelOption = menu.findItem(R.id.menu_cancel_delete);
+
+
         super.onCreateOptionsMenu(menu, inflater);
     }
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull @NotNull MenuItem item) {
 
-        if(item.getItemId() == R.id.delete_orders) {
-            setDeleteState();
+        int count = ordersRecyclerView.getChildCount();
+
+        if(count > 0 || item.getItemId() == R.id.menu_cancel_delete) {
+
+            if(item.getItemId() == R.id.menu_delete_orders) {
+                setDeleteState();
+                deleteOption.setVisible(false);
+                cancelOption.setVisible(true);
+            } else if(item.getItemId() == R.id.menu_cancel_delete) {
+                cancelDeleteState();
+                deleteOption.setVisible(true);
+                cancelOption.setVisible(false);
+            }
+
         }
+
         return super.onOptionsItemSelected(item);
     }
+
 
     private void setDeleteState() {
         int count = ordersRecyclerView.getChildCount();
 
         if(count > 0) {
-            setMenuVisibility(false);
-            returnDelete.setVisibility(View.VISIBLE);
+            cancelOption.setVisible(true);
+            deleteOption.setVisible(false);
+            tabLayout.setVisibility(View.INVISIBLE);
+            deleteButton.setVisibility(View.VISIBLE);
+            selectAllLayout.setVisibility(View.VISIBLE);
 
             ordersViewModel.setDeleteState(true);
-            ordersAdapter.setAllowAllItemSwipe(true);
+            ordersAdapter.setDeleteState();
 
-            final List<RecyclerView.ViewHolder> viewHolders = new ArrayList<>(ordersRecyclerView.getChildCount());
-
-            for (int childCount = ordersRecyclerView.getChildCount(), i = 0; i < childCount; ++i) {
-                viewHolders.add(ordersRecyclerView.getChildViewHolder(ordersRecyclerView.getChildAt(i)));
-            }
-
-            //ordersAdapter.swipeOpenItem(viewHolders);
-            ordersAdapter.setDeleteState(true);
-            //ordersAdapter.notifyDataSetChanged();
         }
     }
 
     private void cancelDeleteState() {
+        cancelOption.setVisible(false);
+        deleteOption.setVisible(true);
+        tabLayout.setVisibility(View.VISIBLE);
+        deleteButton.setVisibility(View.GONE);
+        selectAllLayout.setVisibility(View.GONE);
+        selectAllFilled.setVisibility(View.GONE);
+
         ordersViewModel.setDeleteState(false);
-        ordersAdapter.setAllowAllItemSwipe(false);
-        returnDelete.setVisibility(View.GONE);
-        setMenuVisibility(true);
-
-        final List<RecyclerView.ViewHolder> viewHolders = new ArrayList<>(ordersRecyclerView.getChildCount());
-
-        for (int childCount = ordersRecyclerView.getChildCount(), i = 0; i < childCount; ++i) {
-            viewHolders.add(ordersRecyclerView.getChildViewHolder(ordersRecyclerView.getChildAt(i)));
-            ordersAdapter.swipeCloseItem(viewHolders);
-        }
+        ordersAdapter.cancelDeleteState();
     }
 
     @Override
@@ -134,7 +158,23 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
         ordersViewModel = new ViewModelProvider(requireActivity())
                 .get(OrdersFragmentViewModel.class);
+
+        sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
+
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        IronSource.setRewardedVideoListener(null);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        handleRewardButtonState(IronSource.isRewardedVideoAvailable());
+    }
+
 
     @Nullable
     @org.jetbrains.annotations.Nullable
@@ -143,10 +183,21 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
         View view = inflater.inflate(R.layout.orders_fragment, container, false);
 
-        returnDelete = view.findViewById(R.id.orders_delete_return);
+        deleteButton = view.findViewById(R.id.orders_delete);
+        selectAllLayout = view.findViewById(R.id.limits_select_all_container);
+        selectAllFilled = view.findViewById(R.id.limits_select_all_filled_circle);
         ordersRecyclerView = view.findViewById(R.id.orders_recyclerView);
         ordersRecyclerView.setHasFixedSize(true);
         tabLayout = view.findViewById(R.id.orders_tabs);
+        rewardButton = view.findViewById(R.id.orders_reward_button);
+        rewardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(IronSource.isRewardedVideoAvailable())
+                    IronSource.showRewardedVideo();
+            }
+        });
+
         init();
 
         return view;
@@ -158,11 +209,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         Toolbar toolbar = view.findViewById(R.id.orders_toolbar);
         ((MainActivity)requireActivity()).setSupportActionBar(toolbar);
         setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
     }
 
 
@@ -189,15 +235,32 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         }
 
         subscribeObservers();
+        setListeners();
+    }
 
-        returnDelete.setOnClickListener(new View.OnClickListener() {
+
+    private void setListeners() {
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                requireActivity().onBackPressed();
+                ordersAdapter.deleteSelectedPositions();
+                cancelDeleteState();
             }
         });
 
-
+        selectAllLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(selectAllFilled.getVisibility() == View.GONE) {
+                    selectAllFilled.setVisibility(View.VISIBLE);
+                    ordersAdapter.selectAll();
+                } else {
+                    selectAllFilled.setVisibility(View.GONE);
+                    ordersAdapter.deselectAll();
+                }
+            }
+        });
     }
 
 
@@ -301,24 +364,109 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
                     ordersViewModel.deleteLimit(limitOrder.getCoinID(), limitOrder.getTimeCreated());
 
-                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            ordersAdapter.removeOrder(position);
-                        }
-                    });
-                } else {
-                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(ordersViewModel.getLiveActiveOrdersState().getValue() != null)
-                                ordersViewModel.setLiveActiveOrdersState(ordersViewModel.getLiveActiveOrdersState().getValue());
-                        }
-                    });
                 }
-
-
             }
         });
+    }
+
+
+    private void generateRewardAmount() {
+        float totalValue = sharedPrefs.getTotalValue();
+        int first = (int)(totalValue * 0.05);
+        int second = (int)(totalValue * 0.01);
+        rewardAmount = new Random().nextInt(second) + first;
+
+    }
+
+    private void handleRewardButtonState(boolean isVisible) {
+        if(isVisible)
+            rewardButton.setVisibility(View.VISIBLE);
+        else
+            rewardButton.setVisibility(View.GONE);
+    }
+
+    RewardedVideoListener rewardedVideoListener = new RewardedVideoListener() {
+        /**
+         * Invoked when the RewardedVideo ad view has opened.
+         * Your Activity will lose focus. Please avoid performing heavy
+         * tasks till the video ad will be closed.
+         */
+        @Override
+        public void onRewardedVideoAdOpened() {
+        }
+        /*Invoked when the RewardedVideo ad view is about to be closed.
+        Your activity will now regain its focus.*/
+        @Override
+        public void onRewardedVideoAdClosed() {
+                showRewardDialog();
+        }
+        /**
+         * Invoked when there is a change in the ad availability status.
+         *
+         * @param - available - value will change to true when rewarded videos are *available.
+         *          You can then show the video by calling showRewardedVideo().
+         *          Value will change to false when no videos are available.
+         */
+        @Override
+        public void onRewardedVideoAvailabilityChanged(boolean available) {
+            //Change the in-app 'Traffic Driver' state according to availability.
+            handleRewardButtonState(available);
+
+        }
+        /**
+         /**
+         * Invoked when the user completed the video and should be rewarded.
+         * If using server-to-server callbacks you may ignore this events and wait *for the callback from the ironSource server.
+         *
+         * @param - placement - the Placement the user completed a video from.
+         */
+        @Override
+        public void onRewardedVideoAdRewarded(Placement placement) {
+            /** here you can reward the user according to the given amount.
+             String rewardName = placement.getRewardName();
+             int rewardAmount = placement.getRewardAmount();
+             */
+
+            generateRewardAmount();
+
+            SharedPrefs sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
+            sharedPrefs.setBalance(sharedPrefs.getBalance() + rewardAmount);
+        }
+        /* Invoked when RewardedVideo call to show a rewarded video has failed
+         * IronSourceError contains the reason for the failure.
+         */
+        @Override
+        public void onRewardedVideoAdShowFailed(IronSourceError error) {
+        }
+        /*Invoked when the end user clicked on the RewardedVideo ad
+         */
+        @Override
+        public void onRewardedVideoAdClicked(Placement placement){
+        }
+
+        /*
+        Note: the events AdStarted and AdEnded below are not available for all supported rewarded video
+        ad networks. Check which events are available per ad network you choose
+        to include in your build.
+
+        We recommend only using events which register to ALL ad networks you
+        include in your build.
+
+        Invoked when the video ad starts playing.
+                */
+        @Override
+        public void onRewardedVideoAdStarted(){
+        }
+        /* Invoked when the video ad finishes plating. */
+        @Override
+        public void onRewardedVideoAdEnded(){
+        }
+    };
+
+    private void showRewardDialog() {
+
+        String rewardString = "You've earned it: $" + rewardAmount + ".00 \n\n Thank you for supporting us!";
+        MessageDialogFragment dialogFragment = MessageDialogFragment.getInstance("Great News", rewardString);
+        dialogFragment.showNow(getChildFragmentManager(), "message");
     }
 }

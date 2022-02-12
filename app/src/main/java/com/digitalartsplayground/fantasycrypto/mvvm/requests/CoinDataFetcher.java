@@ -15,6 +15,7 @@ public abstract class CoinDataFetcher<RequestObject> {
 
     private static final String TAG = "NetworkBoundResource";
 
+    private int callCount = 0;
     private String coinID;
     private AppExecutors appExecutors;
     private MediatorLiveData<Resource<RequestObject>> results = new MediatorLiveData<>();
@@ -50,12 +51,17 @@ public abstract class CoinDataFetcher<RequestObject> {
                     setValue(Resource.loading(null));
                 }
                 else if(requestObjectApiResponse instanceof ApiResponse.ApiErrorResponse){
-                    setValue(Resource.error(
-                            ((ApiResponse.ApiErrorResponse) requestObjectApiResponse).getErrorMessage(),
-                            null
-                    ));
 
-                    fetchFromNetwork();
+                    if(callCount < 3) {
+                        fetchFromNetwork();
+                        callCount++;
+                    } else {
+                        setValue(Resource.error(
+                                ((ApiResponse.ApiErrorResponse) requestObjectApiResponse).getErrorMessage(),
+                                null
+                        ));
+                    }
+
                 }
             }
         });

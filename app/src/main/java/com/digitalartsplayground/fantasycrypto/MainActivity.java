@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -20,6 +21,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.digitalartsplayground.fantasycrypto.fragments.LeaderBoardFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.MarketFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.OrdersFragments;
 import com.digitalartsplayground.fantasycrypto.fragments.PortfolioFragment;
@@ -29,19 +32,20 @@ import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.MainViewModel;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
+import com.digitalartsplayground.fantasycrypto.util.Constants;
 import com.digitalartsplayground.fantasycrypto.util.CryptoCalculator;
 import com.digitalartsplayground.fantasycrypto.util.LimitHelper;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.ironsource.mediationsdk.ISBannerSize;
+import com.ironsource.mediationsdk.IronSource;
+import com.ironsource.mediationsdk.IronSourceBannerLayout;
+import com.ironsource.mediationsdk.logger.IronSourceError;
+import com.ironsource.mediationsdk.sdk.BannerListener;
 import org.jetbrains.annotations.NotNull;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,15 +55,19 @@ public class MainActivity extends AppCompatActivity {
 
     private MainViewModel mainViewModel;
     private SharedPrefs sharedPrefs;
+    private FrameLayout bannerContainer;
     private ScheduledExecutorService scheduleTaskExecutor;
     private TextView errorView;
     private TextView refreshTextView;
+    private TextView poweredByGeckoTextview;
     private ImageButton refreshButton;
     private ImageView loadingImage;
     private ProgressBar progressBar;
     private BottomNavigationView bottomNavigationView;
     private boolean isErrorScreen = false;
     private boolean isLoadingScreen = true;
+    public static int counter = 0;
+    private IronSourceBannerLayout banner;
 
 
     @Override
@@ -69,10 +77,12 @@ public class MainActivity extends AppCompatActivity {
 
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         sharedPrefs = SharedPrefs.getInstance(getApplication());
+        bannerContainer = findViewById(R.id.main_banner_container);
         errorView = findViewById(R.id.main_error_view);
         progressBar = findViewById(R.id.main_progress_bar);
         refreshButton = findViewById(R.id.main_refresh_button);
         refreshTextView = findViewById(R.id.main_refresh_textview);
+        poweredByGeckoTextview = findViewById(R.id.powered_by_gecko_textview);
         loadingImage = findViewById(R.id.main_loading_logo);
 
         init();
@@ -80,47 +90,83 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+
+        IronSource.onResume(this);
+        loadIronSourceBanner();
+        checkAdServingTimeLimit();
+
+        long marketTime = sharedPrefs.getMarketDataTimeStamp();
+        boolean fetchFromServer = (System.currentTimeMillis() - marketTime) > Constants.FETCH_TIME_CONSTANT;
+
+        if(fetchFromServer) {
+            mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
+            sharedPrefs.setSchedulerTime(System.currentTimeMillis());
+        } else {
+            if(mainViewModel.getLiveMarketData().getValue() == null)
+                mainViewModel.fetchMarketDataCache();
+        }
         scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
         scheduleUpdater();
     }
 
+
     @Override
     protected void onPause() {
         super.onPause();
+        destroyBanner();
+        IronSource.onPause(this);
         scheduleTaskExecutor.shutdown();
     }
 
     private void init() {
 
-        SharedPrefs sharedPrefs = SharedPrefs.getInstance(this.getApplication());
-        boolean isFirstTime = sharedPrefs.getIsFirstTime();
+        initIronSource();
 
+        boolean isFirstTime = sharedPrefs.getIsFirstTime();
         if(isFirstTime) {
             sharedPrefs.setBalance(10000);
             sharedPrefs.setFirstTime(false);
+            sharedPrefs.setCleanMarketTime(System.currentTimeMillis());
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(navListener);
-        bottomNavigationView.setOnApplyWindowInsetsListener(null);
-        bottomNavigationView.setVisibility(View.INVISIBLE);
+        bottomNavigationView.setVisibility(View.GONE);
+
+        if(Build.VERSION.SDK_INT < 30) {
+            bottomNavigationView.setOnApplyWindowInsetsListener(null);
+        } else {
+            bottomNavigationView.setBackgroundColor(getResources().getColor(R.color.primary, getTheme()));
+        }
 
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, new MarketFragment())
                 .commit();
 
-        hideSystemUI();
-
-        setListeners();
-        mainViewModel.fetchMarketData(6);
-        sharedPrefs.setSchedulerTime(System.currentTimeMillis());
         cleanLimitHistory();
+        setListeners();
     }
 
+
+    private void initIronSource(){
+
+        IronSource.init(this, "133802ab1",IronSource.AD_UNIT.BANNER);
+        IronSource.init(this, "133802ab1",IronSource.AD_UNIT.REWARDED_VIDEO);
+        IronSource.shouldTrackNetworkState(this, true);
+
+    }
+
+
     private void setListeners(){
+
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -131,65 +177,11 @@ public class MainActivity extends AppCompatActivity {
 
                 showLoadingScreen();
                 isLoadingScreen = true;
-                mainViewModel.fetchMarketData(6);
+                mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
             }
         });
     }
 
-    private void cleanLimitHistory() {
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                int limitCount = mainViewModel.getInactiveLimitCount();
-                if(limitCount > 1000) {
-                    mainViewModel.cleanInactiveLimitHistory();
-                }
-            }
-        });
-    }
-
-    private void hideErrorScreen() {
-        if(errorView.getVisibility() == View.VISIBLE)
-            errorView.setVisibility(View.GONE);
-
-        if(refreshButton.getVisibility() == View.VISIBLE)
-            refreshButton.setVisibility(View.GONE);
-
-        if(refreshTextView.getVisibility() == View.VISIBLE)
-            refreshTextView.setVisibility(View.GONE);
-
-
-    }
-
-    private void hideLoadingScreen() {
-        if(progressBar.getVisibility() == View.VISIBLE)
-            progressBar.setVisibility(View.GONE);
-
-        if(loadingImage.getVisibility() == View.VISIBLE)
-            loadingImage.setVisibility(View.GONE);
-
-        if(bottomNavigationView.getVisibility() == View.INVISIBLE)
-            bottomNavigationView.setVisibility(View.VISIBLE);
-    }
-
-    private void showLoadingScreen() {
-        if(bottomNavigationView.getVisibility() == View.VISIBLE)
-            bottomNavigationView.setVisibility(View.INVISIBLE);
-
-        progressBar.setVisibility(View.VISIBLE);
-        loadingImage.setVisibility(View.VISIBLE);
-        bottomNavigationView.setVisibility(View.INVISIBLE);
-    }
-
-    private void showErrorScreen() {
-
-        if(bottomNavigationView.getVisibility() == View.VISIBLE)
-            bottomNavigationView.setVisibility(View.INVISIBLE);
-
-        errorView.setVisibility(View.VISIBLE);
-        refreshButton.setVisibility(View.VISIBLE);
-        refreshTextView.setVisibility(View.VISIBLE);
-    }
 
     private void subscribeObservers() {
 
@@ -197,12 +189,12 @@ public class MainActivity extends AppCompatActivity {
 
         liveMarketData.observe(MainActivity.this, new Observer<Resource<List<MarketUnit>>>() {
 
-            int counter = 0;
-
             @Override
             public void onChanged(Resource<List<MarketUnit>> listResource) {
 
                 if(listResource.status == Resource.Status.SUCCESS) {
+
+                    long currentTime = System.currentTimeMillis();
 
                     if(isErrorScreen) {
                         hideErrorScreen();
@@ -214,10 +206,9 @@ public class MainActivity extends AppCompatActivity {
                         isLoadingScreen = false;
                     }
 
-                    counter++;
                     checkLimitsWithMarket();
 
-                    long timeDifference =  System.currentTimeMillis() - sharedPrefs.getLimitUpdateTime();
+                    long timeDifference =  currentTime - sharedPrefs.getLimitUpdateTime();
                     boolean checkWithCandleData = timeDifference > (30 * 60 * 1000);
 
                     if(checkWithCandleData) {
@@ -225,30 +216,48 @@ public class MainActivity extends AppCompatActivity {
                         sharedPrefs.setLimitUpdateTime(System.currentTimeMillis());
                     }
 
-                } else if(listResource.status == Resource.Status.ERROR) {
+                    if(mainViewModel.isCleanMarketData()) {
+                        long oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
 
-                    if(isLoadingScreen) {
-                        hideLoadingScreen();
-                        isLoadingScreen = false;
+                        if(sharedPrefs.getCleanMarketTime()  < oneDayAgo) {
+                            cleanCoinCache(oneDayAgo);
+                            sharedPrefs.setCleanMarketTime(currentTime);
+                        }
+
+                        mainViewModel.setCleanMarketData(false);
                     }
 
-                    showErrorScreen();
-                    isErrorScreen = true;
+                    if(scheduleTaskExecutor.isShutdown()) {
+                        scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
+                        scheduleUpdater();
+                    }
+
+                } else if(listResource.status == Resource.Status.ERROR) {
+
+                    if(!isErrorScreen) {
+
+                        if(isLoadingScreen) {
+                            hideLoadingScreen();
+                            isLoadingScreen = false;
+                        }
+
+                        showErrorScreen();
+                        isErrorScreen = true;
+
+                        if(!scheduleTaskExecutor.isShutdown())
+                            scheduleTaskExecutor.shutdown();
+                    }
+
                 }
             }
         });
-
 
         LiveData<Resource<CandleStickData>> liveCandleData = mainViewModel.getLiveCandleData();
 
         liveCandleData.observe(MainActivity.this, new Observer<Resource<CandleStickData>>() {
 
-            int counter = 0;
-
             @Override
             public void onChanged(Resource<CandleStickData> candleStickDataResource) {
-
-                counter++;
 
                 if(candleStickDataResource.status == Resource.Status.SUCCESS) {
                     checkLimitWithCandle(candleStickDataResource.data);
@@ -261,29 +270,24 @@ public class MainActivity extends AppCompatActivity {
     private void scheduleUpdater() {
 
         SharedPrefs sharedPrefs = SharedPrefs.getInstance(this);
-        long lastTaskRun = sharedPrefs.getSchedulerTime();
-        long currentTime = System.currentTimeMillis();
 
-        if((currentTime - lastTaskRun) >= (330 * 1000)) {
-            scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
+        scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
 
-                @Override
-                public void run() {
+            @Override
+            public void run() {
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            sharedPrefs.setSchedulerTime(System.currentTimeMillis());
-                            mainViewModel.fetchMarketData(6);
-                        }
-                    });
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        sharedPrefs.setSchedulerTime(System.currentTimeMillis());
+                        mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
+                    }
+                });
 
-                }
+            }
 
-            }, 0, 330, TimeUnit.SECONDS);
-        }
+        }, Constants.FETCH_TIME_CONSTANT, Constants.FETCH_TIME_CONSTANT + 10, TimeUnit.MILLISECONDS);
     }
-
 
 
     private void startLimitCandleUpdate() {
@@ -423,15 +427,98 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void cleanLimitHistory() {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                int limitCount = mainViewModel.getInactiveLimitCount();
+                if(limitCount > 1000) {
+                    mainViewModel.cleanInactiveLimitHistory();
+                }
+            }
+        });
+    }
+
+    private void cleanCoinCache(long timeLimit) {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mainViewModel.cleanMarketListCache(timeLimit);
+            }
+        });
+    }
+
+
     private void updateLimit(LimitOrder limitOrder, long time) {
-        DateFormat formatter = new SimpleDateFormat("MMMM  dd, yyyy", Locale.getDefault());
         limitOrder.setActive(false);
         limitOrder.setCandleCheckTime(time);
         limitOrder.setFillDate(time);
-        limitOrder.setFillDateString(formatter.format(new Date(time)));
         mainViewModel.updateLimitOrder(limitOrder);
     }
 
+
+    private void hideErrorScreen() {
+        if(errorView.getVisibility() == View.VISIBLE)
+            errorView.setVisibility(View.GONE);
+
+        if(refreshButton.getVisibility() == View.VISIBLE)
+            refreshButton.setVisibility(View.GONE);
+
+        if(refreshTextView.getVisibility() == View.VISIBLE)
+            refreshTextView.setVisibility(View.GONE);
+
+        showBottomNavigationView();
+    }
+
+
+    private void hideLoadingScreen() {
+        if(progressBar.getVisibility() == View.VISIBLE)
+            progressBar.setVisibility(View.GONE);
+
+        if(loadingImage.getVisibility() == View.VISIBLE)
+            loadingImage.setVisibility(View.GONE);
+
+        if(poweredByGeckoTextview.getVisibility() == View.VISIBLE)
+            poweredByGeckoTextview.setVisibility(View.GONE);
+
+
+        showBottomNavigationView();
+    }
+
+
+    private void showLoadingScreen() {
+
+        progressBar.setVisibility(View.VISIBLE);
+        loadingImage.setVisibility(View.VISIBLE);
+        poweredByGeckoTextview.setVisibility(View.VISIBLE);
+        hideBottomNavigationView();
+    }
+
+
+    private void showErrorScreen() {
+
+        hideBottomNavigationView();
+
+        errorView.setVisibility(View.VISIBLE);
+        refreshButton.setVisibility(View.VISIBLE);
+        refreshTextView.setVisibility(View.VISIBLE);
+    }
+
+
+    private void hideBottomNavigationView(){
+        if(bottomNavigationView.getVisibility() == View.VISIBLE) {
+            bottomNavigationView.setVisibility(View.GONE);
+            bottomNavigationView.setClickable(false);
+        }
+    }
+
+
+    private void showBottomNavigationView() {
+        if(bottomNavigationView.getVisibility() == View.GONE) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            bottomNavigationView.setClickable(true);
+        }
+    }
 
 
     BottomNavigationView.OnItemSelectedListener navListener = new NavigationBarView.OnItemSelectedListener() {
@@ -449,9 +536,14 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.nav_orders:
                     selectedFragment = new OrdersFragments();
                     break;
+                case R.id.nav_leaderboard:
+                    destroyBanner();
+                    selectedFragment = new LeaderBoardFragment();
+                    break;
             }
 
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+            if(selectedFragment != null)
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     selectedFragment).commit();
 
             return true;
@@ -459,57 +551,91 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
-    @SuppressWarnings("deprecation")
-    private void hideSystemUI() {
+    public void destroyBanner(){
 
-        if(Build.VERSION.SDK_INT < 30) {
-
-            @SuppressLint("WrongConstant") final int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().getDecorView().setSystemUiVisibility(flags);
-
-            final View decorView = getWindow().getDecorView();
-            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int i) {
-                    if((i & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        decorView.setSystemUiVisibility(flags);
-                    }
-                }
-            });
-
-        } else {
-
-            getWindow().setDecorFitsSystemWindows(true);
-            WindowInsetsController controller = getWindow().getInsetsController();
-
-            if (controller != null) {
-                controller.hide(WindowInsets.Type.statusBars());
-                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            }
+        if(bannerContainer != null) {
+            bannerContainer.removeAllViews();
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            getWindow().getAttributes().layoutInDisplayCutoutMode =
-                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; }
+        if(banner != null && !banner.isDestroyed()) {
+            banner.setBannerListener(null);
+            IronSource.destroyBanner(banner);
+            banner = null;
+        }
+
     }
 
-}
+    private void loadIronSourceBanner() {
 
-/*                controller.addOnControllableInsetsChangedListener(new WindowInsetsController.OnControllableInsetsChangedListener() {
-                    @Override
-                    public void onControllableInsetsChanged(@NonNull WindowInsetsController windowInsetsController, int i) {
-                        InputMethodManager imm = ((InputMethodManager)(MainActivity.this).getSystemService(Context.INPUT_METHOD_SERVICE));
-                        if (imm.isAcceptingText()) {
-                            int a = 1;
-                        } else {
-                            int b = 1;
-                        }
-                    }
-                });*/
+        if(banner == null || banner.isDestroyed()) {
+            if(counter < 5) {
+                banner = IronSource.createBanner(this, ISBannerSize.SMART);
+                bannerContainer.addView(banner);
+
+                if(banner != null) {
+                    banner.setBannerListener(bannerListener);
+                    IronSource.loadBanner(banner);
+                }
+            }
+        }
+    }
+
+    private void checkAdServingTimeLimit(){
+        counter = sharedPrefs.getCounter();
+
+        if(sharedPrefs.getExpireDate() < System.currentTimeMillis()) {
+            sharedPrefs.resetAdPrefs();
+            counter = 0;
+        }
+    }
+
+    BannerListener bannerListener = new BannerListener() {
+        @Override
+        public void onBannerAdLoaded() {
+
+        }
+
+        @Override
+        public void onBannerAdLoadFailed(IronSourceError ironSourceError) {
+        // Called after a banner has attempted to load an ad but failed.
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    bannerContainer.removeAllViews();
+                }
+            });
+        }
+
+        @Override
+        public void onBannerAdClicked() {
+
+            counter++;
+            sharedPrefs.setCounter(counter);
+            sharedPrefs.setExpireDate(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24));
+
+            if(counter > 4) {
+                    IronSource.destroyBanner(banner);
+            }
+
+        }
+
+        @Override
+        public void onBannerAdScreenPresented() {
+
+        }
+
+        @Override
+        public void onBannerAdScreenDismissed() {
+
+        }
+
+        @Override
+        public void onBannerAdLeftApplication() {
+
+        }
+    };
+
+    public void setMarketTab() {
+        bottomNavigationView.setSelectedItemId(R.id.nav_home);
+    }
+}

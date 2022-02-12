@@ -5,12 +5,8 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/secondary</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/primary</item>
         <!-- Customize your theme here. -->
         <item name="android:navigationBarColor">@color/black</item>
         <item name="actionOverflowMenuStyle">@style/CMOptionsMenu</item>
@@ -41,14 +37,19 @@
         <item name="android:textAllCaps">false</item>
     </style>
 
+    <style name="TopGraphStyle" parent="Base.Widget.Design.TabLayout">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="TopGraphStyleLarge" parent="Base.Widget.Design.TabLayout">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
     <style name="LargeTabLayoutStyle" parent="Base.Widget.Design.TabLayout">
         <item name="android:textSize">18sp</item>
         <item name="android:textAllCaps">true</item>
-    </style>
-
-    <style name="BottomNavigation">
-        <item name="android:background">@color/black</item>
-        <item name="backgroundTint">@color/black</item>
     </style>
 
     <style name="AppSearchView" parent="Widget.AppCompat.SearchView" >

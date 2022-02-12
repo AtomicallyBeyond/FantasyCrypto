@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
@@ -18,14 +19,22 @@ public class CoinActivityViewModel extends AndroidViewModel {
     private final Repository repository;
     private final MediatorLiveData<MarketUnit> liveMarketUnit = new MediatorLiveData<>();
     private final MediatorLiveData<Resource<DeveloperUnit>> liveDeveloperData = new MediatorLiveData<>();
+    private final MutableLiveData<Boolean> isLineChart = new MutableLiveData<>();
 
 
 
     public CoinActivityViewModel(@NonNull @NotNull Application application) {
         super(application);
         repository = Repository.getInstance(application);
+        isLineChart.setValue(true);
 
     }
+
+
+    public LiveData<MarketUnit> getLiveMarketUnit() {
+        return liveMarketUnit;
+    }
+
 
     public void fetchMarketUnit(String id) {
 
@@ -42,10 +51,20 @@ public class CoinActivityViewModel extends AndroidViewModel {
     }
 
 
-    public LiveData<MarketUnit> getLiveMarketUnit() {
-        return liveMarketUnit;
-    }
+    public void updateMarketUnit(String coinID) {
 
+        LiveData<Resource<MarketUnit>> liveData = repository.getMarketUnitLive(coinID, "usd");
+
+        liveMarketUnit.addSource(liveData, new Observer<Resource<MarketUnit>>() {
+            @Override
+            public void onChanged(Resource<MarketUnit> marketUnitResource) {
+                if(marketUnitResource.status == Resource.Status.SUCCESS) {
+                    liveMarketUnit.setValue(marketUnitResource.data);
+                    liveMarketUnit.removeSource(liveData);
+                }
+            }
+        });
+    }
 
     public void fetchDeveloperData(String coinID) {
 
@@ -63,6 +82,15 @@ public class CoinActivityViewModel extends AndroidViewModel {
 
     public MediatorLiveData<Resource<DeveloperUnit>> getLiveDeveloperData() {
         return liveDeveloperData;
+    }
+
+
+    public LiveData<Boolean> getIsLineChart() {
+        return isLineChart;
+    }
+
+    public void setIsLineChart(boolean isLineChart) {
+        this.isLineChart.setValue(isLineChart);
     }
 
 }

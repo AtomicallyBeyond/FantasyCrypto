@@ -130,9 +130,11 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
 
-            marketList.clear();
-            marketList.addAll((List)filterResults.values);
-            notifyDataSetChanged();
+            if(marketList != null) {
+                marketList.clear();
+                marketList.addAll((List)filterResults.values);
+                notifyDataSetChanged();
+            }
         }
     };
 

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/linear_main_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:clickable="true">
 
     <TextView
         android:id="@+id/limit_fill_date"
@@ -21,35 +24,10 @@
         android:textSize="14sp" />
 
 
-    <com.digitalartsplayground.fantasycrypto.SwipeLayout
-        android:id="@+id/limit_swipe_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="2dp"
-        app:draggedItem="@id/limit_main_layout"
-        app:isEnabledSwipe="false"
-        app:isFreeDragAfterOpen="false"
-        app:rightItem="@id/limit_left_cancel_order"
-        app:swipeDirection="left">
-
-        <ImageView
-            android:id="@+id/limit_left_cancel_order"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|top"
-            android:background="@color/transparent"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"
-            android:src="@drawable/delete"
-            android:clickable="true"/>
-
-
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/limit_main_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/rounded_corners_dark"
-            android:paddingStart="15dp"
             android:paddingTop="10dp"
             android:paddingEnd="15dp"
             android:paddingBottom="10dp">
@@ -62,7 +40,9 @@
                 android:textColor="@color/white"
                 android:textSize="14sp"
                 app:layout_constraintStart_toEndOf="@+id/limit_start_barrier"
-                app:layout_constraintTop_toBottomOf="@+id/limit_top_barrier" />
+                app:layout_constraintTop_toBottomOf="@+id/limit_top_barrier"
+                app:layout_constraintEnd_toStartOf="@+id/limit_amount"
+                app:layout_constraintHorizontal_bias="0"/>
 
             <TextView
                 android:id="@+id/limit_sell_type"
@@ -73,8 +53,8 @@
                 android:textSize="16sp"
                 app:layout_constraintBottom_toTopOf="@+id/limit_trade_type"
                 app:layout_constraintEnd_toEndOf="@+id/limit_trade_type"
-                app:layout_constraintStart_toStartOf="@+id/limit_trade_type"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintStart_toEndOf="@+id/limits_selected_barrier"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/limit_trade_type"
@@ -86,8 +66,8 @@
                 android:textSize="10sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/limit_start_barrier"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/limit_sell_type"/>
+                app:layout_constraintStart_toEndOf="@+id/limits_selected_barrier"
+                app:layout_constraintTop_toBottomOf="@+id/limit_sell_type" />
 
 
             <TextView
@@ -98,12 +78,15 @@
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@+id/limit_start_barrier"
-                app:layout_constraintTop_toBottomOf="@+id/limit_coin_name" />
+                app:layout_constraintTop_toBottomOf="@+id/limit_coin_name"
+                app:layout_constraintEnd_toStartOf="@+id/limit_value"
+                app:layout_constraintHorizontal_bias="0"/>
 
             <TextView
                 android:id="@+id/limit_amount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
                 android:text="21.05 BTC"
                 android:textColor="@color/white"
                 android:textSize="14sp"
@@ -114,11 +97,34 @@
                 android:id="@+id/limit_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
                 android:text="$1,000,234.00"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/limit_amount" />
+
+            <ImageView
+                android:id="@+id/limits_selected_circle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_selected_circle"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/limits_selected_barrier"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <ImageView
+                android:id="@+id/limits_empty_circle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_unselected_circle"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/limits_selected_barrier"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
             <androidx.constraintlayout.widget.Barrier
                 android:id="@+id/limit_start_barrier"
@@ -132,7 +138,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:barrierDirection="bottom" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/limits_selected_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierMargin="10dp"
+                app:barrierDirection="right"
+                app:constraint_referenced_ids="limits_selected_circle, limits_empty_circle" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.digitalartsplayground.fantasycrypto.SwipeLayout>
 
 </LinearLayout>

@@ -1,8 +1,11 @@
-package com.digitalartsplayground.fantasycrypto;
+package com.digitalartsplayground.fantasycrypto.util;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.widget.TextView;
+
+import com.digitalartsplayground.fantasycrypto.CoinActivity;
+import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.github.mikephil.charting.components.MarkerView;
 import com.github.mikephil.charting.data.Entry;

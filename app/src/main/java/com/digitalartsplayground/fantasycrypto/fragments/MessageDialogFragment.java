@@ -1,6 +1,9 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +36,15 @@ public class MessageDialogFragment extends DialogFragment {
         args.putString(MESSAGE_ARG, message);
         messageDialogFragment.setArguments(args);
         return messageDialogFragment;
+    }
+
+    @NonNull
+    @NotNull
+    @Override
+    public Dialog onCreateDialog(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        return dialog;
     }
 
     @Override
@@ -72,28 +84,4 @@ public class MessageDialogFragment extends DialogFragment {
             }
         });
     }
-
-
-/*    AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-
-    LayoutInflater layoutInflater = requireActivity().getLayoutInflater();
-    View view = layoutInflater.inflate(R.layout.message_dialog, null);
-        builder.setView(view);
-    closeButton = view.findViewById(R.id.message_dialog_close_button);
-    messageView = view.findViewById(R.id.message_dialog_textview);
-    setCloseButtonListener();
-        return builder.create();*/
-
-
-
-    /*    AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        builder.setTitle("Notice")
-                .setMessage("This is a message for you")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialogInterface, int i) {
-
-        }
-    });
-        return builder.create();*/
 }

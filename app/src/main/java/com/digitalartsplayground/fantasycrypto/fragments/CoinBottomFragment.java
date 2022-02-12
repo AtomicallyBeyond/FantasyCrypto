@@ -57,6 +57,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     private CryptoAsset asset;
     private MarketUnit marketUnit;
     private TradingType tradingType;
+    private TradingStage tradingStage;
     private PowerSpinnerView tradingSpinner;
     private CoinBottomViewModel coinBottomViewModel;
 
@@ -268,6 +269,8 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         coinBottomViewModel.getLiveTradingStage().observe(getViewLifecycleOwner(), new Observer<TradingStage>() {
             @Override
             public void onChanged(TradingStage tradingStage) {
+
+                CoinBottomFragment.this.tradingStage = tradingStage;
 
                 if(tradingStage == TradingStage.CONFIRMATION) {
                     setConfirmationLayout();
@@ -500,8 +503,13 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
                 coinBottomViewModel.setLiveTradingStage(TradingStage.CONFIRMATION);
 
-                if(tradingType == TradingType.LIMIT && limitPrice == marketUnit.getCurrentPrice()) {
-                    showMessage("Limit Price is set to Market Price");
+                if(tradingStage == TradingStage.CONFIRMATION) {
+                    if(isBuyOrder && limitPrice > marketUnit.getCurrentPrice()) {
+                        showMessage("Limit price is greater than market price");
+                    } else if(!isBuyOrder && limitPrice < marketUnit.getCurrentPrice()) {
+                        showMessage("Limit price is less than market price");
+                    } else if(tradingType == TradingType.LIMIT && limitPrice == marketUnit.getCurrentPrice())
+                        showMessage("Limit price is set to market price");
                 }
             }
         });
@@ -598,7 +606,6 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         if(amount == 0)
             amountEdit.getText().clear();
         else {
-            //String tempAmount = NumberFormatter.getDecimalWithCommas(amount, 3);
             amountEdit.setText(String.valueOf(amount));
             amountEdit.setSelection(amountEdit.getText().length());
         }
@@ -681,7 +688,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
 
         if(tradingType == TradingType.MARKET ||
-                limitPrice == marketUnit.getCurrentPrice()) {
+                limitPrice >= marketUnit.getCurrentPrice()) {
 
             if(asset == null) {
                 asset = new CryptoAsset(marketUnit.getCoinID(), amount);
@@ -694,7 +701,8 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             }
 
             coinBottomViewModel.saveCryptoAssetDB(asset);
-
+            limitPrice = marketUnit.getCurrentPrice();
+            limitEdit.setText(String.valueOf(limitPrice));
             completeOrder(amount, false);
             showConfirmationMessage("Buy Order Filled");
 
@@ -764,7 +772,9 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             }
 
             if(tradingType == TradingType.MARKET ||
-                    limitPrice == marketUnit.getCurrentPrice()) {
+                    limitPrice <= marketUnit.getCurrentPrice()) {
+                limitPrice = marketUnit.getCurrentPrice();
+                limitEdit.setText(String.valueOf(limitPrice));
                 completeOrder(amount, false);
                 showConfirmationMessage("Sell Order Filled");
             } else {
@@ -780,6 +790,8 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     //If isActive = true indicates a limit trade else it's a market trade.
     private void completeOrder(float amount, boolean isActive) {
 
+        messageBox.setText("");
+
         float value;
         SharedPrefs sharedPrefs = SharedPrefs.getInstance(getActivity());
 
@@ -793,7 +805,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             value = CryptoCalculator.calcAmountMinusFEE(limitPrice, amount);
         }
 
-        long tempTime = System.currentTimeMillis(); //- (24 * 60 * 60 * 1000 * 20);
+        long tempTime = System.currentTimeMillis();
 
         boolean isMarketOrder = tradingType == TradingType.MARKET;
 

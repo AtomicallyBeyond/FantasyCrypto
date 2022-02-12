@@ -16,4 +16,9 @@
         android:icon="@drawable/orders"
         android:title="Orders"/>
 
+    <item
+        android:id="@+id/nav_leaderboard"
+        android:icon="@drawable/leaderboard"
+        android:title="Leaderboard"/>
+
 </menu>

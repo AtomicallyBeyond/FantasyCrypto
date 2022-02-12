@@ -85,7 +85,7 @@ public class MarketUnit {
     @SerializedName("price_change_percentage_24h_in_currency")
     @Expose
     @ColumnInfo(name = "one_day_percent_change")
-    private String oneDayPercentChange;
+    private String oneDayPercentChange = "0";
 
     @SerializedName("price_change_percentage_7d_in_currency")
     @Expose

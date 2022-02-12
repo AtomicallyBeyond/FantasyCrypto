@@ -12,8 +12,8 @@ android {
         applicationId "com.digitalartsplayground.fantasycrypto"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.02"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -32,15 +32,26 @@ android {
 
 dependencies {
 
-    implementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+    //Google Play Services
+    implementation 'com.google.android.gms:play-services-games:22.0.1'
+    implementation 'com.google.android.gms:play-services-auth:20.1.0'
 
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.1'
-    implementation 'com.google.firebase:firebase-analytics:19.0.1'
-    implementation 'com.google.firebase:firebase-messaging:22.0.0'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.6'
+    implementation 'com.google.firebase:firebase-analytics:20.0.2'
+    implementation 'com.google.firebase:firebase-messaging:23.0.0'
     def retrofitVersion = "2.9.0"
     def room_version = "2.3.0"
 
     implementation 'org.jetbrains:annotations:15.0'
+
+    //IronSource
+    implementation 'com.ironsource.sdk:mediationsdk:7.1.14'
+
+    //IronSource Google Play Services
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.google.android.gms:play-services-appset:16.0.0'
+    implementation 'com.google.android.gms:play-services-ads-identifier:17.0.0'
+    implementation 'com.google.android.gms:play-services-basement:17.1.1'
 
     //PowerSpinner
     implementation "com.github.skydoves:powerspinner:1.1.9"
@@ -72,4 +83,29 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    // Add AdColony Network
+    implementation 'com.ironsource.adapters:adcolonyadapter:4.3.10'
+    implementation 'com.adcolony:sdk:4.6.5'
+// Add AdMob and Ad Manager Network
+    implementation 'com.google.android.gms:play-services-ads:20.5.0'
+    implementation 'com.ironsource.adapters:admobadapter:4.3.26'
+// Add Applovin Network
+    implementation 'com.ironsource.adapters:applovinadapter:4.3.29'
+    implementation 'com.applovin:applovin-sdk:10.3.5'
+// Add Facebook Network
+    implementation 'com.ironsource.adapters:facebookadapter:4.3.34'
+    implementation 'com.facebook.android:audience-network-sdk:6.8.0'
+// Add Fyber Network (Adapter only)
+    implementation 'com.ironsource.adapters:fyberadapter:4.3.17'
+    implementation "com.fyber:marketplace-sdk:8.1.2"
+    implementation 'com.ironsource.adapters:inmobiadapter:4.3.13'
+    implementation 'com.inmobi.monetization:inmobi-ads:10.0.1'
+    implementation 'com.google.android.gms:play-services-location:17.1.0'//optional dependency for better targeting
+// Add Tapjoy Network
+    implementation 'com.ironsource.adapters:tapjoyadapter:4.1.19'
+    api 'com.tapjoy:tapjoy-android-sdk:12.8.1@aar'
+// Add Vungle Network
+    implementation 'com.ironsource.adapters:vungleadapter:4.3.14'
+    implementation 'com.vungle:publisher-sdk-android:6.10.3'
 }

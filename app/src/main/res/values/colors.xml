@@ -2,7 +2,6 @@
 <resources>
     <color name="primary">#001522</color>
     <color name="secondary">#0c2a3c</color>
-    <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#C0C0C0</color>
@@ -12,4 +11,6 @@
     <color name="red">#3c0c1b</color>
     <color name="gray">#a9a9a9</color>
     <color name="transparent">#00000000</color>
+    <color name="yellow">#F4B400</color>
+    <color name="dialog">#001522</color>
 </resources>

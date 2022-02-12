@@ -2,6 +2,7 @@ package com.digitalartsplayground.fantasycrypto.models;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
@@ -60,6 +61,9 @@ public class LimitOrder {
     @ColumnInfo(name = "candle_check_time")
     private long candleCheckTime;
 
+    @Ignore
+    private boolean isSelected = false;
+
     public LimitOrder(String coinID,
                       String coinName,
                       String coinSymbol,
@@ -82,6 +86,7 @@ public class LimitOrder {
         this.isMarketOrder = isMarketOrder;
         this.isActive = isActive;
         this.timeCreated = timeCreated;
+        fillDate = timeCreated;
         candleCheckTime = timeCreated;
 
         DateFormat formatter = new SimpleDateFormat("MMMM  dd, yyyy", Locale.getDefault());
@@ -208,5 +213,15 @@ public class LimitOrder {
 
     public void setFillDate(long fillDate) {
         this.fillDate = fillDate;
+        DateFormat formatter = new SimpleDateFormat("MMMM  dd, yyyy", Locale.getDefault());
+        fillDateString = formatter.format(new Date(fillDate));
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 }

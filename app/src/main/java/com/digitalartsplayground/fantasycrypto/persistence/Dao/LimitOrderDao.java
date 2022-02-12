@@ -15,7 +15,6 @@ public interface LimitOrderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLimit(LimitOrder limitOrder);
 
-
     @Query("SELECT * FROM limit_orders where is_active=1 ORDER BY time_created DESC")
     LiveData<List<LimitOrder>> getActiveOrders();
 

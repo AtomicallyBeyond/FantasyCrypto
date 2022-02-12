@@ -14,6 +14,10 @@ public class SharedPrefs {
     public static final String MARKET_DATA_FETCHER_COUNT = "marketDataFetcherCount";
     public static final String LIMIT_UPDATE_TIME = "limitUpdateTime";
     public static final String SCHEDULER_TIME = "schedulerTime";
+    public static final String CLEAN_MARKET_TIME = "cleanMarketTime";
+    public static final String COUNTER = "counter";
+    public static final String EXPIRE_DATE = "expireDate";
+    public static final String TOTAL_VALUE = "totalValue";
 
     private static SharedPrefs instance;
     private static SharedPreferences sharedPreferences;
@@ -56,14 +60,6 @@ public class SharedPrefs {
         return sharedPreferences.getLong(MARKET_DATA_FETCHER, 0);
     }
 
-    public void setMarketDataFetcherCount(int count) {
-        editor.putInt(MARKET_DATA_FETCHER_COUNT, count).apply();
-    }
-
-    public int getMarketDataFetcherCount() {
-        return sharedPreferences.getInt(MARKET_DATA_FETCHER_COUNT, 0);
-    }
-
     public void setLimitUpdateTime(long timeStamp) {
         editor.putLong(LIMIT_UPDATE_TIME, timeStamp).apply();
     }
@@ -78,6 +74,39 @@ public class SharedPrefs {
 
     public long getSchedulerTime() {
         return sharedPreferences.getLong(SCHEDULER_TIME, 0);
+    }
+
+    public void setCleanMarketTime(long timeStamp) {
+        editor.putLong(CLEAN_MARKET_TIME, timeStamp).apply();
+    }
+
+    public long getCleanMarketTime() {
+        return sharedPreferences.getLong(CLEAN_MARKET_TIME, 0);
+    }
+
+    public long getExpireDate() { return sharedPreferences.getLong(EXPIRE_DATE, -1); }
+
+    public void setExpireDate(long expireDate) {
+        editor.putLong(EXPIRE_DATE, expireDate).apply();
+    }
+
+    public int getCounter() { return sharedPreferences.getInt(COUNTER, 0); }
+
+    public void setCounter(int counter){
+        editor.putInt(COUNTER, counter).apply();
+    }
+
+    public void resetAdPrefs(){
+        setCounter(0);
+        setExpireDate(0);
+    }
+
+    public void setTotalValue(float totalValue) {
+        editor.putFloat(TOTAL_VALUE, totalValue).apply();
+    }
+
+    public float getTotalValue() {
+        return sharedPreferences.getFloat(TOTAL_VALUE, 10000f);
     }
 
 }

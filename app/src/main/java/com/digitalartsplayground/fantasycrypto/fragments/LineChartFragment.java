@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
@@ -14,9 +16,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 import com.digitalartsplayground.fantasycrypto.CoinActivity;
-import com.digitalartsplayground.fantasycrypto.LineChartMarkerView;
+import com.digitalartsplayground.fantasycrypto.util.LineChartMarkerView;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.LineChartFragmentViewModel;
@@ -35,9 +39,11 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
-public class LineChartFragment extends Fragment {
+public class LineChartFragment extends Fragment implements CompoundButton.OnCheckedChangeListener {
 
 
     private static final String COIN_ID = "coinID";
@@ -50,6 +56,9 @@ public class LineChartFragment extends Fragment {
     private LiveData<Resource<LineGraphData>> liveDay;
     private LiveData<Resource<LineGraphData>> liveThreeMonths;
     private LiveData<Resource<LineGraphData>> liveYear;
+    private ConstraintLayout coinMainContainer;
+    private boolean isHighlightState = true;
+    private SwitchCompat graphSwitch;
 
 
     public LineChartFragment() {
@@ -90,6 +99,9 @@ public class LineChartFragment extends Fragment {
         lineChart = view.findViewById(R.id.line_chart);
         tabLayout = view.findViewById(R.id.line_chart_tabs);
         scrollView = requireActivity().findViewById(R.id.coin_nested_scroll_view);
+        coinMainContainer = requireActivity().findViewById(R.id.coin_main_container);
+        graphSwitch = requireActivity().findViewById(R.id.coin_switch);
+        graphSwitch.setOnCheckedChangeListener(this);
 
         init();
         return view;
@@ -134,7 +146,7 @@ public class LineChartFragment extends Fragment {
                             public void onChanged(Resource<LineGraphData> lineGraphDataResource) {
 
                                 if(lineGraphDataResource.status == Resource.Status.SUCCESS) {
-                                    if(lineGraphDataResource.data.getPrices() != null || !lineGraphDataResource.data.getPrices().isEmpty())
+                                    if(lineGraphDataResource.data.getPrices() != null && !lineGraphDataResource.data.getPrices().isEmpty())
                                         invalidateLineChart(timeSpan, lineGraphDataResource.data);
                                 }
                             }
@@ -252,7 +264,7 @@ public class LineChartFragment extends Fragment {
 
 
         LineDataSet lineDataSet = new LineDataSet(values, "LineChart");
-        lineDataSet.setColor(Color.WHITE);
+        lineDataSet.setColor(Color.GRAY);
         lineDataSet.setCircleColor(Color.YELLOW);
         lineDataSet.setLineWidth(0.75f);
         lineDataSet.setDrawCircles(false);
@@ -268,6 +280,7 @@ public class LineChartFragment extends Fragment {
 
 
         LineData data = new LineData(lineDataSet);
+        data.setHighlightEnabled(false);
         lineChart.setData(data);
         lineChart.invalidate();
     }
@@ -276,20 +289,18 @@ public class LineChartFragment extends Fragment {
 
         LineChartMarkerView lineChartMarkerView = new LineChartMarkerView(getContext(), R.layout.line_chart_marker);
         lineChart.setMarker(lineChartMarkerView);
-
         lineChart.setMinOffset(0);
         lineChart.setDrawGridBackground(false);
         lineChart.setDrawBorders(false);
         lineChart.getLegend().setEnabled(false);
         lineChart.setAutoScaleMinMaxEnabled(true);
+        lineChart.getAxisRight().setEnabled(false);
+        lineChart.getDescription().setEnabled(false);
         lineChart.setTouchEnabled(true);
         lineChart.setDragEnabled(true);
         lineChart.setScaleEnabled(false);
         lineChart.setPinchZoom(false);
         lineChart.setDoubleTapToZoomEnabled(false);
-        lineChart.getAxisRight().setEnabled(false);
-        lineChart.getDescription().setEnabled(false);
-
 
         lineChart.setOnTouchListener(new View.OnTouchListener() {
 
@@ -298,19 +309,27 @@ public class LineChartFragment extends Fragment {
             public boolean onTouch(View view, MotionEvent motionEvent) {
 
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-                    scrollView.requestDisallowInterceptTouchEvent(true);
-                    lineChart.getData().setHighlightEnabled(true);
-                    lineChart.setDrawMarkers(true);
-                    ((CoinActivity) getActivity()).setPriceDateVisibility(View.VISIBLE);
-                    return true;
+                    if(lineChart != null && lineChart.getData() != null) {
+                        scrollView.requestDisallowInterceptTouchEvent(true);
+                        if(isHighlightState) {
+                            lineChart.getData().setHighlightEnabled(true);
+                            lineChart.setDrawMarkers(true);
+                            ((CoinActivity) getActivity()).setLineChartVisibility(View.VISIBLE);
+                        }
+
+                    }
                 }
                 else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
-                    scrollView.requestDisallowInterceptTouchEvent(false);
-                    lineChart.getData().setHighlightEnabled(false);
-                    lineChart.setDrawMarkers(false);
-                    ((CoinActivity) getActivity()).resetCurrentPrice();
-                    ((CoinActivity) getActivity()).setPriceDateVisibility(View.INVISIBLE);
-                    return true;
+                    if(lineChart != null && lineChart.getData() != null) {
+                        scrollView.requestDisallowInterceptTouchEvent(false);
+                        if(isHighlightState) {
+                            lineChart.getData().setHighlightEnabled(false);
+                            lineChart.setDrawMarkers(false);
+                            ((CoinActivity) getActivity()).resetCurrentPrice();
+                            ((CoinActivity) getActivity()).setLineChartVisibility(View.INVISIBLE);
+                        }
+
+                    }
                 }
                 return false;
             }
@@ -318,11 +337,11 @@ public class LineChartFragment extends Fragment {
 
 
         final YAxis yAxis = lineChart.getAxisLeft();
-        yAxis.setLabelCount(10,true);
+        yAxis.setLabelCount(7,true);
         yAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
         yAxis.setTextColor(Color.LTGRAY);
         yAxis.setTextSize(12f);
-        yAxis.setGridColor(Color.argb(102,255,255,255));
+        yAxis.setGridColor(Color.DKGRAY);
         yAxis.setAxisLineColor(Color.TRANSPARENT);
         yAxis.setValueFormatter(new MyYAxisValueFormatter());
 
@@ -340,6 +359,10 @@ public class LineChartFragment extends Fragment {
     TabLayout.OnTabSelectedListener tabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
+
+            if(!lineChart.isFullyZoomedOut())
+                graphSwitch.setChecked(false);
+
             switch (tab.getPosition()) {
                 case 0:
                     lineChartViewModel.setLiveTimeSpan(LineGraphData.TimeSpan.DAY);
@@ -369,4 +392,29 @@ public class LineChartFragment extends Fragment {
 
         }
     };
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        if(b) {
+            isHighlightState = false;
+            graphSwitch.setText("Zoom");
+            setZoomState();
+        } else {
+            isHighlightState = true;
+            graphSwitch.setText("Highlight");
+            setHighlightState();
+        }
+    }
+
+    private void setHighlightState() {
+        lineChart.setScaleEnabled(false);
+        lineChart.setPinchZoom(false);
+        lineChart.fitScreen();
+
+    }
+
+    private void setZoomState() {
+        lineChart.setScaleEnabled(true);
+        lineChart.setPinchZoom(true);
+    }
 }

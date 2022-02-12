@@ -24,12 +24,10 @@ public interface CoinGeckoApi {
             @Query("price_change_percentage")String priceChangeRange);
 
     @GET("coins/markets")
-    LiveData<ApiResponse<List<MarketUnit>>> getMarketDataWithID(
+    LiveData<ApiResponse<MarketUnit>> getMarketUnit(
             @Query("vs_currency")String currency,
             @Query("ids")String ids,
             @Query("order")String order,
-            @Query("per_page")String perPage,
-            @Query("page")String pageNumber,
             @Query("sparkline")String sparkline,
             @Query("price_change_percentage")String priceChangeRange);
 

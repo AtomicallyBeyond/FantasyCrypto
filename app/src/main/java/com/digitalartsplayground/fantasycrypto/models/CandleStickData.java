@@ -5,8 +5,8 @@ import java.util.List;
 
 public class CandleStickData extends ArrayList<List<Float>> {
 
-    private String coinID = "";
 
+    private String coinID = "";
     public ArrayList<List<Float>> getCandleStickData(){
         return this; }
 

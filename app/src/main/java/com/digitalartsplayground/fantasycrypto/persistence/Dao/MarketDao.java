@@ -31,6 +31,9 @@ public interface MarketDao {
     @Query("SELECT * FROM market_data WHERE coin_id IN (:ids)")
     LiveData<List<MarketUnit>> getAssetMarketUnits(List<String> ids);
 
+    @Query("DELETE FROM market_data WHERE time_stamp<:time")
+    void cleanMarketListCache(long time);
+
     @Update
     void updateMarketUnits(MarketUnit... marketUnits);
 

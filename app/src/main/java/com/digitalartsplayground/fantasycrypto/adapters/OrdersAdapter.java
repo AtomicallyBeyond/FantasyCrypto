@@ -12,20 +12,25 @@ import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.interfaces.OrderClickedListener;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
-import com.digitalartsplayground.fantasycrypto.SwipeLayout;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder> {
 
     private List<LimitOrder> ordersList = new ArrayList<>();
     private LimitOrder tempOrder;
-    private SwipeLayout currentSwiped;
     private OrderClickedListener clickedListener;
     private boolean isFilledList = false;
-    private boolean allowAllItemSwipe = false;
-    private boolean deleteState = false;
+    private Set<ViewHolder> mBoundViewHolders = new HashSet<>();
+    private HashMap<Integer, LimitOrder> positionsToDelete = new HashMap<>();
+    boolean isPositionToDelete = false;
+
+
+    private boolean isDeleteState = false;
 
     public OrdersAdapter(OrderClickedListener orderClickedListener) {
         clickedListener = orderClickedListener;
@@ -34,9 +39,9 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
     public void destroyOrderAdapter() {
         ordersList = null;
         tempOrder = null;
-        currentSwiped = null;
         clickedListener = null;
     }
+
 
     @NonNull
     @NotNull
@@ -47,23 +52,13 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
                 .from(parent.getContext())
                 .inflate(R.layout.order_item, parent,false);
 
-
-        OrdersAdapter.ViewHolder holder = new OrdersAdapter.ViewHolder(view);
-        return holder;
+        return new OrdersAdapter.ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull OrdersAdapter.ViewHolder holder, int position) {
 
         tempOrder = ordersList.get(position);
-
-        if(tempOrder.isActive()) {
-            holder.swipeLayout.setEnabledSwipe(true);
-            holder.cancel.setVisibility(View.VISIBLE);
-        } else {
-            holder.swipeLayout.setEnabledSwipe(false);
-            holder.cancel.setVisibility(View.GONE);
-        }
 
         if(isFilledList) {
             holder.date.setText(tempOrder.getFillDateString());
@@ -93,20 +88,96 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         holder.price.setText(NumberFormatter.currency(tempOrder.getLimitPrice()));
         holder.value.setText(tempOrder.getValueString());
 
-        if(deleteState) {
-            if(holder.swipeLayout.isClosed()) {
-/*                holder.swipeLayout.openRight();
-                boolean check = holder.swipeLayout.isLaidOut();
-                holder.swipeLayout.setEnabledSwipe(false);*/
-            }
+        mBoundViewHolders.add(holder);
 
+        if(isDeleteState) {
+            if(holder.emptyCircle.getVisibility() == View.GONE)
+                holder.emptyCircle.setVisibility(View.VISIBLE);
+            if(ordersList.get(holder.getLayoutPosition()).isSelected() && holder.selectedCircle.getVisibility() == View.GONE)
+                holder.selectedCircle.setVisibility(View.VISIBLE);
+            if(!ordersList.get(holder.getLayoutPosition()).isSelected() && holder.selectedCircle.getVisibility() == View.VISIBLE)
+                holder.selectedCircle.setVisibility(View.GONE);
+        } else if(holder.emptyCircle.getVisibility() == View.VISIBLE) {
+            holder.emptyCircle.setVisibility(View.GONE);
         }
 
     }
 
-    public void setDeleteState(boolean isDeleteState) {
-        deleteState = isDeleteState;
-        notifyDataSetChanged();
+    @Override
+    public void onViewRecycled(@NonNull @NotNull OrdersAdapter.ViewHolder holder) {
+        super.onViewRecycled(holder);
+        mBoundViewHolders.remove(holder);
+    }
+
+    public void setDeleteState() {
+
+        isDeleteState = true;
+        for(OrdersAdapter.ViewHolder holder : mBoundViewHolders) {
+            holder.emptyCircle.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    public void selectAll() {
+        for(OrdersAdapter.ViewHolder holder : mBoundViewHolders) {
+            holder.selectedCircle.setVisibility(View.VISIBLE);
+        }
+
+        positionsToDelete.clear();
+        int index = 0;
+
+        for(LimitOrder order : ordersList) {
+            order.setSelected(true);
+            positionsToDelete.put(index, order);
+            index++;
+        }
+
+        isPositionToDelete = true;
+    }
+
+    public void deselectAll() {
+        for(OrdersAdapter.ViewHolder holder : mBoundViewHolders) {
+            holder.selectedCircle.setVisibility(View.GONE);
+        }
+
+        positionsToDelete.clear();
+
+        for(LimitOrder order : ordersList) {
+            order.setSelected(false);
+        }
+
+        isPositionToDelete = false;
+    }
+
+    public void cancelDeleteState() {
+
+        isDeleteState = false;
+        for(OrdersAdapter.ViewHolder holder :mBoundViewHolders) {
+            holder.emptyCircle.setVisibility(View.GONE);
+
+            if(holder.selectedCircle.getVisibility() == View.VISIBLE)
+                holder.selectedCircle.setVisibility(View.GONE);
+        }
+
+        for(int position : positionsToDelete.keySet()) {
+            ordersList.get(position).setSelected(false);
+        }
+        positionsToDelete.clear();
+    }
+
+    public void deleteSelectedPositions() {
+
+        if(!positionsToDelete.isEmpty() && isPositionToDelete) {
+
+            for(int position : positionsToDelete.keySet()) {
+                clickedListener.onOrderClicked(ordersList.get(position), position);
+            }
+
+            ordersList.removeAll(positionsToDelete.values());
+            positionsToDelete.clear();
+            notifyDataSetChanged();
+        }
+
     }
 
     @Override
@@ -120,7 +191,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
 
     public void removeOrder(int position) {
         ordersList.remove(position);
-        notifyDataSetChanged();
+        notifyItemRemoved(position);
     }
 
     public void setOrders(List<LimitOrder> ordersList, boolean isFillDate) {
@@ -129,34 +200,10 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         notifyDataSetChanged();
     }
 
-    public void swipeOpenItem(List<RecyclerView.ViewHolder> viewHolders) {
 
-        if(viewHolders != null) {
-            ViewHolder holder;
-            for(RecyclerView.ViewHolder tempHolder : viewHolders) {
-                holder = (ViewHolder)tempHolder;
-                holder.swipeLayout.openRight();
-            }
-        }
-    }
-
-    public void swipeCloseItem(List<RecyclerView.ViewHolder> viewHolders) {
-        if(viewHolders != null) {
-            ViewHolder holder;
-            for(RecyclerView.ViewHolder tempHolder : viewHolders) {
-                holder = (ViewHolder)tempHolder;
-                holder.swipeLayout.close(true);
-            }
-        }
-    }
-
-    public void setAllowAllItemSwipe(boolean allowAllSwipes) {
-        allowAllItemSwipe = allowAllSwipes;
-    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        SwipeLayout swipeLayout;
         TextView orderType;
         TextView tradeType;
         TextView coinName;
@@ -165,11 +212,12 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         TextView value;
         TextView date;
         ImageView cancel;
+        ImageView selectedCircle;
+        ImageView emptyCircle;
 
         public ViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
 
-            swipeLayout = itemView.findViewById(R.id.limit_swipe_layout);
             orderType = itemView.findViewById(R.id.limit_sell_type);
             tradeType = itemView.findViewById(R.id.limit_trade_type);
             coinName = itemView.findViewById(R.id.limit_coin_name);
@@ -177,41 +225,39 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
             amount = itemView.findViewById(R.id.limit_amount);
             value = itemView.findViewById(R.id.limit_value);
             date = itemView.findViewById(R.id.limit_fill_date);
-            cancel = itemView.findViewById(R.id.limit_left_cancel_order);
+            selectedCircle = itemView.findViewById(R.id.limits_selected_circle);
+            emptyCircle = itemView.findViewById(R.id.limits_empty_circle);
 
-            setSwipeLayoutListener();
-            setCancelListener();
+            setViewListener(itemView.findViewById(R.id.linear_main_layout));
         }
 
-        private void setSwipeLayoutListener() {
-            swipeLayout.setOnActionsListener(new SwipeLayout.SwipeActionsListener() {
-                @Override
-                public void onOpen(int direction, boolean isContinuous) {
-                    if(direction == SwipeLayout.LEFT) {
-
-/*                        if(currentSwiped != null && currentSwiped != swipeLayout && !allowAllItemSwipe) {
-                            currentSwiped.close();
-                        }
-
-                        currentSwiped = swipeLayout;*/
-                    }
-                }
-
-                @Override
-                public void onClose() {
-
-                }
-            });
-        }
-
-        private void setCancelListener() {
-            cancel.setOnClickListener(new View.OnClickListener() {
+        private void setViewListener(View item) {
+            item.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    clickedListener.onOrderClicked(ordersList.get(getLayoutPosition()), getLayoutPosition());
+                    if(isDeleteState) {
+                        if(positionsToDelete.get(getLayoutPosition()) == null) {
+                            ordersList.get(getLayoutPosition()).setSelected(true);
+                            selectedCircle.setVisibility(View.VISIBLE);
+                            positionsToDelete.put(getLayoutPosition(), ordersList.get(getLayoutPosition()));
+
+                            if(!isPositionToDelete) {
+                                isPositionToDelete = true;
+                            }
+                        } else {
+                            ordersList.get(getLayoutPosition()).setSelected(false);
+                            selectedCircle.setVisibility(View.GONE);
+                            positionsToDelete.remove(getLayoutPosition());
+
+                            if(positionsToDelete.isEmpty()) {
+                                isPositionToDelete = false;
+                            }
+                        }
+                    }
+
                 }
             });
-        }
+        }//end setViewListener
 
     }
 }
