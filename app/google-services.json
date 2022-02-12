@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "455054773423",
+    "project_id": "fantasy-crypto-bb298",
+    "storage_bucket": "fantasy-crypto-bb298.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455054773423:android:9bdc59de51b28fb943185a",
+        "android_client_info": {
+          "package_name": "com.digitalartsplayground.fantasycrypto"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "455054773423-bj19nh2j621cd7sonqal7598hf70lrmc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZ8BuElPaJRfw9qP0VYluWj_TnOi9lyaE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "455054773423-bj19nh2j621cd7sonqal7598hf70lrmc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
