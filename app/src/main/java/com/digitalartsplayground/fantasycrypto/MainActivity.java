@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
                         mainViewModel.setCleanMarketData(false);
                     }
 
-                    if(scheduleTaskExecutor == null || scheduleTaskExecutor.isShutdown()) {
+                    if(scheduleTaskExecutor.isShutdown()) {
                         scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
                         scheduleUpdater();
                     }
