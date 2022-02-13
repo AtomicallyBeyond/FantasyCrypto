@@ -11,7 +11,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FantasyCrypto">
+        android:theme="@style/Theme.FantasyCrypto"
+        android:screenOrientation="locked">
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

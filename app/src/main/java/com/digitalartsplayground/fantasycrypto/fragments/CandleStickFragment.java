@@ -8,7 +8,9 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class CandleStickFragment extends Fragment {
+public class CandleStickFragment extends Fragment implements CompoundButton.OnCheckedChangeListener {
 
     private static final String COIN_ID = "coinID";
 
@@ -42,6 +44,8 @@ public class CandleStickFragment extends Fragment {
     private CandleStickChartViewModel candleViewModel;
     private CandleStickChart candleStickChart;
     private NestedScrollView scrollView;
+    private boolean isHighlightState = true;
+    private SwitchCompat graphSwitch;
 
     public CandleStickFragment() {
         // Required empty public constructor
@@ -76,6 +80,8 @@ public class CandleStickFragment extends Fragment {
 
         candleStickChart = view.findViewById(R.id.candle_stick_chart);
         scrollView = requireActivity().findViewById(R.id.coin_nested_scroll_view);
+        graphSwitch = requireActivity().findViewById(R.id.coin_switch);
+        graphSwitch.setOnCheckedChangeListener(this);
 
         init();
         return view;
@@ -163,7 +169,7 @@ public class CandleStickFragment extends Fragment {
         candleStickChart.setTouchEnabled(true);
         candleStickChart.setDragEnabled(true);
         candleStickChart.setScaleEnabled(false);
-        candleStickChart.setPinchZoom(true);
+        candleStickChart.setPinchZoom(false);
         candleStickChart.setDoubleTapToZoomEnabled(false);
         candleStickChart.getAxisRight().setEnabled(false);
         candleStickChart.getDescription().setEnabled(false);
@@ -178,19 +184,25 @@ public class CandleStickFragment extends Fragment {
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                     if(candleStickChart != null) {
                         scrollView.requestDisallowInterceptTouchEvent(true);
-                         candleStickChart.getData().setHighlightEnabled(true);
-                        candleStickChart.setDrawMarkers(true);
-                        ((CoinActivity) getActivity()).setCandleChartVisibility(View.VISIBLE);
-                        return true;
+
+                        if(isHighlightState) {
+                            candleStickChart.getData().setHighlightEnabled(true);
+                            candleStickChart.setDrawMarkers(true);
+                            ((CoinActivity) getActivity()).setCandleChartVisibility(View.VISIBLE);
+                        }
+
                     }
                 }
                 else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
                     if(candleStickChart != null) {
-                        scrollView.requestDisallowInterceptTouchEvent(false);
-                        candleStickChart.getData().setHighlightEnabled(false);
-                        candleStickChart.setDrawMarkers(false);
-                        ((CoinActivity) getActivity()).setCandleChartVisibility(View.INVISIBLE);
-                        return true;
+
+                        if(isHighlightState) {
+                            scrollView.requestDisallowInterceptTouchEvent(false);
+                            candleStickChart.getData().setHighlightEnabled(false);
+                            candleStickChart.setDrawMarkers(false);
+                            ((CoinActivity) getActivity()).setCandleChartVisibility(View.INVISIBLE);
+                        }
+
                     }
                 }
                 return false;
@@ -221,4 +233,29 @@ public class CandleStickFragment extends Fragment {
         xAxis.setValueFormatter(new DayXAxisValueFormatter());
     }
 
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
+        if(b) {
+            isHighlightState = false;
+            graphSwitch.setText("Zoom");
+            setZoomState();
+        } else {
+            isHighlightState = true;
+            graphSwitch.setText("Highlight");
+            setHighlightState();
+        }
+    }
+
+    private void setHighlightState() {
+        candleStickChart.setScaleEnabled(false);
+        candleStickChart.setPinchZoom(false);
+        candleStickChart.fitScreen();
+
+    }
+
+    private void setZoomState() {
+        candleStickChart.setScaleEnabled(true);
+        candleStickChart.setPinchZoom(true);
+    }
 }

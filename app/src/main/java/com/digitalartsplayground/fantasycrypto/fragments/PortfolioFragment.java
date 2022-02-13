@@ -281,9 +281,14 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     }
 
     private void generateRewardAmount() {
-        int first = (int)(totalValue * 0.05);
+        int first = (int)(totalValue * 0.015);
         int second = (int)(totalValue * 0.01);
         rewardAmount = new Random().nextInt(second) + first;
+
+        if(rewardAmount > 1000) {
+            rewardAmount = 1000;
+        }
+
 
     }
 
@@ -379,8 +384,8 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
     private void showRewardDialog() {
 
-        String rewardString = "You've earned it: $" + rewardAmount + ".00 \n\n Thank you for supporting us!";
-        MessageDialogFragment dialogFragment = MessageDialogFragment.getInstance("Great News", rewardString);
-        dialogFragment.showNow(getChildFragmentManager(), "message");
+        String rewardAmount = "$" + NumberFormatter.getDecimalWithCommas(PortfolioFragment.this.rewardAmount, 2);
+        RewardDialogFragment rewardDialogFragment = RewardDialogFragment.getInstance(rewardAmount);
+        rewardDialogFragment.showNow(getChildFragmentManager(), "message");
     }
 }
