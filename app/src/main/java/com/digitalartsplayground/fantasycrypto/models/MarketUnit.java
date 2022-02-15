@@ -85,12 +85,18 @@ public class MarketUnit {
     @SerializedName("price_change_percentage_24h_in_currency")
     @Expose
     @ColumnInfo(name = "one_day_percent_change")
-    private String oneDayPercentChange = "0";
+    private float oneDayPercentChange = "0";
+
+    @Ignore
+    private String onDayPercentString;
 
     @SerializedName("price_change_percentage_7d_in_currency")
     @Expose
     @ColumnInfo(name = "seven_day_percent_change")
-    private String sevenDayPercentChange;
+    private float sevenDayPercentChange;
+
+    @Ignore
+    private String sevenDayPercentString;
 
     @SerializedName("sparkline_in_7d")
     @Expose
@@ -145,13 +151,15 @@ public class MarketUnit {
         this.priceName = priceName;
     }
 
-    public void setOneDayPercentChange(String oneDayPercentChange) {
-
-        if(oneDayPercentChange != null) {
-            this.oneDayPercentChange = String.format(Locale.ENGLISH, "%.2f", Double.parseDouble(oneDayPercentChange));
-        }
-
+    public void setOneDayPercentChange(float oneDayPercentChange) {
+        onDayPercentString = NumberFormatter.getDecimalWithCommas(oneDayPercentChange, 2) + "%";
     }
+
+    public float getOneDayPercentChange() {
+        return oneDayPercentChange;
+    }
+
+    public String getOnDayPercentString() {return onDayPercentString;}
 
     @NonNull
     public String getCoinID() {
@@ -171,10 +179,6 @@ public class MarketUnit {
 
     public float getCurrentPrice() {
         return currentPrice;
-    }
-
-    public String getOneDayPercentChange() {
-        return oneDayPercentChange;
     }
 
     public long getMarketCap() {
@@ -241,12 +245,15 @@ public class MarketUnit {
         this.timeStamp = timeStamp;
     }
 
-    public String getSevenDayPercentChange() {
+    public float getSevenDayPercentChange() {
         return sevenDayPercentChange;
     }
 
-    public void setSevenDayPercentChange(String sevenDayPercentChange) {
+    public String getSevenDayPercentString() {return sevenDayPercentString;}
+
+    public void setSevenDayPercentChange(float sevenDayPercentChange) {
         this.sevenDayPercentChange = sevenDayPercentChange;
+        sevenDayPercentString = NumberFormatter.getDecimalWithCommas(sevenDayPercentChange, 2) + "%";
     }
 }
 

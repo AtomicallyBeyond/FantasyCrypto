@@ -72,7 +72,7 @@ public class CoinBottomViewModel extends AndroidViewModel {
 
     public LiveData<CryptoAsset> getLiveCryptoAsset(String coinID) {
 
-        LiveData<CryptoAsset> liveData = repository.getCryptoAsset(coinID);
+        LiveData<CryptoAsset> liveData = repository.getLiveCryptoAsset(coinID);
 
         liveCryptoAsset.addSource(liveData, new Observer<CryptoAsset>() {
             @Override

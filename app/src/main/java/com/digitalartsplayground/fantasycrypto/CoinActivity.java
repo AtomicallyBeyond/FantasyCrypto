@@ -203,18 +203,15 @@ public class CoinActivity extends AppCompatActivity {
         else
             maxSupply.setText(" ");
 
-        if(marketUnit.getOneDayPercentChange() != null){
-            String temp = marketUnit.getOneDayPercentChange() + "%";
-            percentChange.setText(temp);
 
-            if(Double.parseDouble(marketUnit.getOneDayPercentChange()) >= 0) {
-                percentChange.setTextColor(Color.GREEN);
-            } else {
-                percentChange.setTextColor(Color.RED);
-            }
+        percentChange.setText(marketUnit.getOnDayPercentString());
+
+        if(marketUnit.getOneDayPercentChange() >= 0) {
+            percentChange.setTextColor(Color.GREEN);
+        } else {
+            percentChange.setTextColor(Color.RED);
         }
-        else
-            percentChange.setText(" ");
+
 
         if(marketUnit.getRank() != null) {
             String temp = "Rank #" + marketUnit.getRank();

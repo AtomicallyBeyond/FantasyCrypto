@@ -48,8 +48,8 @@ public class OrdersFragmentViewModel extends AndroidViewModel {
         liveActiveOrdersState.setValue(isActiveOrders);
     }
 
-    public void updateCryptoAsset(String coinID, float amount) {
-        repository.updateCryptoAsset(coinID, amount);
+    public void updateCryptoAsset(String coinID, float amount, float value) {
+        repository.updateCryptoAsset(coinID, amount, value);
     }
 
     public void deleteLimit(String coinID, long timeCreated) {

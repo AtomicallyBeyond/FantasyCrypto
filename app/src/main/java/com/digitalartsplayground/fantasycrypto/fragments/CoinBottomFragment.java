@@ -545,6 +545,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
 
         slider.addOnChangeListener(new Slider.OnChangeListener() {
+            @SuppressLint("RestrictedApi")
             @Override
             public void onValueChange(@NonNull @NotNull Slider slider, float value, boolean fromUser) {
 
@@ -686,22 +687,32 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
     private void placeBuyOrder(float amount){
 
+        float marketPrice = marketUnit.getCurrentPrice();
 
         if(tradingType == TradingType.MARKET ||
-                limitPrice >= marketUnit.getCurrentPrice()) {
+                limitPrice >= marketPrice) {
 
             if(asset == null) {
-                asset = new CryptoAsset(marketUnit.getCoinID(), amount);
+
+                asset = new CryptoAsset(
+                        marketUnit.getCoinID(),
+                        amount,
+                        marketPrice * amount);
+
             } else {
+
                 float assetAmount = asset.getAmount() + amount;
                 asset.setAmount(assetAmount);
                 asset.setAmountName(
                         NumberFormatter.getDecimalWithCommas(assetAmount, 2) +
                                 " " + marketUnit.getCoinSymbol().toUpperCase());
+
+                asset.setAccumulatedPurchaseSum(
+                        asset.getAccumulatedPurchaseSum() + (amount * marketPrice));
             }
 
             coinBottomViewModel.saveCryptoAssetDB(asset);
-            limitPrice = marketUnit.getCurrentPrice();
+            limitPrice = marketPrice;
             limitEdit.setText(String.valueOf(limitPrice));
             completeOrder(amount, false);
             showConfirmationMessage("Buy Order Filled");
@@ -762,12 +773,18 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             float cryptoDifference = asset.getAmount() - amount;
 
             if(cryptoDifference > 0) {
+
                 asset.setAmount(cryptoDifference);
                 asset.setAmountName(
                         NumberFormatter.getDecimalWithCommas(cryptoDifference, 2) +
                         " " + marketUnit.getCoinSymbol().toUpperCase());
+                asset.setAccumulatedPurchaseSum(
+                        asset.getAccumulatedPurchaseSum() - (amount * asset.getAverageCostPerUnit()));
+
                 coinBottomViewModel.saveCryptoAssetDB(asset);
+
             } else {
+
                 coinBottomViewModel.deleteCryptoAssetDB(asset);
             }
 

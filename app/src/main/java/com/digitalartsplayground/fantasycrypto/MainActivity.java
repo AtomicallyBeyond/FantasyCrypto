@@ -349,8 +349,23 @@ public class MainActivity extends AppCompatActivity {
                     if(limitFilledTime > 0) {
 
                         if(limitOrder.isBuyOrder()) {
-                            CryptoAsset asset = new CryptoAsset(limitOrder.getCoinID(), limitOrder.getAmount());
-                            mainViewModel.saveCryptoAssetDB(asset);
+
+                            CryptoAsset asset = mainViewModel.getCryptoAsset(limitOrder.getCoinID());
+
+                            if(asset == null) {
+                                asset = new CryptoAsset(
+                                        limitOrder.getCoinID(),
+                                        limitOrder.getAmount(),
+                                        limitOrder.getValue() * limitOrder.getAmount());
+                                mainViewModel.saveCryptoAssetDB(asset);
+                            } else {
+                                mainViewModel.updateCryptoAsset(
+                                        limitOrder.getCoinID(),
+                                        limitOrder.getAmount(),
+                                        limitOrder.getValue() * limitOrder.getAmount());
+                            }
+
+
 
                         } else {
                             float balance = sharedPrefs.getBalance();
@@ -398,8 +413,23 @@ public class MainActivity extends AppCompatActivity {
                             if(limitOrder.isBuyOrder()) {
 
                                 if(marketPrice <= limitOrder.getLimitPrice()) {
-                                    CryptoAsset asset = new CryptoAsset(limitOrder.getCoinID(), limitOrder.getAmount());
-                                    mainViewModel.saveCryptoAssetDB(asset);
+
+                                    CryptoAsset asset = mainViewModel.getCryptoAsset(limitOrder.getCoinID());
+
+                                    if(asset == null) {
+                                        asset = new CryptoAsset(
+                                                limitOrder.getCoinID(),
+                                                limitOrder.getAmount(),
+                                                limitOrder.getValue() * limitOrder.getAmount());
+                                        mainViewModel.saveCryptoAssetDB(asset);
+                                    } else {
+                                        mainViewModel.updateCryptoAsset(
+                                                limitOrder.getCoinID(),
+                                                limitOrder.getAmount(),
+                                                limitOrder.getValue() * limitOrder.getAmount()
+                                        );
+                                    }
+
                                     updateLimit(limitOrder, marketUnit.getTimeStamp());
                                 }
 

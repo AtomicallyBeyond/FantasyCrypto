@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
+import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.robinhood.spark.SparkView;
 
 import org.jetbrains.annotations.NotNull;
@@ -51,28 +52,22 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
         holder.cryptoSymbol.setText(marketUnit.getCoinSymbol());
         holder.currentPrice.setText(marketUnit.getPriceName());
 
-        if(marketUnit.getOneDayPercentChange() != null){
-            if(Float.parseFloat(marketUnit.getOneDayPercentChange()) >= 0) {
-                holder.priceChange.setTextColor(Color.GREEN);
-            } else {
-                holder.priceChange.setTextColor(Color.RED);
-            }
 
-            String percentString = marketUnit.getOneDayPercentChange() + "%";
-            holder.priceChange.setText(percentString);
-
+        if(marketUnit.getOneDayPercentChange() >= 0) {
+            holder.priceChange.setTextColor(Color.GREEN);
         } else {
-            holder.priceChange.setText(" ");
+            holder.priceChange.setTextColor(Color.RED);
         }
 
+        holder.priceChange.setText(marketUnit.getSevenDayPercentString());
 
-        if(marketUnit.getSevenDayPercentChange() != null) {
-            if(Float.parseFloat(marketUnit.getSevenDayPercentChange()) >= 0) {
-                holder.chart.setLineColor(Color.CYAN);
-            } else {
-                holder.chart.setLineColor(Color.RED);
-            }
+
+        if(marketUnit.getSevenDayPercentChange() >= 0) {
+            holder.chart.setLineColor(Color.CYAN);
+        } else {
+            holder.chart.setLineColor(Color.RED);
         }
+
 
         ((SparkLineAdapter)holder.chart.getAdapter()).setData(marketUnit.getSparkLineData());
         holder.chart.invalidate();

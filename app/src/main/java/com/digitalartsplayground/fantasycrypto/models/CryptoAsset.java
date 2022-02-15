@@ -6,6 +6,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
+
 @Entity(tableName = "assets")
 public class CryptoAsset {
 
@@ -17,14 +19,32 @@ public class CryptoAsset {
     @ColumnInfo(name = "amount")
     private float amount;
 
+    @ColumnInfo(name = "accumulated_sum")
+    private float accumulatedPurchaseSum;
+
     @Ignore
     private float totalValue;
 
     @Ignore
-    private float percent;
+    private float portfolioPercent;
+
+    @Ignore
+    private float currentPrice;
+
+    @Ignore
+    float percent24hr;
+
+    @Ignore
+    String currentPriceString;
+
+    @Ignore
+    String costPerCoinString;
 
     @Ignore
     String fullName;
+
+    @Ignore
+    String shortName;
 
     @Ignore
     private String imageURL;
@@ -38,13 +58,17 @@ public class CryptoAsset {
     @Ignore
     String amountName;
 
+    @Ignore
+    boolean isOpened = false;
+
     public CryptoAsset(){
 
     }
 
-    public CryptoAsset(@NonNull String id, float amount) {
+    public CryptoAsset(@NonNull String id, float amount, float totalPurchaseValue) {
         this.id = id;
         this.amount = amount;
+        accumulatedPurchaseSum = totalPurchaseValue;
     }
 
     @NonNull
@@ -81,11 +105,7 @@ public class CryptoAsset {
     }
 
     public String getPercentString() {
-        return percentString;
-    }
-
-    public void setPercentString(String percentString) {
-        this.percentString = percentString;
+        return portfolioPercent + "%";
     }
 
     public String getTotalStringValue() {
@@ -110,13 +130,93 @@ public class CryptoAsset {
 
     public void setTotalValue(float totalValue) {
         this.totalValue = totalValue;
+        totalStringValue = "$" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
     }
 
-    public float getPercent() {
-        return percent;
+    public float getPortfolioPercent() {
+        return portfolioPercent;
     }
 
-    public void setPercent(float percent) {
-        this.percent = percent;
+    public void setPortfolioPercent(float portfolioPercent) {
+        this.portfolioPercent = portfolioPercent;
+    }
+
+    public float getAccumulatedPurchaseSum() {
+        return accumulatedPurchaseSum;
+    }
+
+    public void setAccumulatedPurchaseSum(float accumulatedPurchaseSum) {
+        this.accumulatedPurchaseSum = accumulatedPurchaseSum;
+        costPerCoinString = "$" +
+                NumberFormatter.getDecimalWithCommas(accumulatedPurchaseSum / amount, 2) +
+                " / " + shortName;
+    }
+
+    public float getAverageCostPerUnit() {
+        return accumulatedPurchaseSum / amount;
+    }
+
+    public String getAverageCostString() {
+        return costPerCoinString;
+    }
+
+    public float getGain() {
+        return totalValue - accumulatedPurchaseSum;
+    }
+
+    public float getGainPercent() {
+
+        float temp = (totalValue - accumulatedPurchaseSum) / accumulatedPurchaseSum;
+        temp = ((float)Math.round(temp * 100) / 100) * 100;
+        return temp;
+    }
+
+    public boolean isOpened() {
+        return isOpened;
+    }
+
+    public void setOpened(boolean opened) {
+        isOpened = opened;
+    }
+
+    public float getCurrentPrice() {
+        return currentPrice;
+    }
+
+    public void setCurrentPrice(float currentPrice) {
+        this.currentPrice = currentPrice;
+        currentPriceString = "$" + NumberFormatter.getDecimalWithCommas(currentPrice, 2);
+    }
+
+    public String getCurrentPriceString() {
+        return currentPriceString;
+    }
+
+    public float getPercent24hr() {
+        return percent24hr;
+    }
+
+    public void setPercent24hr(float percent24hr) {
+        this.percent24hr = percent24hr;
+    }
+
+    public String getCostPerCoinString() {
+        return costPerCoinString;
+    }
+
+    public void setCostPerCoinString(String costPerCoinString) {
+        this.costPerCoinString = costPerCoinString;
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    public void setPercentString(String percentString) {
+        this.percentString = percentString;
     }
 }

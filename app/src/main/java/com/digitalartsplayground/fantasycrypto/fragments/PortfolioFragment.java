@@ -166,13 +166,17 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             tempUnit = portfolioViewModel.fetchMarketUnit(asset.getId());
 
             asset.setFullName(tempUnit.getCoinName());
+            asset.setShortName(tempUnit.getCoinSymbol().toUpperCase());
             asset.setImageURL(tempUnit.getCoinImageURI());
             asset.setAmountName(NumberFormatter.getDecimalWithCommas(asset.getAmount(), 2) +
                     " "  + tempUnit.getCoinSymbol().toUpperCase());
+            asset.setCurrentPrice(tempUnit.getCurrentPrice());
+            asset.setPercent24hr(tempUnit.getOneDayPercentChange());
+
+
 
             tempPrice = tempUnit.getCurrentPrice() * asset.getAmount();
             asset.setTotalValue(tempPrice);
-            asset.setTotalStringValue(NumberFormatter.currency(tempPrice));
             totalAssetValue += tempPrice;
         }
 
@@ -181,8 +185,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         for(CryptoAsset asset : cryptoAssets) {
             tempPrice = (asset.getTotalValue() / totalAssetValue) * 100f;
             tempPrice = (float)Math.round(tempPrice * 100) / 100;
-            asset.setPercent(tempPrice);
-            asset.setPercentString(tempPrice + "%");
+            asset.setPortfolioPercent(tempPrice);
         }
 
         AppExecutors.getInstance().mainThread().execute(new Runnable() {
@@ -239,7 +242,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         for(CryptoAsset asset : cryptoAssets) {
 
-            PieEntry pieEntry = new PieEntry(asset.getPercent(), asset.getFullName());
+            PieEntry pieEntry = new PieEntry(asset.getPortfolioPercent(), asset.getFullName());
             pieEntries.add(pieEntry);
         }
 

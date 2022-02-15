@@ -350,7 +350,7 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
     };
 
     @Override
-    public void onOrderClicked(LimitOrder limitOrder, int position) {
+    public void onOrderDelete(LimitOrder limitOrder, int position) {
 
         SharedPrefs sharedPrefs = SharedPrefs.getInstance(getContext());
 
@@ -362,7 +362,10 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
                     if(limitOrder.isBuyOrder()) {
                         sharedPrefs.setBalance(sharedPrefs.getBalance() + limitOrder.getValue());
                     } else {
-                        ordersViewModel.updateCryptoAsset(limitOrder.getCoinID(), limitOrder.getAmount());
+                        ordersViewModel.updateCryptoAsset(
+                                limitOrder.getCoinID(),
+                                limitOrder.getAmount(),
+                                limitOrder.getValue() * limitOrder.getAmount());
                     }
 
                     ordersViewModel.deleteLimit(limitOrder.getCoinID(), limitOrder.getTimeCreated());

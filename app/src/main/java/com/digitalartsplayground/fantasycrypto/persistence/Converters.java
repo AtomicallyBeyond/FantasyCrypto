@@ -54,4 +54,15 @@ public class Converters {
     public static long toLong(String longString) {
         return Long.parseLong(longString);
     }
+
+    @TypeConverter
+    public static String fromFloat(float value) {
+        return String.valueOf(value);
+    }
+
+    //need to figure out what to do if longString == null
+    @TypeConverter
+    public static float toFloat(String longString) {
+        return Float.parseFloat(longString);
+    }
 }

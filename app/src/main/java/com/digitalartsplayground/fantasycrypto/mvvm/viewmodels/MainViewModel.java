@@ -142,6 +142,14 @@ public class MainViewModel extends AndroidViewModel {
         repository.addCryptoAsset(cryptoAsset);
     }
 
+    public void updateCryptoAsset(String coinID, float amount, float value) {
+        repository.updateCryptoAsset(coinID, amount, value);
+    }
+
+    public CryptoAsset getCryptoAsset(String coinID) {
+        return repository.getCryptoAsset(coinID);
+    }
+
     public void fetchCandleStickData(String id, String days) {
 
         LiveData<Resource<CandleStickData>> liveData = repository.getCandleStickData(id, "usd", days);

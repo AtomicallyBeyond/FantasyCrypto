@@ -170,7 +170,7 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.ViewHolder
         if(!positionsToDelete.isEmpty() && isPositionToDelete) {
 
             for(int position : positionsToDelete.keySet()) {
-                clickedListener.onOrderClicked(ordersList.get(position), position);
+                clickedListener.onOrderDelete(ordersList.get(position), position);
             }
 
             ordersList.removeAll(positionsToDelete.values());

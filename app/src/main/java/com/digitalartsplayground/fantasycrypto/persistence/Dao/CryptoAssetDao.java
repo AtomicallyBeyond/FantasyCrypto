@@ -21,11 +21,14 @@ public interface CryptoAssetDao{
     List<CryptoAsset> getAllAssets();
 
     @Query("SELECT * FROM assets WHERE id=:id")
-    LiveData<CryptoAsset> getCryptoAsset(String id);
+    LiveData<CryptoAsset> getLiveCryptoAsset(String id);
+
+    @Query("SELECT * FROM assets WHERE id=:id")
+    CryptoAsset getCryptoAsset(String id);
 
     @Query("DELETE FROM assets WHERE id = :coinId")
     void deleteAsset(String coinId);
 
-    @Query("UPDATE assets SET amount = amount + :amount WHERE id =:id")
-    void updateAmount(String id, float amount);
+    @Query("UPDATE assets SET amount = amount + :amount AND accumulated_sum + :value WHERE id =:id")
+    void updateAmount(String id, float amount, float value);
 }

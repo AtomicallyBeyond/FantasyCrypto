@@ -112,8 +112,8 @@ public class Repository {
     }
 
 
-    public void updateCryptoAsset(String coinID, float amount) {
-        cryptoAssetDao.updateAmount(coinID, amount);
+    public void updateCryptoAsset(String coinID, float amount, float value) {
+        cryptoAssetDao.updateAmount(coinID, amount, value);
     }
 
     public void addCryptoAsset(CryptoAsset cryptoAsset) {
@@ -140,7 +140,11 @@ public class Repository {
         return cryptoAssetDao.getAllAssets();
     }
 
-    public LiveData<CryptoAsset> getCryptoAsset(String coinID) {
+    public LiveData<CryptoAsset> getLiveCryptoAsset(String coinID) {
+        return cryptoAssetDao.getLiveCryptoAsset(coinID);
+    }
+
+    public CryptoAsset getCryptoAsset(String coinID) {
         return cryptoAssetDao.getCryptoAsset(coinID);
     }
 
@@ -300,13 +304,8 @@ public class Repository {
 
                 MarketUnit marketUnit = (MarketUnit) response.getBody();
                 if(marketUnit != null) {
-                    if(marketUnit.getOneDayPercentChange() == null) {
-                        marketUnit.setOneDayPercentChange("0");
-                    }
                     marketUnit.setTimeStamp(System.currentTimeMillis());
-
                     marketDao.updateMarketUnits(marketUnit);
-
                     return marketUnit;
                 }
 
