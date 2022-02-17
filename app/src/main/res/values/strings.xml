@@ -1,11 +1,10 @@
 <resources>
     <string name="app_name">Fantasy Crypto</string>
     <!--app_id-->
-    <string name="app_id" translatable="false">910179096253</string>
+    <string name="app_id" translatable="false">469787253431</string>
     <!--package_name-->
-    <string name="package_name" translatable="false">com.digitalartsplayground.fantasycrypto</string>
     <!--leaderboard Fantasy Crypto-->
-    <string name="leaderboard_fantasy_crypto" translatable="false">CgkIva2b174aEAIQBA</string>
+    <string name="leaderboard_fantasy_crypto" translatable="false">CgkIt7WCjNYNEAIQAQ</string>
 
     <string-array name="tradingTypes">
         <item>Market</item>

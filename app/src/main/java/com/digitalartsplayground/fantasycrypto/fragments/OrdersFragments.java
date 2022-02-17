@@ -27,12 +27,14 @@ import com.digitalartsplayground.fantasycrypto.MainActivity;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.adapters.OrdersAdapter;
 import com.digitalartsplayground.fantasycrypto.interfaces.OrderClickedListener;
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.OrdersFragmentViewModel;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.tabs.TabLayout;
+import com.ironsource.mediationsdk.C;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.model.Placement;
@@ -210,8 +212,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         Toolbar toolbar = view.findViewById(R.id.orders_toolbar);
         ((MainActivity)requireActivity()).setSupportActionBar(toolbar);
         setHasOptionsMenu(true);
-
-        showRewardDialog();
     }
 
 
@@ -362,14 +362,23 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
                     if(limitOrder.isBuyOrder()) {
                         sharedPrefs.setBalance(sharedPrefs.getBalance() + limitOrder.getValue());
                     } else {
-                        ordersViewModel.updateCryptoAsset(
-                                limitOrder.getCoinID(),
-                                limitOrder.getAmount(),
-                                limitOrder.getValue() * limitOrder.getAmount());
+
+                        CryptoAsset asset = ordersViewModel.getAsset(limitOrder.getCoinID());
+
+                        if(asset == null) {
+
+                            asset = new CryptoAsset(limitOrder.getCoinID(), limitOrder.getAmount(), limitOrder.getAccumulatedPurchaseSum());
+                            ordersViewModel.addAsset(asset);
+
+                        } else {
+                            ordersViewModel.updateCryptoAsset(
+                                    limitOrder.getCoinID(),
+                                    limitOrder.getAmount(),
+                                    limitOrder.getAccumulatedPurchaseSum());
+                        }
                     }
 
                     ordersViewModel.deleteLimit(limitOrder.getCoinID(), limitOrder.getTimeCreated());
-
                 }
             }
         });

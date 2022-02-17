@@ -774,12 +774,13 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
             if(cryptoDifference > 0) {
 
+                float accumulatedDiff = asset.getAccumulatedPurchaseSum() - amount * asset.getAverageCostPerUnit();
+                asset.setAccumulatedPurchaseSum(accumulatedDiff);
+
                 asset.setAmount(cryptoDifference);
                 asset.setAmountName(
                         NumberFormatter.getDecimalWithCommas(cryptoDifference, 2) +
-                        " " + marketUnit.getCoinSymbol().toUpperCase());
-                asset.setAccumulatedPurchaseSum(
-                        asset.getAccumulatedPurchaseSum() - (amount * asset.getAverageCostPerUnit()));
+                                " " + marketUnit.getCoinSymbol().toUpperCase());
 
                 coinBottomViewModel.saveCryptoAssetDB(asset);
 
@@ -838,6 +839,10 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
                         isMarketOrder,
                         isActive,
                         tempTime);
+
+        if(!isBuyOrder) {
+            limitOrder.setAccumulatedPurchaseSum(amount * asset.getAverageCostPerUnit());
+        }
 
         coinBottomViewModel.addLimitOrder(limitOrder);
     }

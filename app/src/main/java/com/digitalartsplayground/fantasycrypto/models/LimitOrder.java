@@ -61,6 +61,9 @@ public class LimitOrder {
     @ColumnInfo(name = "candle_check_time")
     private long candleCheckTime;
 
+    @ColumnInfo(name = "accumulated_purchase_sum")
+    private float accumulatedPurchaseSum;
+
     @Ignore
     private boolean isSelected = false;
 
@@ -82,6 +85,7 @@ public class LimitOrder {
         this.coinSymbol = coinSymbol;
         this.limitPrice = limitPrice;
         this.amount = amount;
+        this.accumulatedPurchaseSum = accumulatedPurchaseSum;
         this.isBuyOrder = isBuyOrder;
         this.isMarketOrder = isMarketOrder;
         this.isActive = isActive;
@@ -223,5 +227,13 @@ public class LimitOrder {
 
     public void setSelected(boolean selected) {
         isSelected = selected;
+    }
+
+    public float getAccumulatedPurchaseSum() {
+        return accumulatedPurchaseSum;
+    }
+
+    public void setAccumulatedPurchaseSum(float accumulatedPurchaseSum) {
+        this.accumulatedPurchaseSum = accumulatedPurchaseSum;
     }
 }

@@ -29,6 +29,6 @@ public interface CryptoAssetDao{
     @Query("DELETE FROM assets WHERE id = :coinId")
     void deleteAsset(String coinId);
 
-    @Query("UPDATE assets SET amount = amount + :amount AND accumulated_sum + :value WHERE id =:id")
+    @Query("UPDATE assets SET amount = amount + :amount , accumulated_sum = accumulated_sum + :value WHERE id =:id")
     void updateAmount(String id, float amount, float value);
 }

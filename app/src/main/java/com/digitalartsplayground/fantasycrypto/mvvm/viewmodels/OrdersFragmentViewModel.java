@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+
+import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 import org.jetbrains.annotations.NotNull;
@@ -62,5 +64,13 @@ public class OrdersFragmentViewModel extends AndroidViewModel {
 
     public void setDeleteState(boolean deleteState) {
         isDeleteState = deleteState;
+    }
+
+    public CryptoAsset getAsset(String coinID) {
+        return repository.getCryptoAsset(coinID);
+    }
+
+    public void addAsset(CryptoAsset asset) {
+        repository.addCryptoAsset(asset);
     }
 }

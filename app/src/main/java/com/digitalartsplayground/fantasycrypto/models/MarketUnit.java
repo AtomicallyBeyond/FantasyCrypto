@@ -85,7 +85,7 @@ public class MarketUnit {
     @SerializedName("price_change_percentage_24h_in_currency")
     @Expose
     @ColumnInfo(name = "one_day_percent_change")
-    private float oneDayPercentChange = "0";
+    private float oneDayPercentChange;
 
     @Ignore
     private String onDayPercentString;
@@ -94,9 +94,6 @@ public class MarketUnit {
     @Expose
     @ColumnInfo(name = "seven_day_percent_change")
     private float sevenDayPercentChange;
-
-    @Ignore
-    private String sevenDayPercentString;
 
     @SerializedName("sparkline_in_7d")
     @Expose
@@ -152,6 +149,7 @@ public class MarketUnit {
     }
 
     public void setOneDayPercentChange(float oneDayPercentChange) {
+        this.oneDayPercentChange = oneDayPercentChange;
         onDayPercentString = NumberFormatter.getDecimalWithCommas(oneDayPercentChange, 2) + "%";
     }
 
@@ -249,11 +247,8 @@ public class MarketUnit {
         return sevenDayPercentChange;
     }
 
-    public String getSevenDayPercentString() {return sevenDayPercentString;}
-
     public void setSevenDayPercentChange(float sevenDayPercentChange) {
         this.sevenDayPercentChange = sevenDayPercentChange;
-        sevenDayPercentString = NumberFormatter.getDecimalWithCommas(sevenDayPercentChange, 2) + "%";
     }
 }
 

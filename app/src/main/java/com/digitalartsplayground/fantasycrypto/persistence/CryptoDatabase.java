@@ -15,7 +15,7 @@ import com.digitalartsplayground.fantasycrypto.persistence.Dao.DeveloperDao;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.MarketDao;
 
 
-@Database(entities = {MarketUnit.class, CryptoAsset.class, DeveloperUnit.class, LimitOrder.class}, version = 1)
+@Database(entities = {MarketUnit.class, CryptoAsset.class, DeveloperUnit.class, LimitOrder.class}, version = 2)
 @TypeConverters({Converters.class})
 public abstract class CryptoDatabase extends RoomDatabase {
 
@@ -29,6 +29,7 @@ public abstract class CryptoDatabase extends RoomDatabase {
                     context.getApplicationContext(),
                     CryptoDatabase.class,
                     DATABASE_NAME)
+                    .fallbackToDestructiveMigration()
                     .build();
         }
         return instance;

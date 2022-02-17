@@ -8,4 +8,10 @@
         android:title="Reset Game"
         app:showAsAction="never"/>
 
+    <item
+        android:id="@+id/telegram_option"
+        android:icon="@drawable/ic_telegram_icon"
+        android:title="Telegram"
+        app:showAsAction="never"/>
+
 </menu>

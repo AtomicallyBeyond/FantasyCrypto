@@ -71,7 +71,6 @@ public class RewardDialogFragment extends DialogFragment {
     @org.jetbrains.annotations.Nullable
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        @SuppressLint("InflateParams")
         View view = inflater.inflate(R.layout.reward_layout, null);
         closeButton = view.findViewById(R.id.reward_close_button);
         amount = view.findViewById(R.id.reward_amount);

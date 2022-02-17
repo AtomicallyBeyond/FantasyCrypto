@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -67,6 +68,29 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
 
         holder.coinName.setText(tempAsset.getFullName());
         holder.coinAmount.setText(tempAsset.getAmountName());
+        holder.currentPrice.setText(tempAsset.getCurrentPriceString());
+
+        String oneDayPercentString = tempAsset.getOneDayPercentString();
+
+        if(tempAsset.getOneDayPercent() >= 0) {
+            holder.oneDayPercent.setTextColor(Color.GREEN);
+            oneDayPercentString = "+" + oneDayPercentString;
+        } else {
+            holder.oneDayPercent.setTextColor(Color.RED);
+            oneDayPercentString = "-" + oneDayPercentString;
+        }
+
+        holder.oneDayPercent.setText(oneDayPercentString);
+
+        if(tempAsset.isOpened()) {
+            holder.bindItem(tempAsset);
+        } else {
+            if(holder.bottomContainer.getVisibility() == View.VISIBLE) {
+                holder.closedArrow.setVisibility(View.VISIBLE);
+                holder.openArrow.setVisibility(View.GONE);
+                holder.bottomContainer.setVisibility(View.GONE);
+            }
+        }
 
     }
 
@@ -87,15 +111,20 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         ConstraintLayout bottomContainer;
+
+        AppCompatImageView closedArrow;
+        AppCompatImageView openArrow;
+
         ImageView coinImage;
         TextView coinName;
         TextView coinAmount;
         TextView currentPrice;
-        TextView percent24h;
+        TextView oneDayPercent;
 
         TextView totalValue;
         TextView portfolioPercent;
         TextView costPerCoin;
+        TextView gain;
         TextView gainPercent;
 
 
@@ -106,15 +135,19 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
 
             bottomContainer = itemView.findViewById(R.id.portfolio_item_bottom_container);
 
+            closedArrow = itemView.findViewById(R.id.portfolio_item_closed_arrow);
+            openArrow = itemView.findViewById(R.id.portfolio_item_open_arrow);
+
             coinImage = itemView.findViewById(R.id.portfolio_item_coinView);
             coinName = itemView.findViewById(R.id.portfolio_item_coinName);
             coinAmount = itemView.findViewById(R.id.portfolio_item_coin_amount);
             currentPrice = itemView.findViewById(R.id.portfolio_item_current_price);
-            percent24h = itemView.findViewById(R.id.portfolio_item_24h_percent);
+            oneDayPercent = itemView.findViewById(R.id.portfolio_item_24h_percent);
 
             totalValue = itemView.findViewById(R.id.portfolio_item_total_value);
-            portfolioPercent = itemView.findViewById(R.id.portfolio_item_percent);
+            portfolioPercent = itemView.findViewById(R.id.portfolio_item_value_percent);
             costPerCoin = itemView.findViewById(R.id.portfolio_item_cost_per_coin);
+            gain = itemView.findViewById(R.id.portfolio_item_gain);
             gainPercent = itemView.findViewById(R.id.portfolio_item_gain_percent);
 
             setOnClickListener(itemView);
@@ -125,12 +158,20 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
                 @Override
                 public void onClick(View view) {
 
-                    CryptoAsset tempAsset = cryptoAssets.get(getLayoutPosition());
+                    int position = getLayoutPosition();
+                    CryptoAsset asset = cryptoAssets.get(position);
 
-                    if(tempAsset.isOpened()) {
+                    if(asset.isOpened()) {
+                        asset.setOpened(false);
+                        closedArrow.setVisibility(View.VISIBLE);
+                        openArrow.setVisibility(View.GONE);
                         bottomContainer.setVisibility(View.GONE);
                     } else {
-                        bindItem(tempAsset);
+                        asset.setOpened(true);
+                        closedArrow.setVisibility(View.GONE);
+                        openArrow.setVisibility(View.VISIBLE);
+                        bottomContainer.setVisibility(View.VISIBLE);
+                        bindItem(asset);
                     }
 
 /*                    itemClickedListener.onItemClicked(
@@ -141,25 +182,32 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
 
         protected void bindItem(CryptoAsset cryptoAsset) {
             cryptoAsset.setOpened(true);
+
+            closedArrow.setVisibility(View.GONE);
+            openArrow.setVisibility(View.VISIBLE);
             bottomContainer.setVisibility(View.VISIBLE);
 
+
             totalValue.setText(cryptoAsset.getTotalStringValue());
-            portfolioPercent.setText(cryptoAsset.getPercentString());
-            costPerCoin.setText(cryptoAsset.getAverageCostString());
+            portfolioPercent.setText(cryptoAsset.getPortfolioPercentString());
 
-            String gainString;
-            float gain = tempAsset.getGain();
-            float percent = tempAsset.getGainPercent();
+            String costString = cryptoAsset.getAverageCostString() + " / " + cryptoAsset.getShortName();
+            costPerCoin.setText(costString);
 
-            if(percent >= 0) {
-                gainString = "$" + NumberFormatter.getDecimalWithCommas(gain, 2) + "  +" + percent + "%";
+            String gainString = "$" + NumberFormatter.getDecimalWithCommas(cryptoAsset.getGain(), 2);
+            gain.setText(gainString);
+
+            String gainPercentString = NumberFormatter.getDecimalWithCommas(cryptoAsset.getGainPercent(), 2) + "%";
+
+            if(cryptoAsset.getGainPercent() >= 0) {
+                gainPercentString = "+" + gainPercentString;
                 gainPercent.setTextColor(Color.GREEN);
             } else {
-                gainString = "$" + NumberFormatter.getDecimalWithCommas(gain, 2) + " -" + percent + "%";
+                gainPercentString = "-" + gainPercentString;
                 gainPercent.setTextColor(Color.RED);
             }
 
-            gainPercent.setText(gainString);
+            gainPercent.setText(gainPercentString);
         }
     }
 }

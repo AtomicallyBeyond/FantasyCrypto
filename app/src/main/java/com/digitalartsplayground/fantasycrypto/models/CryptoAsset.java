@@ -26,40 +26,44 @@ public class CryptoAsset {
     private float totalValue;
 
     @Ignore
-    private float portfolioPercent;
-
-    @Ignore
     private float currentPrice;
 
     @Ignore
-    float percent24hr;
+    private float portfolioPercent;
 
     @Ignore
-    String currentPriceString;
+    private float oneDayPercent;
 
     @Ignore
-    String costPerCoinString;
+    private String fullName = " ";
 
     @Ignore
-    String fullName;
+    private String shortName = " ";
 
     @Ignore
-    String shortName;
+    private String imageURL = " ";
 
     @Ignore
-    private String imageURL;
+    private String currentPriceString = " ";
 
     @Ignore
-    String percentString;
+    private String costPerCoinString = " ";
 
     @Ignore
-    String totalStringValue;
+    private String totalStringValue = " ";
 
     @Ignore
-    String amountName;
+    private String amountName = " ";
+
+    @Ignore
+    private String portfolioPercentString = " ";
+
+    @Ignore
+    private String oneDayPercentString = " ";
 
     @Ignore
     boolean isOpened = false;
+
 
     public CryptoAsset(){
 
@@ -104,10 +108,6 @@ public class CryptoAsset {
         this.imageURL = imageURL;
     }
 
-    public String getPercentString() {
-        return portfolioPercent + "%";
-    }
-
     public String getTotalStringValue() {
         return totalStringValue;
     }
@@ -133,13 +133,7 @@ public class CryptoAsset {
         totalStringValue = "$" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
     }
 
-    public float getPortfolioPercent() {
-        return portfolioPercent;
-    }
 
-    public void setPortfolioPercent(float portfolioPercent) {
-        this.portfolioPercent = portfolioPercent;
-    }
 
     public float getAccumulatedPurchaseSum() {
         return accumulatedPurchaseSum;
@@ -148,8 +142,7 @@ public class CryptoAsset {
     public void setAccumulatedPurchaseSum(float accumulatedPurchaseSum) {
         this.accumulatedPurchaseSum = accumulatedPurchaseSum;
         costPerCoinString = "$" +
-                NumberFormatter.getDecimalWithCommas(accumulatedPurchaseSum / amount, 2) +
-                " / " + shortName;
+                NumberFormatter.getDecimalWithCommas(accumulatedPurchaseSum / amount, 2);
     }
 
     public float getAverageCostPerUnit() {
@@ -166,8 +159,7 @@ public class CryptoAsset {
 
     public float getGainPercent() {
 
-        float temp = (totalValue - accumulatedPurchaseSum) / accumulatedPurchaseSum;
-        temp = ((float)Math.round(temp * 100) / 100) * 100;
+        float temp = ((totalValue - accumulatedPurchaseSum) / totalValue) * 100;
         return temp;
     }
 
@@ -192,13 +184,7 @@ public class CryptoAsset {
         return currentPriceString;
     }
 
-    public float getPercent24hr() {
-        return percent24hr;
-    }
 
-    public void setPercent24hr(float percent24hr) {
-        this.percent24hr = percent24hr;
-    }
 
     public String getCostPerCoinString() {
         return costPerCoinString;
@@ -216,7 +202,31 @@ public class CryptoAsset {
         this.shortName = shortName;
     }
 
-    public void setPercentString(String percentString) {
-        this.percentString = percentString;
+
+
+    public float getPortfolioPercent() {
+        return portfolioPercent;
+    }
+
+    public void setPortfolioPercent(float portfolioPercent) {
+        this.portfolioPercent = portfolioPercent;
+        portfolioPercentString = NumberFormatter.getDecimalWithCommas(portfolioPercent, 1) + "%";
+    }
+
+    public String getPortfolioPercentString() {
+        return portfolioPercentString;
+    }
+
+    public float getOneDayPercent() {
+        return oneDayPercent;
+    }
+
+    public void setOneDayPercent(float percent24hr) {
+        this.oneDayPercent = percent24hr;
+        oneDayPercentString = NumberFormatter.getDecimalWithCommas(percent24hr, 2) + "%";
+    }
+
+    public String getOneDayPercentString() {
+        return oneDayPercentString;
     }
 }

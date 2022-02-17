@@ -1,15 +1,11 @@
 package com.digitalartsplayground.fantasycrypto;
 
-import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,6 +22,7 @@ import com.digitalartsplayground.fantasycrypto.fragments.LeaderBoardFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.MarketFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.OrdersFragments;
 import com.digitalartsplayground.fantasycrypto.fragments.PortfolioFragment;
+import com.digitalartsplayground.fantasycrypto.fragments.TelegramDialogFragment;
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
@@ -98,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        IronSource.onResume(this);
+/*        IronSource.onResume(this);
         loadIronSourceBanner();
-        checkAdServingTimeLimit();
+        checkAdServingTimeLimit();*/
 
         long marketTime = sharedPrefs.getMarketDataTimeStamp();
         boolean fetchFromServer = (System.currentTimeMillis() - marketTime) > Constants.FETCH_TIME_CONSTANT;
@@ -120,20 +117,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        destroyBanner();
-        IronSource.onPause(this);
+/*        destroyBanner();
+        IronSource.onPause(this);*/
         scheduleTaskExecutor.shutdown();
     }
 
     private void init() {
 
-        initIronSource();
+        //initIronSource();
 
         boolean isFirstTime = sharedPrefs.getIsFirstTime();
         if(isFirstTime) {
             sharedPrefs.setBalance(10000);
             sharedPrefs.setFirstTime(false);
             sharedPrefs.setCleanMarketTime(System.currentTimeMillis());
+
+            TelegramDialogFragment telegramDialogFragment = TelegramDialogFragment.getInstance();
+            telegramDialogFragment.show(getSupportFragmentManager(), "Telegram");
+
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
@@ -356,13 +357,13 @@ public class MainActivity extends AppCompatActivity {
                                 asset = new CryptoAsset(
                                         limitOrder.getCoinID(),
                                         limitOrder.getAmount(),
-                                        limitOrder.getValue() * limitOrder.getAmount());
+                                        limitOrder.getAccumulatedPurchaseSum());
                                 mainViewModel.saveCryptoAssetDB(asset);
                             } else {
                                 mainViewModel.updateCryptoAsset(
                                         limitOrder.getCoinID(),
                                         limitOrder.getAmount(),
-                                        limitOrder.getValue() * limitOrder.getAmount());
+                                        limitOrder.getAccumulatedPurchaseSum());
                             }
 
 
@@ -420,13 +421,13 @@ public class MainActivity extends AppCompatActivity {
                                         asset = new CryptoAsset(
                                                 limitOrder.getCoinID(),
                                                 limitOrder.getAmount(),
-                                                limitOrder.getValue() * limitOrder.getAmount());
+                                                limitOrder.getAccumulatedPurchaseSum());
                                         mainViewModel.saveCryptoAssetDB(asset);
                                     } else {
                                         mainViewModel.updateCryptoAsset(
                                                 limitOrder.getCoinID(),
                                                 limitOrder.getAmount(),
-                                                limitOrder.getValue() * limitOrder.getAmount()
+                                                limitOrder.getAccumulatedPurchaseSum()
                                         );
                                     }
 

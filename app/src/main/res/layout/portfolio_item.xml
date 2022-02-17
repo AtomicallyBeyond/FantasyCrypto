@@ -71,7 +71,7 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="4dp"
             android:text="+0.52%"
-            android:textColor="@color/white"
+            android:textColor="#00FF00"
             android:textSize="12sp"
             app:layout_constraintStart_toEndOf="@+id/portfolio_item_current_price"
             app:layout_constraintTop_toBottomOf="@+id/portfolio_item_coinName" />
@@ -220,13 +220,25 @@
             app:layout_constraintTop_toBottomOf="@+id/portfolio_item_cost_per_coin"/>
 
         <TextView
+            android:id="@+id/portfolio_item_gain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="$2,014.12"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@+id/portfolio_item_gain_percent_title"
+            app:layout_constraintEnd_toStartOf="@+id/portfolio_item_gain_percent"
+            app:layout_constraintTop_toBottomOf="@+id/portfolio_item_gain_percent_title"/>
+
+        <TextView
             android:id="@+id/portfolio_item_gain_percent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="$2014.12  +10.14%"
+            android:layout_marginStart="4dp"
+            android:text="+10.14%"
             android:textColor="#00FF00"
             android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="@+id/portfolio_item_gain_percent_title"
+            app:layout_constraintStart_toEndOf="@+id/portfolio_item_gain"
             app:layout_constraintEnd_toEndOf="@+id/portfolio_item_gain_percent_title"
             app:layout_constraintTop_toBottomOf="@+id/portfolio_item_gain_percent_title"/>
 

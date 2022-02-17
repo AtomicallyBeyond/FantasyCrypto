@@ -2,6 +2,7 @@ package com.digitalartsplayground.fantasycrypto.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -111,6 +112,10 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
             progressBar.setVisibility(View.VISIBLE);
             loadingTextView.setVisibility(View.VISIBLE);
             resetGame();
+        } else if(item.getItemId() == R.id.telegram_option) {
+            Uri uri = Uri.parse("https://t.me/fantasy_crypto");
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
         }
 
 

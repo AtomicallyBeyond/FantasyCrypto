@@ -171,7 +171,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             asset.setAmountName(NumberFormatter.getDecimalWithCommas(asset.getAmount(), 2) +
                     " "  + tempUnit.getCoinSymbol().toUpperCase());
             asset.setCurrentPrice(tempUnit.getCurrentPrice());
-            asset.setPercent24hr(tempUnit.getOneDayPercentChange());
+            asset.setOneDayPercent(tempUnit.getOneDayPercentChange());
 
 
 
