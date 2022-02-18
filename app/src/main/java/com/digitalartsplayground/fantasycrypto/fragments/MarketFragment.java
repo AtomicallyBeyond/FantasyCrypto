@@ -140,7 +140,8 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
                     @Override
                     public void run() {
                         marketViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
-                        marketBalance.setText(NumberFormatter.currency(10000));
+                        String balanceString = "$" + NumberFormatter.getDecimalWithCommas(10000, 2);
+                        marketBalance.setText(balanceString);
                     }
                 });
             }
@@ -152,7 +153,8 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
     public void onResume() {
         super.onResume();
         float balance = sharedPrefs.getBalance();
-        marketBalance.setText(NumberFormatter.currency(balance));
+        String balanceString = NumberFormatter.getDecimalWithCommas(balance, 2);
+        marketBalance.setText(balanceString);
     }
 
     @Override

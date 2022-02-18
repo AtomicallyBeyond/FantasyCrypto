@@ -95,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-/*        IronSource.onResume(this);
+        IronSource.onResume(this);
         loadIronSourceBanner();
-        checkAdServingTimeLimit();*/
+        checkAdServingTimeLimit();
 
         long marketTime = sharedPrefs.getMarketDataTimeStamp();
         boolean fetchFromServer = (System.currentTimeMillis() - marketTime) > Constants.FETCH_TIME_CONSTANT;
@@ -117,14 +117,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-/*        destroyBanner();
-        IronSource.onPause(this);*/
+        destroyBanner();
+        IronSource.onPause(this);
         scheduleTaskExecutor.shutdown();
     }
 
     private void init() {
 
-        //initIronSource();
+        initIronSource();
 
         boolean isFirstTime = sharedPrefs.getIsFirstTime();
         if(isFirstTime) {

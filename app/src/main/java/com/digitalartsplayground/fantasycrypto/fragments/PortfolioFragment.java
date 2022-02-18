@@ -128,7 +128,8 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         else
             tempBalance = SharedPrefs.getInstance(getContext()).getBalance();
 
-        balance.setText(NumberFormatter.currency(tempBalance));
+        String balanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
+        balance.setText(balanceString);
         updatePortfolioWithAssets();
     }
 
@@ -351,8 +352,10 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             tempBalance += rewardAmount;
             totalValue +=rewardAmount;
 
-            balance.setText("$" + tempBalance);
-            total.setText("$" + totalAssetValue);
+            String tempBalanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
+            String totalValueString = "$" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
+            balance.setText(tempBalanceString);
+            total.setText(totalValueString);
         }
         /* Invoked when RewardedVideo call to show a rewarded video has failed
          * IronSourceError contains the reason for the failure.

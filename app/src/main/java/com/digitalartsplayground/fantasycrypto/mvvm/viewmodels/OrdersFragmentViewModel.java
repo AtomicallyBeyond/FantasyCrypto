@@ -19,8 +19,6 @@ public class OrdersFragmentViewModel extends AndroidViewModel {
     private final Repository repository;
     private boolean isDeleteState = false;
     private final MediatorLiveData<Boolean> liveActiveOrdersState = new MediatorLiveData<>();
-    private final MediatorLiveData<List<LimitOrder>> liveActiveOrders = new MediatorLiveData<>();
-    private final MediatorLiveData<List<LimitOrder>> liveFilledOrders = new MediatorLiveData<>();
 
     public OrdersFragmentViewModel(@NonNull @NotNull Application application) {
         super(application);

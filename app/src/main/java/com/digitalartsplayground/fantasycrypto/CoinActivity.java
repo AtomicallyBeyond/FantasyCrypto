@@ -80,8 +80,8 @@ public class CoinActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-/*        IronSource.onResume(this);
-        loadIronSourceBanner();*/
+        IronSource.onResume(this);
+        loadIronSourceBanner();
         checkAdServingTimeLimit();
 
         if(SharedPrefs.getInstance(this).getMarketDataTimeStamp()  > Constants.FETCH_TIME_CONSTANT) {
@@ -92,8 +92,8 @@ public class CoinActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-/*        IronSource.onPause(this);
-        destroyBanner();*/
+        IronSource.onPause(this);
+        destroyBanner();
     }
 
     @Override
@@ -125,7 +125,8 @@ public class CoinActivity extends AppCompatActivity {
     }
 
     private void loadIronSourceBanner() {
-/*        if(banner == null || banner.isDestroyed()) {
+
+        if(banner == null || banner.isDestroyed()) {
             if(counter < 5) {
                 banner = IronSource.createBanner(this, ISBannerSize.SMART);
                 coinBannerContainer.addView(banner);
@@ -135,12 +136,12 @@ public class CoinActivity extends AppCompatActivity {
                     banner.setBannerListener(bannerListener);
                 }
             }
-        }*/
+        }
     }
 
     private void init() {
 
-        //IronSource.init(this, "133802ab1",IronSource.AD_UNIT.BANNER);
+        IronSource.init(this, "133802ab1",IronSource.AD_UNIT.BANNER);
 
         coinID = getIntent().getStringExtra(EXTRA_ID);
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
