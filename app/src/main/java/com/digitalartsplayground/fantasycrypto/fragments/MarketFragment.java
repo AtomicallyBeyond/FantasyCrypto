@@ -35,8 +35,6 @@ import com.digitalartsplayground.fantasycrypto.util.Constants;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
@@ -124,11 +122,11 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
 
     private void resetGame() {
 
+        (getActivity().findViewById(R.id.bottomNavigationView)).setVisibility(View.INVISIBLE);
+
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
-
-                (getActivity().findViewById(R.id.bottomNavigationView)).setVisibility(View.INVISIBLE);
                 sharedPrefs.setBalance(10000);
                 sharedPrefs.setSchedulerTime(0);
                 sharedPrefs.setLimitUpdateTime(0);

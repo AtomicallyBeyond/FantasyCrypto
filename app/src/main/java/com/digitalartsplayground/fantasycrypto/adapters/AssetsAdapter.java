@@ -111,6 +111,7 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         ConstraintLayout bottomContainer;
+        View invisibleButton;
 
         AppCompatImageView closedArrow;
         AppCompatImageView openArrow;
@@ -134,6 +135,7 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
             super(itemView);
 
             bottomContainer = itemView.findViewById(R.id.portfolio_item_bottom_container);
+            invisibleButton = itemView.findViewById(R.id.portfolio_item_invisible_button);
 
             closedArrow = itemView.findViewById(R.id.portfolio_item_closed_arrow);
             openArrow = itemView.findViewById(R.id.portfolio_item_open_arrow);
@@ -173,9 +175,14 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
                         bottomContainer.setVisibility(View.VISIBLE);
                         bindItem(asset);
                     }
+                }
+            });
 
-/*                    itemClickedListener.onItemClicked(
-                            AssetsAdapter.this.cryptoAssets.get(ViewHolder.this.getLayoutPosition()).getId());*/
+            invisibleButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                                        itemClickedListener.onItemClicked(
+                            AssetsAdapter.this.cryptoAssets.get(ViewHolder.this.getLayoutPosition()).getId());
                 }
             });
         }

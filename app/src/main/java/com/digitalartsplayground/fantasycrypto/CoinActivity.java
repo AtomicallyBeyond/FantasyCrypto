@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.text.HtmlCompat;
 import androidx.lifecycle.Observer;
@@ -75,6 +76,7 @@ public class CoinActivity extends AppCompatActivity {
     public static int counter = 0;
     private IronSourceBannerLayout banner;
     private SharedPrefs sharedPrefs;
+    private SwitchCompat graphSwitch;
 
     @Override
     protected void onResume() {
@@ -115,9 +117,11 @@ public class CoinActivity extends AppCompatActivity {
 
     private void destroyBanner(){
 
-        IronSource.destroyBanner(banner);
-
-        banner.setBannerListener(null);
+        if(banner != null && !banner.isDestroyed()) {
+            IronSource.destroyBanner(banner);
+            banner.setBannerListener(null);
+            banner = null;
+        }
 
         if(coinBannerContainer != null) {
             coinBannerContainer.removeView(banner);
@@ -126,7 +130,7 @@ public class CoinActivity extends AppCompatActivity {
 
     private void loadIronSourceBanner() {
 
-        if(banner == null || banner.isDestroyed()) {
+/*        if(banner == null || banner.isDestroyed()) {
             if(counter < 5) {
                 banner = IronSource.createBanner(this, ISBannerSize.SMART);
                 coinBannerContainer.addView(banner);
@@ -136,12 +140,10 @@ public class CoinActivity extends AppCompatActivity {
                     banner.setBannerListener(bannerListener);
                 }
             }
-        }
+        }*/
     }
 
     private void init() {
-
-        IronSource.init(this, "133802ab1",IronSource.AD_UNIT.BANNER);
 
         coinID = getIntent().getStringExtra(EXTRA_ID);
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
@@ -165,6 +167,7 @@ public class CoinActivity extends AppCompatActivity {
         backImage = findViewById(R.id.coin_toolbar_back);
         candleHeader = findViewById(R.id.coin_candle_stats);
         coinBannerContainer = findViewById(R.id.coin_banner_container);
+        graphSwitch = findViewById(R.id.coin_switch);
 
         initTabLayout();
         setListeners();
@@ -177,32 +180,32 @@ public class CoinActivity extends AppCompatActivity {
         if(marketUnit.getMarketCap() > 0)
             marketCap.setText(numberFormatter(String.valueOf(marketUnit.getMarketCap())));
         else
-            marketCap.setText(" ");
+            marketCap.setText(" - ");
 
         if(marketUnit.getFullDiluted() != null)
             fullyDiluted.setText(numberFormatter(marketUnit.getFullDiluted()));
         else
-            fullyDiluted.setText(" ");
+            fullyDiluted.setText(" - ");
 
         if(marketUnit.getVolume() != null)
             volume.setText(numberFormatter(marketUnit.getVolume()));
         else
-            volume.setText(" ");
+            volume.setText(" - ");
 
         if(marketUnit.getCirculatingSupply() != null)
             circulatingSupply.setText(numberFormatter(marketUnit.getCirculatingSupply()));
         else
-            circulatingSupply.setText(" ");
+            circulatingSupply.setText(" - ");
 
         if(marketUnit.getTotalSupply() != null)
             totalSupply.setText(numberFormatter(marketUnit.getTotalSupply()));
         else
-            totalSupply.setText(" ");
+            totalSupply.setText(" - ");
 
         if(marketUnit.getMaxSupply() != null)
             maxSupply.setText(numberFormatter(marketUnit.getMaxSupply()));
         else
-            maxSupply.setText(" ");
+            maxSupply.setText(" - ");
 
 
         percentChange.setText(marketUnit.getOnDayPercentString());
@@ -338,6 +341,9 @@ public class CoinActivity extends AppCompatActivity {
         coinActivityViewModel.getIsLineChart().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
+
+                graphSwitch.setChecked(false);
+
                 if(aBoolean) {
                     LineChartFragment lineChartFragment =  LineChartFragment.newInstance(coinID);
                     getSupportFragmentManager().beginTransaction().replace(R.id.coin_fragment_graph_layout,
@@ -362,6 +368,7 @@ public class CoinActivity extends AppCompatActivity {
     TabLayout.OnTabSelectedListener tabSelectedListener = new TabLayout.OnTabSelectedListener() {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
+
             switch (tab.getPosition()) {
                 case 0:
                     coinActivityViewModel.setIsLineChart(true);

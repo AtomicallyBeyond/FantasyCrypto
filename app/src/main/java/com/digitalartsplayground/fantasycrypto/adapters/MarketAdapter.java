@@ -125,7 +125,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
 
-            if(marketList != null) {
+            if(marketList != null  && filterResults.values != null) {
                 marketList.clear();
                 marketList.addAll((List)filterResults.values);
                 notifyDataSetChanged();

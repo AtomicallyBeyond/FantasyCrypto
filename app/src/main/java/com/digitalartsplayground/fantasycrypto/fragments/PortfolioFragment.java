@@ -1,5 +1,6 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -52,25 +53,32 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     private float totalAssetValue = 0;
     private float tempBalance = 0;
     private float totalValue = 0;
-    private TextView balance;
-    private TextView orders;
-    private TextView assets;
-    private TextView total;
+    private float tempValue = 0;
+    private TextView balanceView;
+    private TextView ordersView;
+    private TextView assetsView;
+    private TextView totalView;
     private PieChart pieChart;
     private ImageButton rewardButton;
     private int rewardAmount = 100;
     private SharedPrefs sharedPrefs;
+    private Context mContext;
+
+    private float balance = 0;
+
 
     @Override
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mContext = requireContext();
 
         portfolioViewModel = new ViewModelProvider(requireActivity())
                 .get(PortfolioFragmentViewModel.class);
 
         sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
 
-        assetsAdapter = new AssetsAdapter(requireContext(), this);
+        assetsAdapter = new AssetsAdapter(mContext, this);
 
         IronSource.setRewardedVideoListener(rewardedVideoListener);
     }
@@ -79,6 +87,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     public void onDestroy() {
         super.onDestroy();
         IronSource.setRewardedVideoListener(null);
+        mContext = null;
     }
 
     @Nullable
@@ -89,10 +98,10 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         View view = inflater.inflate(R.layout.portfolio_fragment, container, false);
         portfolioRecyclerView = view.findViewById(R.id.portfolio_recyclerView);
         pieChart = view.findViewById(R.id.portfolio_pie_chart);
-        balance = view.findViewById(R.id.portfolio_balance);
-        orders = view.findViewById(R.id.portfolio_orders);
-        assets = view.findViewById(R.id.portfolio_assets);
-        total = view.findViewById(R.id.portfolio_value);
+        balanceView = view.findViewById(R.id.portfolio_balance);
+        ordersView = view.findViewById(R.id.portfolio_orders);
+        assetsView = view.findViewById(R.id.portfolio_assets);
+        totalView = view.findViewById(R.id.portfolio_value);
         rewardButton = view.findViewById(R.id.portfolio_reward_button);
         rewardButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,7 +111,6 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             }
         });
 
-        updateBalances();
         initPortfolio();
         return view;
 
@@ -129,31 +137,43 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             tempBalance = SharedPrefs.getInstance(getContext()).getBalance();
 
         String balanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
-        balance.setText(balanceString);
+        balanceView.setText(balanceString);
         updatePortfolioWithAssets();
     }
 
     private void initPortfolio() {
 
+        balance = sharedPrefs.getBalance();
+        updateBalances();
+        initRecyclerView();
+
+    }
+
+    private void initRecyclerView() {
         portfolioRecyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager =
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         portfolioRecyclerView.setLayoutManager(linearLayoutManager);
         portfolioRecyclerView.setAdapter(assetsAdapter);
-
     }
+
+
+
 
     private void updatePortfolioWithAssets() {
 
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+       Runnable updateRunnable = new Runnable() {
             @Override
             public void run() {
+
                 List<CryptoAsset> assets = portfolioViewModel.getAllAssets();
 
                 if(assets != null)
                     initWithAssets(assets);
             }
-        });
+        };
+
+        AppExecutors.getInstance().diskIO().execute(updateRunnable);
     }
 
     private void initWithAssets(List<CryptoAsset> cryptoAssets) {
@@ -183,10 +203,12 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         updateBalances();
 
+        float percent = 0;
+
         for(CryptoAsset asset : cryptoAssets) {
-            tempPrice = (asset.getTotalValue() / totalAssetValue) * 100f;
-            tempPrice = (float)Math.round(tempPrice * 100) / 100;
-            asset.setPortfolioPercent(tempPrice);
+            percent = (asset.getTotalValue() / totalAssetValue) * 100f;
+            percent = (float)Math.round(percent * 100) / 100;
+            asset.setPortfolioPercent(percent);
         }
 
         AppExecutors.getInstance().mainThread().execute(new Runnable() {
@@ -201,36 +223,28 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
     private void updateBalances() {
 
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+        List<LimitOrder> buyActiveOrders = portfolioViewModel.fetchBuyOrders();
+        for(LimitOrder limitOrder : buyActiveOrders) {
+            tempValue = tempValue + limitOrder.getValue();
+        }
 
-            float value = 0;
+        List<LimitOrder> sellActiveOrders = portfolioViewModel.fetchSellOrders();
+        for(LimitOrder limitOrder : sellActiveOrders) {
+            tempValue = tempValue + (portfolioViewModel.fetchMarketUnit(limitOrder.getCoinID()).getCurrentPrice()
+                    * limitOrder.getAmount());
+        }
 
+        AppExecutors.getInstance().mainThread().execute(new Runnable() {
             @Override
             public void run() {
-
-                List<LimitOrder> buyActiveOrders = portfolioViewModel.fetchBuyOrders();
-                for(LimitOrder limitOrder : buyActiveOrders) {
-                    value = value + limitOrder.getValue();
-                }
-
-                List<LimitOrder> sellActiveOrders = portfolioViewModel.fetchSellOrders();
-                for(LimitOrder limitOrder : sellActiveOrders) {
-                    value = value + (portfolioViewModel.fetchMarketUnit(limitOrder.getCoinID()).getCurrentPrice()
-                                    * limitOrder.getAmount());
-                }
-
-                AppExecutors.getInstance().mainThread().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        balance.setText(NumberFormatter.currency(SharedPrefs.getInstance(getContext()).getBalance()));
-                        orders.setText(NumberFormatter.currency(value));
-                        assets.setText(NumberFormatter.currency(totalAssetValue));
-                        totalValue = totalAssetValue + tempBalance + value;
-                        sharedPrefs.setTotalValue(totalValue);
-                        String totalString = "Total Value: $" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
-                        total.setText(totalString);
-                    }
-                });
+                balanceView.setText(NumberFormatter.currency(balance));
+                ordersView.setText(NumberFormatter.currency(tempValue));
+                assetsView.setText(NumberFormatter.currency(totalAssetValue));
+                totalValue = totalAssetValue + tempBalance + tempValue;
+                sharedPrefs.setTotalValue(totalValue);
+                String totalString = "Total Value: $" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
+                totalView.setText(totalString);
+                tempValue = 0;
             }
         });
     }
@@ -354,8 +368,8 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
             String tempBalanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
             String totalValueString = "$" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
-            balance.setText(tempBalanceString);
-            total.setText(totalValueString);
+            balanceView.setText(tempBalanceString);
+            totalView.setText(totalValueString);
         }
         /* Invoked when RewardedVideo call to show a rewarded video has failed
          * IronSourceError contains the reason for the failure.

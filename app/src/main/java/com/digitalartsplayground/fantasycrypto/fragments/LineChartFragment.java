@@ -65,6 +65,20 @@ public class LineChartFragment extends Fragment implements CompoundButton.OnChec
         // Required empty public constructor
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        coinID = null;
+        tabLayout = null;
+        lineChart = null;
+        scrollView = null;
+        lineChartViewModel = null;
+        liveDay = null;
+        liveThreeMonths = null;
+        liveYear = null;
+        coinMainContainer = null;
+        graphSwitch = null;
+    }
 
     public static LineChartFragment newInstance(String id) {
         LineChartFragment fragment = new LineChartFragment();

@@ -30,10 +30,10 @@
                 android:id="@+id/market_balance_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_gravity="right"
+                android:layout_gravity="end"
                 android:layout_marginEnd="14dp"
                 android:gravity="center"
-                android:text="$10,000"
+                android:text="@string/value_place_holder"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 
@@ -119,6 +119,8 @@
         android:scrollbarThumbVertical="@color/charcoal"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarSize="14dp"
+        android:paddingBottom="65dp"
+        android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

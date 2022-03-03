@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isLoadingScreen = true;
     public static int counter = 0;
     private IronSourceBannerLayout banner;
+    private boolean isFirstTime = false;
 
 
     @Override
@@ -119,22 +120,20 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         destroyBanner();
         IronSource.onPause(this);
-        scheduleTaskExecutor.shutdown();
+
+        if(scheduleTaskExecutor != null)
+            scheduleTaskExecutor.shutdown();
     }
 
     private void init() {
 
         initIronSource();
 
-        boolean isFirstTime = sharedPrefs.getIsFirstTime();
+        isFirstTime = sharedPrefs.getIsFirstTime();
         if(isFirstTime) {
             sharedPrefs.setBalance(10000);
             sharedPrefs.setFirstTime(false);
             sharedPrefs.setCleanMarketTime(System.currentTimeMillis());
-
-            TelegramDialogFragment telegramDialogFragment = TelegramDialogFragment.getInstance();
-            telegramDialogFragment.show(getSupportFragmentManager(), "Telegram");
-
         }
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
@@ -195,6 +194,12 @@ public class MainActivity extends AppCompatActivity {
 
                 if(listResource.status == Resource.Status.SUCCESS) {
 
+                    if(isFirstTime) {
+                        TelegramDialogFragment telegramDialogFragment = TelegramDialogFragment.getInstance();
+                        telegramDialogFragment.show(getSupportFragmentManager(), "Telegram");
+                        isFirstTime = false;
+                    }
+
                     long currentTime = System.currentTimeMillis();
 
                     if(isErrorScreen) {
@@ -228,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
                         mainViewModel.setCleanMarketData(false);
                     }
 
-                    if(scheduleTaskExecutor.isShutdown()) {
+                    if(scheduleTaskExecutor == null || scheduleTaskExecutor.isShutdown()) {
                         scheduleTaskExecutor = Executors.newScheduledThreadPool(2);
                         scheduleUpdater();
                     }
@@ -245,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
                         showErrorScreen();
                         isErrorScreen = true;
 
-                        if(!scheduleTaskExecutor.isShutdown())
+                        if(scheduleTaskExecutor != null && !scheduleTaskExecutor.isShutdown())
                             scheduleTaskExecutor.shutdown();
                     }
 
@@ -272,22 +277,25 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPrefs sharedPrefs = SharedPrefs.getInstance(this);
 
-        scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
+        if(scheduleTaskExecutor != null) {
 
-            @Override
-            public void run() {
+            scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        sharedPrefs.setSchedulerTime(System.currentTimeMillis());
-                        mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
-                    }
-                });
+                @Override
+                public void run() {
 
-            }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            sharedPrefs.setSchedulerTime(System.currentTimeMillis());
+                            mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
+                        }
+                    });
 
-        }, Constants.FETCH_TIME_CONSTANT, Constants.FETCH_TIME_CONSTANT + 10, TimeUnit.MILLISECONDS);
+                }
+
+            }, Constants.FETCH_TIME_CONSTANT, Constants.FETCH_TIME_CONSTANT + 10, TimeUnit.MILLISECONDS);
+        }
     }
 
 
@@ -598,7 +606,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadIronSourceBanner() {
 
-        if(banner == null || banner.isDestroyed()) {
+/*        if(banner == null || banner.isDestroyed()) {
             if(counter < 5) {
                 banner = IronSource.createBanner(this, ISBannerSize.SMART);
                 bannerContainer.addView(banner);
@@ -608,7 +616,7 @@ public class MainActivity extends AppCompatActivity {
                     IronSource.loadBanner(banner);
                 }
             }
-        }
+        }*/
     }
 
     private void checkAdServingTimeLimit(){

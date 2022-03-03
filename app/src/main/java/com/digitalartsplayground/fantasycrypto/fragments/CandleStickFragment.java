@@ -51,6 +51,17 @@ public class CandleStickFragment extends Fragment implements CompoundButton.OnCh
         // Required empty public constructor
     }
 
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        coinID = null;
+        candleViewModel = null;
+        candleStickChart = null;
+        scrollView = null;
+        graphSwitch = null;
+    }
+
     public static CandleStickFragment newInstance(String id) {
         CandleStickFragment fragment = new CandleStickFragment();
         Bundle args = new Bundle();
