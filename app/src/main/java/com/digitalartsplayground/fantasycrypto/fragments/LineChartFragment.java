@@ -322,7 +322,8 @@ public class LineChartFragment extends Fragment implements CompoundButton.OnChec
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
 
-                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+
                     if(lineChart != null && lineChart.getData() != null) {
                         scrollView.requestDisallowInterceptTouchEvent(true);
                         if(isHighlightState) {
@@ -332,8 +333,9 @@ public class LineChartFragment extends Fragment implements CompoundButton.OnChec
                         }
 
                     }
-                }
-                else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
+
+                } else if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
+
                     if(lineChart != null && lineChart.getData() != null) {
                         scrollView.requestDisallowInterceptTouchEvent(false);
                         if(isHighlightState) {
@@ -342,9 +344,10 @@ public class LineChartFragment extends Fragment implements CompoundButton.OnChec
                             ((CoinActivity) getActivity()).resetCurrentPrice();
                             ((CoinActivity) getActivity()).setLineChartVisibility(View.INVISIBLE);
                         }
-
                     }
+
                 }
+
                 return false;
             }
         });

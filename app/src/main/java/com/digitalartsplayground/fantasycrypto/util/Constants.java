@@ -7,6 +7,6 @@ public class Constants {
     public static final int CONNECTION_TIMEOUT = 10; // 10 seconds
     public static final int READ_TIMEOUT = 10; // 2 seconds
     public static final int WRITE_TIMEOUT = 10; // 2 seconds
-    public static final int FETCH_TIME_CONSTANT = 30 * 1000;
+    public static final int FETCH_TIME_CONSTANT = 60 * 1000;
     public static final int FETCH_PAGE_COUNT = 5;
 }

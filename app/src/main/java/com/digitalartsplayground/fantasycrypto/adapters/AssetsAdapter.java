@@ -77,7 +77,6 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
             oneDayPercentString = "+" + oneDayPercentString;
         } else {
             holder.oneDayPercent.setTextColor(Color.RED);
-            oneDayPercentString = "-" + oneDayPercentString;
         }
 
         holder.oneDayPercent.setText(oneDayPercentString);

@@ -36,6 +36,7 @@ import com.digitalartsplayground.fantasycrypto.util.Resource;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.ironsource.mediationsdk.ISBannerSize;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.IronSourceBannerLayout;
@@ -63,9 +64,10 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private boolean isErrorScreen = false;
     private boolean isLoadingScreen = true;
+    private boolean isFirstTime = false;
     public static int counter = 0;
     private IronSourceBannerLayout banner;
-    private boolean isFirstTime = false;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
 
     @Override
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         sharedPrefs = SharedPrefs.getInstance(getApplication());
         bannerContainer = findViewById(R.id.main_banner_container);

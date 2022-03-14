@@ -164,6 +164,7 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
         sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
 
+        IronSource.setRewardedVideoListener(rewardedVideoListener);
     }
 
     @Override
@@ -202,7 +203,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         });
 
         init();
-
         return view;
     }
 
@@ -416,7 +416,7 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         Your activity will now regain its focus.*/
         @Override
         public void onRewardedVideoAdClosed() {
-                showRewardDialog();
+            showRewardDialog();
         }
         /**
          * Invoked when there is a change in the ad availability status.

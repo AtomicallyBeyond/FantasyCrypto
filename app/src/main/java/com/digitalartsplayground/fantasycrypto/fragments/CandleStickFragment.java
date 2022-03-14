@@ -193,7 +193,7 @@ public class CandleStickFragment extends Fragment implements CompoundButton.OnCh
             public boolean onTouch(View view, MotionEvent motionEvent) {
 
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-                    if(candleStickChart != null) {
+                    if(candleStickChart != null && candleStickChart.getData() != null) {
                         scrollView.requestDisallowInterceptTouchEvent(true);
 
                         if(isHighlightState) {
@@ -203,19 +203,19 @@ public class CandleStickFragment extends Fragment implements CompoundButton.OnCh
                         }
 
                     }
-                }
-                else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
-                    if(candleStickChart != null) {
+                } else if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
 
+                    if(candleStickChart != null && candleStickChart.getData() != null) {
                         if(isHighlightState) {
                             scrollView.requestDisallowInterceptTouchEvent(false);
                             candleStickChart.getData().setHighlightEnabled(false);
                             candleStickChart.setDrawMarkers(false);
                             ((CoinActivity) getActivity()).setCandleChartVisibility(View.INVISIBLE);
                         }
-
                     }
+
                 }
+
                 return false;
             }
         });

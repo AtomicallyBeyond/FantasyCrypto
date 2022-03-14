@@ -50,10 +50,10 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     private PortfolioFragmentViewModel portfolioViewModel;
     private RecyclerView portfolioRecyclerView;
     private AssetsAdapter assetsAdapter;
-    private float totalAssetValue = 0;
+    private float assetsValue = 0;
+    private float ordersValue = 0;
     private float tempBalance = 0;
     private float totalValue = 0;
-    private float tempValue = 0;
     private TextView balanceView;
     private TextView ordersView;
     private TextView assetsView;
@@ -63,9 +63,6 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     private int rewardAmount = 100;
     private SharedPrefs sharedPrefs;
     private Context mContext;
-
-    private float balance = 0;
-
 
     @Override
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -78,7 +75,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
 
-        assetsAdapter = new AssetsAdapter(mContext, this);
+        assetsAdapter = new AssetsAdapter(requireContext(), this);
 
         IronSource.setRewardedVideoListener(rewardedVideoListener);
     }
@@ -111,7 +108,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             }
         });
 
-        initPortfolio();
+        initRecyclerView();
         return view;
 
     }
@@ -131,38 +128,25 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         handleRewardButtonState(IronSource.isRewardedVideoAvailable());
 
-        if(getContext().getApplicationContext() != null)
-            tempBalance = SharedPrefs.getInstance(getContext().getApplicationContext()).getBalance();
-        else
-            tempBalance = SharedPrefs.getInstance(getContext()).getBalance();
-
+        tempBalance = sharedPrefs.getBalance();
         String balanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
         balanceView.setText(balanceString);
         updatePortfolioWithAssets();
     }
 
-    private void initPortfolio() {
-
-        balance = sharedPrefs.getBalance();
-        updateBalances();
-        initRecyclerView();
-
-    }
-
     private void initRecyclerView() {
+
         portfolioRecyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager =
-                new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+                new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         portfolioRecyclerView.setLayoutManager(linearLayoutManager);
         portfolioRecyclerView.setAdapter(assetsAdapter);
+
     }
-
-
-
 
     private void updatePortfolioWithAssets() {
 
-       Runnable updateRunnable = new Runnable() {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
 
@@ -171,16 +155,14 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
                 if(assets != null)
                     initWithAssets(assets);
             }
-        };
-
-        AppExecutors.getInstance().diskIO().execute(updateRunnable);
+        });
     }
 
     private void initWithAssets(List<CryptoAsset> cryptoAssets) {
         
         float tempPrice;
         MarketUnit tempUnit;
-        totalAssetValue = 0;
+        assetsValue = 0;
 
         for(CryptoAsset asset : cryptoAssets) {
 
@@ -198,7 +180,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
             tempPrice = tempUnit.getCurrentPrice() * asset.getAmount();
             asset.setTotalValue(tempPrice);
-            totalAssetValue += tempPrice;
+            assetsValue += tempPrice;
         }
 
         updateBalances();
@@ -206,7 +188,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         float percent = 0;
 
         for(CryptoAsset asset : cryptoAssets) {
-            percent = (asset.getTotalValue() / totalAssetValue) * 100f;
+            percent = (asset.getTotalValue() / assetsValue) * 100f;
             percent = (float)Math.round(percent * 100) / 100;
             asset.setPortfolioPercent(percent);
         }
@@ -223,28 +205,29 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
     private void updateBalances() {
 
+        ordersValue = 0;
+
         List<LimitOrder> buyActiveOrders = portfolioViewModel.fetchBuyOrders();
         for(LimitOrder limitOrder : buyActiveOrders) {
-            tempValue = tempValue + limitOrder.getValue();
+            ordersValue = ordersValue + limitOrder.getValue();
         }
 
         List<LimitOrder> sellActiveOrders = portfolioViewModel.fetchSellOrders();
         for(LimitOrder limitOrder : sellActiveOrders) {
-            tempValue = tempValue + (portfolioViewModel.fetchMarketUnit(limitOrder.getCoinID()).getCurrentPrice()
+            ordersValue = ordersValue + (portfolioViewModel.fetchMarketUnit(limitOrder.getCoinID()).getCurrentPrice()
                     * limitOrder.getAmount());
         }
 
         AppExecutors.getInstance().mainThread().execute(new Runnable() {
             @Override
             public void run() {
-                balanceView.setText(NumberFormatter.currency(balance));
-                ordersView.setText(NumberFormatter.currency(tempValue));
-                assetsView.setText(NumberFormatter.currency(totalAssetValue));
-                totalValue = totalAssetValue + tempBalance + tempValue;
+                balanceView.setText(NumberFormatter.currency(sharedPrefs.getBalance()));
+                ordersView.setText(NumberFormatter.currency(ordersValue));
+                assetsView.setText(NumberFormatter.currency(assetsValue));
+                totalValue = assetsValue + tempBalance + ordersValue;
                 sharedPrefs.setTotalValue(totalValue);
                 String totalString = "Total Value: $" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
                 totalView.setText(totalString);
-                tempValue = 0;
             }
         });
     }
@@ -264,17 +247,8 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         PieDataSet pieDataSet = new PieDataSet(pieEntries,label);
 
-        if(DeviceTypeCheck.isTablet(getContext())) {
-            pieDataSet.setValueTextSize(14f);
-            pieChart.setEntryLabelTextSize(14f);
-        }
-        else {
-            pieDataSet.setValueTextSize(12f);
-            pieChart.setEntryLabelTextSize(12f);
-        }
-
-
-        pieDataSet.setValueTextColor(getContext().getResources().getColor(R.color.black));
+        pieDataSet.setValueTextSize(14f);
+        pieDataSet.setValueTextColor(Color.BLACK);
         pieDataSet.setColors(Colors.COLOR_LIST);
         PieData pieData = new PieData(pieDataSet);
         pieData.setValueFormatter(new PercentFormatter(pieChart));
@@ -282,18 +256,19 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         pieDataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
         pieChart.setExtraOffsets(30, 0, 30, 0);
         pieChart.getLegend().setEnabled(false);
-        pieChart.setEntryLabelColor(getContext().getResources().getColor(R.color.white));
+        pieChart.setEntryLabelColor(Color.WHITE);
         pieChart.getDescription().setEnabled(false);
         pieChart.setUsePercentValues(true);
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(Color.TRANSPARENT);
+        pieChart.setEntryLabelTextSize(14f);
         pieChart.setData(pieData);
         pieChart.invalidate();
     }
 
     @Override
     public void onItemClicked(String id) {
-        Intent intent = new Intent(getContext(), CoinActivity.class);
+        Intent intent = new Intent(mContext, CoinActivity.class);
         intent.putExtra(CoinActivity.EXTRA_ID, id);
         startActivity(intent);
     }
