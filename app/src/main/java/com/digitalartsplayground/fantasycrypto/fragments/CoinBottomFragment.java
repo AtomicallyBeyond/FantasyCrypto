@@ -905,6 +905,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
 
     private float getAmount() {
+
         if(isEmpty(amountEdit) || getFloat(amountEdit) == 0) {
             return 0f;
         }

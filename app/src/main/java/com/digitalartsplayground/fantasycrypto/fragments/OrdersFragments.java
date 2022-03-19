@@ -31,18 +31,10 @@ import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.OrdersFragmentViewModel;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
-import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.tabs.TabLayout;
-import com.ironsource.mediationsdk.C;
-import com.ironsource.mediationsdk.IronSource;
-import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.model.Placement;
-import com.ironsource.mediationsdk.sdk.RewardedVideoListener;
-
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
-import java.util.Random;
 
 
 public class OrdersFragments extends Fragment implements OrderClickedListener {
@@ -56,9 +48,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
     private ImageView selectAllFilled;
     private MenuItem deleteOption;
     private MenuItem cancelOption;
-    private ImageButton rewardButton;
-    private int rewardAmount = 100;
-    private SharedPrefs sharedPrefs;
 
 
     @SuppressLint("RestrictedApi")
@@ -161,22 +150,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
         ordersViewModel = new ViewModelProvider(requireActivity())
                 .get(OrdersFragmentViewModel.class);
-
-        sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
-
-        IronSource.setRewardedVideoListener(rewardedVideoListener);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        IronSource.setRewardedVideoListener(null);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        handleRewardButtonState(IronSource.isRewardedVideoAvailable());
     }
 
 
@@ -193,14 +166,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         ordersRecyclerView = view.findViewById(R.id.orders_recyclerView);
         ordersRecyclerView.setHasFixedSize(true);
         tabLayout = view.findViewById(R.id.orders_tabs);
-        rewardButton = view.findViewById(R.id.orders_reward_button);
-        rewardButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(IronSource.isRewardedVideoAvailable())
-                    IronSource.showRewardedVideo();
-            }
-        });
 
         init();
         return view;
@@ -382,109 +347,5 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
                 }
             }
         });
-    }
-
-
-    private void generateRewardAmount() {
-        float totalValue = sharedPrefs.getTotalValue();
-        int first = (int)(totalValue * 0.015);
-        int second = (int)(totalValue * 0.01);
-        rewardAmount = new Random().nextInt(second) + first;
-        if(rewardAmount > 1000) {
-            rewardAmount = 1000;
-        }
-
-    }
-
-    private void handleRewardButtonState(boolean isVisible) {
-        if(isVisible)
-            rewardButton.setVisibility(View.VISIBLE);
-        else
-            rewardButton.setVisibility(View.GONE);
-    }
-
-    RewardedVideoListener rewardedVideoListener = new RewardedVideoListener() {
-        /**
-         * Invoked when the RewardedVideo ad view has opened.
-         * Your Activity will lose focus. Please avoid performing heavy
-         * tasks till the video ad will be closed.
-         */
-        @Override
-        public void onRewardedVideoAdOpened() {
-        }
-        /*Invoked when the RewardedVideo ad view is about to be closed.
-        Your activity will now regain its focus.*/
-        @Override
-        public void onRewardedVideoAdClosed() {
-            showRewardDialog();
-        }
-        /**
-         * Invoked when there is a change in the ad availability status.
-         *
-         * @param - available - value will change to true when rewarded videos are *available.
-         *          You can then show the video by calling showRewardedVideo().
-         *          Value will change to false when no videos are available.
-         */
-        @Override
-        public void onRewardedVideoAvailabilityChanged(boolean available) {
-            //Change the in-app 'Traffic Driver' state according to availability.
-            handleRewardButtonState(available);
-
-        }
-        /**
-         /**
-         * Invoked when the user completed the video and should be rewarded.
-         * If using server-to-server callbacks you may ignore this events and wait *for the callback from the ironSource server.
-         *
-         * @param - placement - the Placement the user completed a video from.
-         */
-        @Override
-        public void onRewardedVideoAdRewarded(Placement placement) {
-            /** here you can reward the user according to the given amount.
-             String rewardName = placement.getRewardName();
-             int rewardAmount = placement.getRewardAmount();
-             */
-
-            generateRewardAmount();
-
-            SharedPrefs sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
-            sharedPrefs.setBalance(sharedPrefs.getBalance() + rewardAmount);
-        }
-        /* Invoked when RewardedVideo call to show a rewarded video has failed
-         * IronSourceError contains the reason for the failure.
-         */
-        @Override
-        public void onRewardedVideoAdShowFailed(IronSourceError error) {
-        }
-        /*Invoked when the end user clicked on the RewardedVideo ad
-         */
-        @Override
-        public void onRewardedVideoAdClicked(Placement placement){
-        }
-
-        /*
-        Note: the events AdStarted and AdEnded below are not available for all supported rewarded video
-        ad networks. Check which events are available per ad network you choose
-        to include in your build.
-
-        We recommend only using events which register to ALL ad networks you
-        include in your build.
-
-        Invoked when the video ad starts playing.
-                */
-        @Override
-        public void onRewardedVideoAdStarted(){
-        }
-        /* Invoked when the video ad finishes plating. */
-        @Override
-        public void onRewardedVideoAdEnded(){
-        }
-    };
-
-    private void showRewardDialog() {
-
-        String rewardAmount = "$" + NumberFormatter.getDecimalWithCommas(OrdersFragments.this.rewardAmount, 2);
-        RewardDialogFragment rewardDialogFragment = RewardDialogFragment.getInstance(rewardAmount);
-        rewardDialogFragment.showNow(getChildFragmentManager(), "message");
     }
 }

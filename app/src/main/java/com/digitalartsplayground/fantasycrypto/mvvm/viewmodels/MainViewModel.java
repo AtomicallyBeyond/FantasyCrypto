@@ -1,9 +1,6 @@
 package com.digitalartsplayground.fantasycrypto.mvvm.viewmodels;
 
 import android.app.Application;
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -13,19 +10,22 @@ import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
+import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
-import com.digitalartsplayground.fantasycrypto.util.Constants;
+import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
+import com.ironsource.mediationsdk.O;
 
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
-
 public class MainViewModel extends AndroidViewModel {
 
-    private Repository repository;
-    private MediatorLiveData<Resource<List<MarketUnit>>> liveMarketData = new MediatorLiveData<>();
-    private MediatorLiveData<Resource<CandleStickData>> liveCandleData = new MediatorLiveData<>();
+    private final Repository repository;
+    private final MediatorLiveData<Resource<List<MarketUnit>>> liveMarketData = new MediatorLiveData<>();
+    private final MediatorLiveData<Resource<CandleStickData>> liveCandleData = new MediatorLiveData<>();
+    private final MediatorLiveData<List<MarketUnitMaster>> liveMarketDataMaster = new MediatorLiveData<>();
+    private final MediatorLiveData<List<MarketUnitMaster>> liveWatchList = new MediatorLiveData<>();
 
     private boolean cleanMarketData = true;
 
@@ -175,5 +175,55 @@ public class MainViewModel extends AndroidViewModel {
 
     public void setCleanMarketData(boolean cleanMarketData) {
         this.cleanMarketData = cleanMarketData;
+    }
+
+    public void loadLiveMarketDataMaster() {
+        LiveData<List<MarketUnitMaster>> liveData = repository.getLiveMarketMasterData();
+
+        liveMarketDataMaster.addSource(liveData, new Observer<List<MarketUnitMaster>>() {
+            @Override
+            public void onChanged(List<MarketUnitMaster> marketUnitMasters) {
+                if(marketUnitMasters != null) {
+                    liveMarketDataMaster.setValue(marketUnitMasters);
+                    //liveMarketDataMaster.removeSource(liveData);
+                }
+            }
+        });
+    }
+
+    public LiveData<List<MarketUnitMaster>> getLiveMarketDataMaster() {
+        return liveMarketDataMaster;
+    }
+
+
+    public void loadWatchList() {
+
+        LiveData<List<MarketUnitMaster>> liveData = repository.getWatchList();
+
+        liveWatchList.addSource(liveData, new Observer<List<MarketUnitMaster>>() {
+            @Override
+            public void onChanged(List<MarketUnitMaster> marketUnitMasters) {
+                if(marketUnitMasters != null) {
+                    liveWatchList.setValue(marketUnitMasters);
+                    //liveWatchList.removeSource(liveData);
+                }
+            }
+        });
+
+    }
+
+    public LiveData<List<MarketUnitMaster>> getWatchList() {
+        return liveWatchList;
+    }
+
+    public void updateWatchListItem(String coinID, boolean isWatchItem) {
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                repository.updateWatchListItem(coinID, isWatchItem);
+            }
+        });
+
     }
 }

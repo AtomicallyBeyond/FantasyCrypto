@@ -68,13 +68,13 @@ public class SharedPrefs {
         return sharedPreferences.getLong(LIMIT_UPDATE_TIME, 0);
     }
 
-    public void setSchedulerTime(long timeStamp) {
+/*    public void setSchedulerTime(long timeStamp) {
         editor.putLong(SCHEDULER_TIME, timeStamp).apply();
     }
 
     public long getSchedulerTime() {
         return sharedPreferences.getLong(SCHEDULER_TIME, 0);
-    }
+    }*/
 
     public void setCleanMarketTime(long timeStamp) {
         editor.putLong(CLEAN_MARKET_TIME, timeStamp).apply();

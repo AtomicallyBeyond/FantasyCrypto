@@ -1,0 +1,299 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "970e53f93af813abdbf8ec7bef895572",
+    "entities": [
+      {
+        "tableName": "market_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `time_stamp` INTEGER NOT NULL, `coin_name` TEXT, `coin_symbol` TEXT, `coin_image_uri` TEXT, `current_price` REAL NOT NULL, `market_cap` INTEGER NOT NULL, `market_cap_rank` TEXT, `fully_diluted_valuation` TEXT, `total_volume` TEXT, `circulating_supply` TEXT, `total_supply` TEXT, `max_supply` TEXT, `one_day_percent_change` REAL NOT NULL, `seven_day_percent_change` REAL NOT NULL, `spark_line_data` TEXT, `watch_list_boolean` TEXT NOT NULL DEFAULT '0', PRIMARY KEY(`coin_id`))",
+        "fields": [
+          {
+            "fieldPath": "coinID",
+            "columnName": "coin_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeStamp",
+            "columnName": "time_stamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coinName",
+            "columnName": "coin_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "coinSymbol",
+            "columnName": "coin_symbol",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "coinImageURI",
+            "columnName": "coin_image_uri",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "currentPrice",
+            "columnName": "current_price",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "marketCap",
+            "columnName": "market_cap",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rank",
+            "columnName": "market_cap_rank",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fullDiluted",
+            "columnName": "fully_diluted_valuation",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "volume",
+            "columnName": "total_volume",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "circulatingSupply",
+            "columnName": "circulating_supply",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "totalSupply",
+            "columnName": "total_supply",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "maxSupply",
+            "columnName": "max_supply",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "oneDayPercentChange",
+            "columnName": "one_day_percent_change",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sevenDayPercentChange",
+            "columnName": "seven_day_percent_change",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sparkLineData",
+            "columnName": "spark_line_data",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isWatchList",
+            "columnName": "watch_list_boolean",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'0'"
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "coin_id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "assets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `amount` REAL NOT NULL, `accumulated_sum` REAL NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accumulatedPurchaseSum",
+            "columnName": "accumulated_sum",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "developer_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `description` TEXT, PRIMARY KEY(`coin_id`))",
+        "fields": [
+          {
+            "fieldPath": "coinID",
+            "columnName": "coin_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coinDescription",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "coin_id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "limit_orders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT, `coin_name` TEXT, `coin_symbol` TEXT, `limit_price` REAL NOT NULL, `amount` REAL NOT NULL, `buy_order` TEXT NOT NULL, `is_active` TEXT NOT NULL, `is_market_order` TEXT NOT NULL, `fill_date_string` TEXT, `fill_date` INTEGER NOT NULL, `value_string` TEXT, `value` REAL NOT NULL, `time_created_string` TEXT, `time_created` INTEGER NOT NULL, `candle_check_time` INTEGER NOT NULL, `accumulated_purchase_sum` REAL NOT NULL, PRIMARY KEY(`time_created`))",
+        "fields": [
+          {
+            "fieldPath": "coinID",
+            "columnName": "coin_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "coinName",
+            "columnName": "coin_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "coinSymbol",
+            "columnName": "coin_symbol",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "limitPrice",
+            "columnName": "limit_price",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isBuyOrder",
+            "columnName": "buy_order",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "is_active",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isMarketOrder",
+            "columnName": "is_market_order",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fillDateString",
+            "columnName": "fill_date_string",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fillDate",
+            "columnName": "fill_date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valueString",
+            "columnName": "value_string",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeCreatedString",
+            "columnName": "time_created_string",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "timeCreated",
+            "columnName": "time_created",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candleCheckTime",
+            "columnName": "candle_check_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accumulatedPurchaseSum",
+            "columnName": "accumulated_purchase_sum",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "time_created"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '970e53f93af813abdbf8ec7bef895572')"
+    ]
+  }
+}

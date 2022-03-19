@@ -1,7 +1,9 @@
 package com.digitalartsplayground.fantasycrypto.adapters;
 
 import android.graphics.Color;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
@@ -14,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
+import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
 import com.robinhood.spark.SparkView;
 
 import org.jetbrains.annotations.NotNull;
@@ -21,31 +24,28 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder> implements Filterable {
-
-    private List<MarketUnit> marketList = new ArrayList<>(1000);
-    private List<MarketUnit> marketListFull;
+public class WatchListAdapter extends RecyclerView.Adapter<WatchListAdapter.ViewHolder> {
+    private List<MarketUnitMaster> marketList = new ArrayList<>(1000);
     private ItemClickedListener itemClickedListener;
-    private boolean isSearching = false;
 
 
-    public MarketAdapter(ItemClickedListener itemClickedListener) {
+    public WatchListAdapter(ItemClickedListener itemClickedListener) {
         this.itemClickedListener = itemClickedListener;
     }
 
     @NonNull
     @NotNull
     @Override
-    public MarketAdapter.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+    public WatchListAdapter.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         View view = LayoutInflater
                 .from(parent.getContext())
                 .inflate(R.layout.market_item, parent, false);
-        return new ViewHolder(view);
+        return new WatchListAdapter.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull MarketAdapter.ViewHolder holder, int position) {
-        MarketUnit marketUnit = marketList.get(position);
+    public void onBindViewHolder(@NonNull @NotNull WatchListAdapter.ViewHolder holder, int position) {
+        MarketUnitMaster marketUnit = marketList.get(position);
 
         holder.cryptoName.setText(marketUnit.getCoinName());
         holder.cryptoSymbol.setText(marketUnit.getCoinSymbol());
@@ -72,76 +72,23 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
         holder.chart.invalidate();
     }
 
+
     @Override
     public int getItemCount() {
         return marketList.size();
     }
 
-    public void setMarketList(List<MarketUnit> marketList){
+    public void setMarketList(List<MarketUnitMaster> marketList){
         this.marketList = marketList;
-        marketListFull = new ArrayList<>(marketList);
         notifyDataSetChanged();
     }
 
     public void destroyAdapter() {
         marketList = null;
-        marketListFull = null;
         itemClickedListener = null;
     }
 
-    @Override
-    public Filter getFilter() {
-        return searchFilter;
-    }
 
-    private Filter searchFilter = new Filter() {
-        @Override
-        protected FilterResults performFiltering(CharSequence charSequence) {
-            List<MarketUnit> filteredList = new ArrayList<>();
-
-            if (charSequence == null || charSequence.length() == 0) {
-                filteredList.addAll(marketListFull);
-            } else {
-                String filterPattern = charSequence.toString().toLowerCase().trim();
-
-                for(MarketUnit marketUnit :marketListFull) {
-                    if(marketUnit.getCoinName().toLowerCase().startsWith(filterPattern)) {
-                        filteredList.add(marketUnit);
-                    } else if (marketUnit.getCoinSymbol().toLowerCase().startsWith(filterPattern)) {
-                        filteredList.add(marketUnit);
-                    }
-                }
-
-                isSearching = true;
-            }
-
-            FilterResults results = new FilterResults();
-            results.values = filteredList;
-
-            return results;
-        }
-
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-
-            if(marketList != null  && filterResults.values != null) {
-                marketList.clear();
-                marketList.addAll((List)filterResults.values);
-                notifyDataSetChanged();
-            }
-        }
-    };
-
-    public void resetList() {
-
-        if(isSearching) {
-            isSearching = false;
-            marketList.clear();
-            marketList.addAll(marketListFull);
-            notifyDataSetChanged();
-        }
-
-    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -172,11 +119,20 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
                 @Override
                 public void onClick(View view) {
                     itemClickedListener.onItemClicked(
-                            MarketAdapter.this.marketList.get(ViewHolder.this.getLayoutPosition()).getCoinID());
+                            WatchListAdapter.this.marketList.get(WatchListAdapter.ViewHolder.this.getLayoutPosition()).getCoinID());
                 }
             });
+
         }
     }
+
+    public void removeItem(int position) {
+        marketList.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public String getPositionID(int position) {
+        return marketList.get(position).getCoinID();
+    }
+
 }
-
-

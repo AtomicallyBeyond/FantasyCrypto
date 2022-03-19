@@ -42,6 +42,7 @@ import java.util.List;
 public class MarketFragment extends Fragment implements ItemClickedListener {
 
     private MainViewModel marketViewModel;
+    private RecyclerView marketRecyclerView;
     private MarketAdapter marketAdapter;
     private TextView marketBalance;
     private TextView loadingTextView;
@@ -90,9 +91,20 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
         marketBalance = view.findViewById(R.id.market_balance_textview);
         progressBar = view.findViewById(R.id.market_progress_bar);
         loadingTextView = view.findViewById(R.id.market_loading_textView);
-        initMarket(view);
-        subscribeObservers();
+        marketRecyclerView = view.findViewById(R.id.market_recyclerView);
+        marketRecyclerView.setHasFixedSize(true);
+        marketSearchView = view.findViewById(R.id.market_searchView);
+        initMarket();
         return view;
+    }
+
+    private void initMarket(){
+        setSearchViewListener(marketSearchView);
+        LinearLayoutManager linearLayoutManager =
+                new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        marketRecyclerView.setLayoutManager(linearLayoutManager);
+        marketRecyclerView.setAdapter(marketAdapter);
+        subscribeObservers();
     }
 
     @Override
@@ -128,7 +140,6 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
             @Override
             public void run() {
                 sharedPrefs.setBalance(10000);
-                sharedPrefs.setSchedulerTime(0);
                 sharedPrefs.setLimitUpdateTime(0);
                 sharedPrefs.setMarketDataTimeStamp(0);
 
@@ -161,17 +172,6 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
         marketAdapter.resetList();
         marketSearchView.setQuery("", false);
         marketSearchView.clearFocus();
-    }
-
-    private void initMarket(View view){
-        marketSearchView = view.findViewById(R.id.market_searchView);
-        setSearchViewListener(marketSearchView);
-        RecyclerView marketRecyclerView = view.findViewById(R.id.market_recyclerView);
-        marketRecyclerView.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager =
-                new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        marketRecyclerView.setLayoutManager(linearLayoutManager);
-        marketRecyclerView.setAdapter(marketAdapter);
     }
 
 

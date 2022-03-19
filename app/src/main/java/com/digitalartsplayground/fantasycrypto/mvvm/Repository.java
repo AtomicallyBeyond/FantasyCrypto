@@ -10,6 +10,7 @@ import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
+import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.CoinDataFetcher;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.MarketDataFetcher;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.MarketDataLoader;
@@ -28,7 +29,6 @@ import java.util.List;
 
 
 public class Repository {
-
 
     private static Repository instance;
     private final MarketDao marketDao;
@@ -168,6 +168,17 @@ public class Repository {
         return marketDao.getMarketUnit(id);
     }
 
+    public LiveData<List<MarketUnitMaster>> getLiveMarketMasterData() {
+        return marketDao.getMarketDataMaster();
+    }
+
+    public LiveData<List<MarketUnitMaster>> getWatchList() {
+        return marketDao.getLiveWatchList();
+    }
+
+    public void updateWatchListItem(String coinID, boolean isWatchList) {
+        marketDao.updateWatchListItem(coinID, isWatchList);
+    }
 
     public LiveData<Resource<DeveloperUnit>> getDeveloperUnit(String coinId) {
         return new MarketDataFetcher<DeveloperUnit, DeveloperUnit>(AppExecutors.getInstance()) {
@@ -224,7 +235,13 @@ public class Repository {
                 }
 
                 MarketUnit[] marketUnits = item.toArray(new MarketUnit[item.size()]);
-                marketDao.insertMarketUnits(marketUnits);
+
+                if(sharedPrefs.getIsFirstTime()) {
+                    marketDao.insertMarketUnits(marketUnits);
+                } else {
+                    marketDao.updateMarketUnits(marketUnits);
+                }
+
 
                 sharedPrefs.setMarketDataTimeStamp(timeStamp);
             }
@@ -275,7 +292,12 @@ public class Repository {
                 }
 
                 MarketUnit[] marketUnits = item.toArray(new MarketUnit[item.size()]);
-                marketDao.insertMarketUnits(marketUnits);
+
+                if(sharedPrefs.getIsFirstTime()) {
+                    marketDao.insertMarketUnits(marketUnits);
+                } else {
+                    marketDao.updateMarketUnits(marketUnits);
+                }
 
                 sharedPrefs.setMarketDataTimeStamp(timeStamp);
             }

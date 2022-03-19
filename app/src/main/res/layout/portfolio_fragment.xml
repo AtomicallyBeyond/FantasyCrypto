@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--    androidx.constraintlayout.motion.widget.MotionLayout-->
-<androidx.constraintlayout.motion.widget.MotionLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:motion="http://schemas.android.com/tools"
@@ -21,18 +21,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:title="Portfolio"
         app:titleTextAppearance="@style/Toolbar.TitleText">
-
-        <ImageButton
-            android:id="@+id/portfolio_reward_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="20dp"
-            android:layout_gravity="end"
-            android:background="@color/transparent"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_reward_icon"
-            android:visibility="visible" />
 
     </androidx.appcompat.widget.Toolbar>
 
@@ -193,7 +181,7 @@
         app:layout_constraintGuide_percent="0.65" />
 
 
-</androidx.constraintlayout.motion.widget.MotionLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
 
     <!--
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"-->

@@ -7,6 +7,11 @@
         android:title="Markets"/>
 
     <item
+        android:id="@+id/nav_watchlist"
+        android:icon="@drawable/watchlist"
+        android:title="Watchlist"/>
+
+    <item
         android:id="@+id/nav_portfolio"
         android:icon="@drawable/portfolio"
         android:title="Portfolio"/>

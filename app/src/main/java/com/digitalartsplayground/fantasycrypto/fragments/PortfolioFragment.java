@@ -59,8 +59,6 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     private TextView assetsView;
     private TextView totalView;
     private PieChart pieChart;
-    private ImageButton rewardButton;
-    private int rewardAmount = 100;
     private SharedPrefs sharedPrefs;
     private Context mContext;
 
@@ -77,13 +75,11 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         assetsAdapter = new AssetsAdapter(requireContext(), this);
 
-        IronSource.setRewardedVideoListener(rewardedVideoListener);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        IronSource.setRewardedVideoListener(null);
         mContext = null;
     }
 
@@ -99,14 +95,6 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         ordersView = view.findViewById(R.id.portfolio_orders);
         assetsView = view.findViewById(R.id.portfolio_assets);
         totalView = view.findViewById(R.id.portfolio_value);
-        rewardButton = view.findViewById(R.id.portfolio_reward_button);
-        rewardButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(IronSource.isRewardedVideoAvailable())
-                    IronSource.showRewardedVideo();
-            }
-        });
 
         initRecyclerView();
         return view;
@@ -125,8 +113,6 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
     @Override
     public void onResume() {
         super.onResume();
-
-        handleRewardButtonState(IronSource.isRewardedVideoAvailable());
 
         tempBalance = sharedPrefs.getBalance();
         String balanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
@@ -271,116 +257,5 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         Intent intent = new Intent(mContext, CoinActivity.class);
         intent.putExtra(CoinActivity.EXTRA_ID, id);
         startActivity(intent);
-    }
-
-    private void generateRewardAmount() {
-        int first = (int)(totalValue * 0.015);
-        int second = (int)(totalValue * 0.01);
-        rewardAmount = new Random().nextInt(second) + first;
-
-        if(rewardAmount > 1000) {
-            rewardAmount = 1000;
-        }
-
-
-    }
-
-    private void handleRewardButtonState(boolean isVisible) {
-        if(isVisible)
-            rewardButton.setVisibility(View.VISIBLE);
-        else
-            rewardButton.setVisibility(View.GONE);
-    }
-
-    RewardedVideoListener rewardedVideoListener = new RewardedVideoListener() {
-        /**
-         * Invoked when the RewardedVideo ad view has opened.
-         * Your Activity will lose focus. Please avoid performing heavy
-         * tasks till the video ad will be closed.
-         */
-        @Override
-        public void onRewardedVideoAdOpened() {
-        }
-        /*Invoked when the RewardedVideo ad view is about to be closed.
-        Your activity will now regain its focus.*/
-        @Override
-        public void onRewardedVideoAdClosed() {
-                showRewardDialog();
-        }
-        /**
-         * Invoked when there is a change in the ad availability status.
-         *
-         * @param - available - value will change to true when rewarded videos are *available.
-         *          You can then show the video by calling showRewardedVideo().
-         *          Value will change to false when no videos are available.
-         */
-        @Override
-        public void onRewardedVideoAvailabilityChanged(boolean available) {
-            //Change the in-app 'Traffic Driver' state according to availability.
-            handleRewardButtonState(available);
-
-        }
-        /**
-         /**
-         * Invoked when the user completed the video and should be rewarded.
-         * If using server-to-server callbacks you may ignore this events and wait *for the callback from the ironSource server.
-         *
-         * @param - placement - the Placement the user completed a video from.
-         */
-        @Override
-        public void onRewardedVideoAdRewarded(Placement placement) {
-            /** here you can reward the user according to the given amount.
-             String rewardName = placement.getRewardName();
-             int rewardAmount = placement.getRewardAmount();
-             */
-
-            generateRewardAmount();
-
-            sharedPrefs.setBalance(sharedPrefs.getBalance() + rewardAmount);
-
-            tempBalance += rewardAmount;
-            totalValue +=rewardAmount;
-
-            String tempBalanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
-            String totalValueString = "$" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
-            balanceView.setText(tempBalanceString);
-            totalView.setText(totalValueString);
-        }
-        /* Invoked when RewardedVideo call to show a rewarded video has failed
-         * IronSourceError contains the reason for the failure.
-         */
-        @Override
-        public void onRewardedVideoAdShowFailed(IronSourceError error) {
-        }
-        /*Invoked when the end user clicked on the RewardedVideo ad
-         */
-        @Override
-        public void onRewardedVideoAdClicked(Placement placement){
-        }
-
-        /*
-        Note: the events AdStarted and AdEnded below are not available for all supported rewarded video
-        ad networks. Check which events are available per ad network you choose
-        to include in your build.
-
-        We recommend only using events which register to ALL ad networks you
-        include in your build.
-
-        Invoked when the video ad starts playing.
-                */
-        @Override
-        public void onRewardedVideoAdStarted(){
-        }
-        /* Invoked when the video ad finishes plating. */
-        @Override
-        public void onRewardedVideoAdEnded(){
-        }
-    };
-
-    private void showRewardDialog() {
-
-        String rewardAmount = "$" + NumberFormatter.getDecimalWithCommas(PortfolioFragment.this.rewardAmount, 2);
-        RewardDialogFragment rewardDialogFragment = RewardDialogFragment.getInstance(rewardAmount);
-        rewardDialogFragment.showNow(getChildFragmentManager(), "message");
     }
 }

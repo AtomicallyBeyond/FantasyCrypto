@@ -23,6 +23,7 @@ import com.digitalartsplayground.fantasycrypto.fragments.MarketFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.OrdersFragments;
 import com.digitalartsplayground.fantasycrypto.fragments.PortfolioFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.TelegramDialogFragment;
+import com.digitalartsplayground.fantasycrypto.fragments.WatchListFragment;
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         refreshTextView = findViewById(R.id.main_refresh_textview);
         poweredByGeckoTextview = findViewById(R.id.powered_by_gecko_textview);
         loadingImage = findViewById(R.id.main_loading_logo);
-
+        
         init();
         subscribeObservers();
     }
@@ -108,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
 
         if(fetchFromServer) {
             mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
-            sharedPrefs.setSchedulerTime(System.currentTimeMillis());
         } else {
             if(mainViewModel.getLiveMarketData().getValue() == null)
                 mainViewModel.fetchMarketDataCache();
@@ -135,7 +135,6 @@ public class MainActivity extends AppCompatActivity {
         isFirstTime = sharedPrefs.getIsFirstTime();
         if(isFirstTime) {
             sharedPrefs.setBalance(10000);
-            sharedPrefs.setFirstTime(false);
             sharedPrefs.setCleanMarketTime(System.currentTimeMillis());
         }
 
@@ -201,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                         TelegramDialogFragment telegramDialogFragment = TelegramDialogFragment.getInstance();
                         telegramDialogFragment.show(getSupportFragmentManager(), "Telegram");
                         isFirstTime = false;
+                        sharedPrefs.setFirstTime(false);
                     }
 
                     long currentTime = System.currentTimeMillis();
@@ -290,7 +290,6 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            sharedPrefs.setSchedulerTime(System.currentTimeMillis());
                             mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
                         }
                     });
@@ -571,6 +570,9 @@ public class MainActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case R.id.nav_home:
                     selectedFragment = new MarketFragment();
+                    break;
+                case R.id.nav_watchlist:
+                    selectedFragment = new WatchListFragment();
                     break;
                 case R.id.nav_portfolio:
                     selectedFragment = new PortfolioFragment();
