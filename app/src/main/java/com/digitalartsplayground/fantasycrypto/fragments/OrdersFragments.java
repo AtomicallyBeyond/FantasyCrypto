@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.digitalartsplayground.fantasycrypto.MainActivity;
@@ -187,6 +188,7 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         ordersRecyclerView.setLayoutManager(linearLayoutManager);
         ordersRecyclerView.setAdapter(ordersAdapter);
+        itemTouchHelper.attachToRecyclerView(ordersRecyclerView);
 
         tabLayout.addTab(tabLayout.newTab().setText("Active Orders"), 0);
         tabLayout.addTab(tabLayout.newTab().setText("Filled Orders"), 1);
@@ -348,4 +350,23 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
             }
         });
     }
+
+
+    ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT | ItemTouchHelper.DOWN | ItemTouchHelper.UP) {
+
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+            //Remove swiped item from list and notify the RecyclerView
+            int position = viewHolder.getLayoutPosition();
+            watchlistViewModel.updateWatchListItem(watchlistAdapter.getPositionID(position), false);
+            watchlistAdapter.removeItem(position);
+        }
+    };
+
+    private ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
 }
