@@ -64,20 +64,3 @@
     </style>
 
 </resources>
-
-<!--<style name="BottomSheetDialogTheme" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
-<item name="android:windowIsFloating">false</item>
-<item name="android:windowSoftInputMode">stateVisible|adjustPan</item>
-</style>-->
-
-<!--
-        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogStyle</item>
-
-<style name="BottomSheetDialogStyle" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
-<item name="android:windowIsFloating">false</item>
-<item name="android:windowSoftInputMode">adjustResize</item>
-<item name="android:statusBarColor">@android:color/transparent</item>
-<item name="colorPrimary">@color/purple_500</item>
-<item name="colorPrimaryDark">@color/purple_700</item>
-<item name="colorAccent">@color/teal_200</item>
-</style>-->

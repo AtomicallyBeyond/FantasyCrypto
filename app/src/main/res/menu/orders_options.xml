@@ -2,17 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
     <item
         android:id="@+id/menu_delete_orders"
         android:icon="@drawable/delete"
-        android:title="Delete"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/menu_cancel_delete"
-        android:icon="@drawable/cancel"
-        android:title="Cancel Delete"
+        android:title="Delete All"
         app:showAsAction="never"/>
 
 </menu>

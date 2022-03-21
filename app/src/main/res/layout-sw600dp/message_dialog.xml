@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/reward_drawable">
+    android:background="@drawable/dialog_background">
 
     <TextView
         android:id="@+id/message_dialog_title"
@@ -16,7 +16,7 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:background="@drawable/reward_top_drawable"
+        android:background="@drawable/dialog_top"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

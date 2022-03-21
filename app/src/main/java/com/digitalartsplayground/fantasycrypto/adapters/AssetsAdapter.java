@@ -209,7 +209,6 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
                 gainPercentString = "+" + gainPercentString;
                 gainPercent.setTextColor(Color.GREEN);
             } else {
-                gainPercentString = "-" + gainPercentString;
                 gainPercent.setTextColor(Color.RED);
             }
 

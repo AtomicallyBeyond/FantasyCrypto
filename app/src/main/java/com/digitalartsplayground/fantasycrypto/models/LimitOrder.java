@@ -78,18 +78,17 @@ public class LimitOrder {
                       boolean isActive,
                       long timeCreated) {
 
-        this.valueString = NumberFormatter.currency(value);
-        this.value = value;
         this.coinID = coinID;
         this.coinName = coinName;
         this.coinSymbol = coinSymbol;
+        this.value = value;
         this.limitPrice = limitPrice;
         this.amount = amount;
-        this.accumulatedPurchaseSum = accumulatedPurchaseSum;
         this.isBuyOrder = isBuyOrder;
         this.isMarketOrder = isMarketOrder;
         this.isActive = isActive;
         this.timeCreated = timeCreated;
+        valueString = NumberFormatter.currency(value);
         fillDate = timeCreated;
         candleCheckTime = timeCreated;
 

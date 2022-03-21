@@ -261,9 +261,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        LiveData<Resource<CandleStickData>> liveCandleData = mainViewModel.getLiveCandleData();
-
-        liveCandleData.observe(MainActivity.this, new Observer<Resource<CandleStickData>>() {
+        mainViewModel.getLiveCandleData()
+                .observe(MainActivity.this, new Observer<Resource<CandleStickData>>() {
 
             @Override
             public void onChanged(Resource<CandleStickData> candleStickDataResource) {
@@ -312,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
 
                 List<LimitOrder> limitOrders = mainViewModel.getBackgroundActiveLimitOrders();
 
-                if(limitOrders != null && limitOrders.size() != 0) {
+                if(limitOrders != null && limitOrders.size() > 0) {
 
                     int time = 0;
 
@@ -323,7 +322,10 @@ public class MainActivity extends AppCompatActivity {
                         Runnable runnable = new Runnable() {
                             @Override
                             public void run() {
-                                mainViewModel.fetchCandleStickData(order.getCoinID(), String.valueOf(days));
+                                mainViewModel.fetchCandleStickData(
+                                        order.getCoinID(),
+                                        String.valueOf(days),
+                                        order.getTimeCreated());
                             }
                         };
 
@@ -344,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                LimitOrder limitOrder = mainViewModel.getBackgroundLimitOrder(candleStickData.getCoinID());
+                LimitOrder limitOrder = mainViewModel.getLimitByTimeCreated(candleStickData.getLimitTimeCreated());
 
                 if(limitOrder != null) {
 
@@ -370,15 +372,15 @@ public class MainActivity extends AppCompatActivity {
                                         limitOrder.getAccumulatedPurchaseSum());
                                 mainViewModel.saveCryptoAssetDB(asset);
                             } else {
+
                                 mainViewModel.updateCryptoAsset(
                                         limitOrder.getCoinID(),
                                         limitOrder.getAmount(),
                                         limitOrder.getAccumulatedPurchaseSum());
                             }
 
-
-
                         } else {
+
                             float balance = sharedPrefs.getBalance();
 
                             balance = balance + CryptoCalculator
@@ -387,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
                             sharedPrefs.setBalance(balance);
                         }
 
-                        updateLimit(limitOrder, limitFilledTime);
+                        mainViewModel.updateLimit(limitOrder, limitFilledTime, false);
 
                     } else {
                         int index = candleStickData.size() - 1;
@@ -434,6 +436,7 @@ public class MainActivity extends AppCompatActivity {
                                                 limitOrder.getAccumulatedPurchaseSum());
                                         mainViewModel.saveCryptoAssetDB(asset);
                                     } else {
+
                                         mainViewModel.updateCryptoAsset(
                                                 limitOrder.getCoinID(),
                                                 limitOrder.getAmount(),
@@ -441,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
                                         );
                                     }
 
-                                    updateLimit(limitOrder, marketUnit.getTimeStamp());
+                                    mainViewModel.updateLimit(limitOrder, marketUnit.getTimeStamp(), false);
                                 }
 
                             } else {
@@ -453,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
                                             .calcAmountMinusFEE(limitOrder.getLimitPrice(), limitOrder.getAmount());
                                     sharedPrefs.setBalance(balance);
 
-                                    updateLimit(limitOrder, marketUnit.getTimeStamp());
+                                    mainViewModel.updateLimit(limitOrder, marketUnit.getTimeStamp(), false);
                                 }
 
                             }
@@ -469,6 +472,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void cleanLimitHistory() {
+
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -481,6 +485,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cleanCoinCache(long timeLimit) {
+
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -490,15 +495,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void updateLimit(LimitOrder limitOrder, long time) {
-        limitOrder.setActive(false);
-        limitOrder.setCandleCheckTime(time);
-        limitOrder.setFillDate(time);
-        mainViewModel.updateLimitOrder(limitOrder);
-    }
-
-
     private void hideErrorScreen() {
+
         if(errorView.getVisibility() == View.VISIBLE)
             errorView.setVisibility(View.GONE);
 
@@ -513,6 +511,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void hideLoadingScreen() {
+
         if(progressBar.getVisibility() == View.VISIBLE)
             progressBar.setVisibility(View.GONE);
 
@@ -521,7 +520,6 @@ public class MainActivity extends AppCompatActivity {
 
         if(poweredByGeckoTextview.getVisibility() == View.VISIBLE)
             poweredByGeckoTextview.setVisibility(View.GONE);
-
 
         showBottomNavigationView();
     }
@@ -539,7 +537,6 @@ public class MainActivity extends AppCompatActivity {
     private void showErrorScreen() {
 
         hideBottomNavigationView();
-
         errorView.setVisibility(View.VISIBLE);
         refreshButton.setVisibility(View.VISIBLE);
         refreshTextView.setVisibility(View.VISIBLE);
@@ -547,6 +544,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void hideBottomNavigationView(){
+
         if(bottomNavigationView.getVisibility() == View.VISIBLE) {
             bottomNavigationView.setVisibility(View.GONE);
             bottomNavigationView.setClickable(false);
@@ -555,6 +553,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void showBottomNavigationView() {
+
         if(bottomNavigationView.getVisibility() == View.GONE) {
             bottomNavigationView.setVisibility(View.VISIBLE);
             bottomNavigationView.setClickable(true);
@@ -565,6 +564,7 @@ public class MainActivity extends AppCompatActivity {
     BottomNavigationView.OnItemSelectedListener navListener = new NavigationBarView.OnItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
+
             Fragment selectedFragment = null;
 
             switch (item.getItemId()) {
@@ -625,6 +625,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkAdServingTimeLimit(){
+
         counter = sharedPrefs.getCounter();
 
         if(sharedPrefs.getExpireDate() < System.currentTimeMillis()) {
@@ -634,11 +635,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     BannerListener bannerListener = new BannerListener() {
+
         @Override
-        public void onBannerAdLoaded() {
-
-        }
-
+        public void onBannerAdLoaded() { }
         @Override
         public void onBannerAdLoadFailed(IronSourceError ironSourceError) {
         // Called after a banner has attempted to load an ad but failed.
@@ -649,10 +648,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
         @Override
         public void onBannerAdClicked() {
-
             counter++;
             sharedPrefs.setCounter(counter);
             sharedPrefs.setExpireDate(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24));
@@ -660,26 +657,18 @@ public class MainActivity extends AppCompatActivity {
             if(counter > 4) {
                     IronSource.destroyBanner(banner);
             }
-
         }
-
         @Override
-        public void onBannerAdScreenPresented() {
-
-        }
-
+        public void onBannerAdScreenPresented() {}
         @Override
-        public void onBannerAdScreenDismissed() {
-
-        }
-
+        public void onBannerAdScreenDismissed() {}
         @Override
-        public void onBannerAdLeftApplication() {
-
-        }
+        public void onBannerAdLeftApplication() { }
     };
 
+
     public void setMarketTab() {
+
         bottomNavigationView.setSelectedItemId(R.id.nav_home);
     }
 }

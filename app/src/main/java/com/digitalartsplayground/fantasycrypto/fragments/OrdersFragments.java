@@ -1,22 +1,16 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import androidx.activity.OnBackPressedCallback;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
@@ -28,121 +22,19 @@ import com.digitalartsplayground.fantasycrypto.MainActivity;
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.adapters.OrdersAdapter;
 import com.digitalartsplayground.fantasycrypto.interfaces.OrderClickedListener;
-import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.OrdersFragmentViewModel;
-import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
-import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.google.android.material.tabs.TabLayout;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 
-public class OrdersFragments extends Fragment implements OrderClickedListener {
+public class OrdersFragments extends Fragment implements OrderClickedListener{
 
     private OrdersFragmentViewModel ordersViewModel;
     private RecyclerView ordersRecyclerView;
     private OrdersAdapter ordersAdapter;
     private TabLayout tabLayout;
-    private ImageButton deleteButton;
-    private ConstraintLayout selectAllLayout;
-    private ImageView selectAllFilled;
-    private MenuItem deleteOption;
-    private MenuItem cancelOption;
-
-
-    @SuppressLint("RestrictedApi")
-    @Override
-    public void onCreateOptionsMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater inflater) {
-        inflater.inflate(R.menu.orders_options, menu);
-
-        if(menu instanceof MenuBuilder) {
-            ((MenuBuilder) menu).setOptionalIconsVisible(true);
-        }
-
-        MenuItem item = menu.findItem(R.id.menu_cancel_delete);
-        item.setVisible(false);
-
-        deleteOption = menu.findItem(R.id.menu_delete_orders);
-        cancelOption = menu.findItem(R.id.menu_cancel_delete);
-
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull @NotNull MenuItem item) {
-
-        int count = ordersRecyclerView.getChildCount();
-
-        if(count > 0 || item.getItemId() == R.id.menu_cancel_delete) {
-
-            if(item.getItemId() == R.id.menu_delete_orders) {
-                setDeleteState();
-                deleteOption.setVisible(false);
-                cancelOption.setVisible(true);
-            } else if(item.getItemId() == R.id.menu_cancel_delete) {
-                cancelDeleteState();
-                deleteOption.setVisible(true);
-                cancelOption.setVisible(false);
-            }
-
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-    private void setDeleteState() {
-        int count = ordersRecyclerView.getChildCount();
-
-        if(count > 0) {
-            cancelOption.setVisible(true);
-            deleteOption.setVisible(false);
-            tabLayout.setVisibility(View.INVISIBLE);
-            deleteButton.setVisibility(View.VISIBLE);
-            selectAllLayout.setVisibility(View.VISIBLE);
-
-            ordersViewModel.setDeleteState(true);
-            ordersAdapter.setDeleteState();
-
-        }
-    }
-
-    private void cancelDeleteState() {
-        cancelOption.setVisible(false);
-        deleteOption.setVisible(true);
-        tabLayout.setVisibility(View.VISIBLE);
-        deleteButton.setVisibility(View.GONE);
-        selectAllLayout.setVisibility(View.GONE);
-        selectAllFilled.setVisibility(View.GONE);
-
-        ordersViewModel.setDeleteState(false);
-        ordersAdapter.cancelDeleteState();
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-
-                if(ordersViewModel.isDeleteState()) {
-                    cancelDeleteState();
-                } else {
-                    this.setEnabled(false);
-                    requireActivity().onBackPressed();
-                }
-            }
-        };
-
-
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
-    }
-
 
 
     @Override
@@ -151,6 +43,7 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
         ordersViewModel = new ViewModelProvider(requireActivity())
                 .get(OrdersFragmentViewModel.class);
+
     }
 
 
@@ -161,9 +54,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
         View view = inflater.inflate(R.layout.orders_fragment, container, false);
 
-        deleteButton = view.findViewById(R.id.orders_delete);
-        selectAllLayout = view.findViewById(R.id.limits_select_all_container);
-        selectAllFilled = view.findViewById(R.id.limits_select_all_filled_circle);
         ordersRecyclerView = view.findViewById(R.id.orders_recyclerView);
         ordersRecyclerView.setHasFixedSize(true);
         tabLayout = view.findViewById(R.id.orders_tabs);
@@ -171,6 +61,7 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         init();
         return view;
     }
+
 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -188,7 +79,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         ordersRecyclerView.setLayoutManager(linearLayoutManager);
         ordersRecyclerView.setAdapter(ordersAdapter);
-        itemTouchHelper.attachToRecyclerView(ordersRecyclerView);
 
         tabLayout.addTab(tabLayout.newTab().setText("Active Orders"), 0);
         tabLayout.addTab(tabLayout.newTab().setText("Filled Orders"), 1);
@@ -205,32 +95,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         }
 
         subscribeObservers();
-        setListeners();
-    }
-
-
-    private void setListeners() {
-
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ordersAdapter.deleteSelectedPositions();
-                cancelDeleteState();
-            }
-        });
-
-        selectAllLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(selectAllFilled.getVisibility() == View.GONE) {
-                    selectAllFilled.setVisibility(View.VISIBLE);
-                    ordersAdapter.selectAll();
-                } else {
-                    selectAllFilled.setVisibility(View.GONE);
-                    ordersAdapter.deselectAll();
-                }
-            }
-        });
     }
 
 
@@ -244,48 +108,46 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
 
                 if(aBoolean) {
 
-                    LiveData<List<LimitOrder>> liveActiveOrders = ordersViewModel.getActiveLimitOrders();
+                    ordersViewModel.getFilledLimitOrders().removeObservers(getViewLifecycleOwner());
 
-                    liveActiveOrders.observe(getViewLifecycleOwner(), new Observer<List<LimitOrder>>() {
+                    ordersViewModel.getActiveLimitOrders().observe(getViewLifecycleOwner(), new Observer<List<LimitOrder>>() {
                         @Override
                         public void onChanged(List<LimitOrder> limitOrders) {
 
                             if(limitOrders != null) {
                                 ordersAdapter.setOrders(limitOrders, false);
-                                liveActiveOrders.removeObserver(this);
                             }
-
-
                         }
                     });
 
+                    if(ordersViewModel.getActiveLimitOrders().getValue() == null)
+                        ordersViewModel.loadActiveLimitOrders();
+
+                    itemTouchHelper.attachToRecyclerView(ordersRecyclerView);
+
                 } else {
 
-                    LiveData<List<LimitOrder>> liveFilledOrders = ordersViewModel.getFilledLimitOrders();
+                    ordersViewModel.getActiveLimitOrders().removeObservers(getViewLifecycleOwner());
 
-                    liveFilledOrders.observe(getViewLifecycleOwner(), new Observer<List<LimitOrder>>() {
+                    ordersViewModel.getFilledLimitOrders().observe(getViewLifecycleOwner(), new Observer<List<LimitOrder>>() {
                         @Override
                         public void onChanged(List<LimitOrder> limitOrders) {
 
                             if(limitOrders != null) {
                                 ordersAdapter.setOrders(limitOrders, true);
-                                liveFilledOrders.removeObserver(this);
                             }
+                        }
+                    });
 
-                        } //end onChanged FilledOrders
+                    if(ordersViewModel.getFilledLimitOrders().getValue() == null)
+                        ordersViewModel.loadFilledLimitOrders();
 
-                    }); //observeFilledOrders
-
-                } //end else statement
-
-
-            } //end onChanged OrderState
-
-        }); //observeOrderState
+                    itemTouchHelper.attachToRecyclerView(null);
+                }
+            }
+        });
 
     }
-
-
 
     TabLayout.OnTabSelectedListener tabSelectedListener = new TabLayout.OnTabSelectedListener() {
 
@@ -297,8 +159,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
                     ordersViewModel.setLiveActiveOrdersState(true);
                     break;
                 case 1:
-                    if(ordersViewModel.isDeleteState())
-                        cancelDeleteState();
                     setMenuVisibility(false);
                     ordersViewModel.setLiveActiveOrdersState(false);
                     break;
@@ -316,42 +176,6 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
         }
     };
 
-    @Override
-    public void onOrderDelete(LimitOrder limitOrder, int position) {
-
-        SharedPrefs sharedPrefs = SharedPrefs.getInstance(getContext());
-
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-
-                if(ordersViewModel.getLimitByTimeStamp(limitOrder.getTimeCreated()).isActive()) {
-                    if(limitOrder.isBuyOrder()) {
-                        sharedPrefs.setBalance(sharedPrefs.getBalance() + limitOrder.getValue());
-                    } else {
-
-                        CryptoAsset asset = ordersViewModel.getAsset(limitOrder.getCoinID());
-
-                        if(asset == null) {
-
-                            asset = new CryptoAsset(limitOrder.getCoinID(), limitOrder.getAmount(), limitOrder.getAccumulatedPurchaseSum());
-                            ordersViewModel.addAsset(asset);
-
-                        } else {
-                            ordersViewModel.updateCryptoAsset(
-                                    limitOrder.getCoinID(),
-                                    limitOrder.getAmount(),
-                                    limitOrder.getAccumulatedPurchaseSum());
-                        }
-                    }
-
-                    ordersViewModel.deleteLimit(limitOrder.getCoinID(), limitOrder.getTimeCreated());
-                }
-            }
-        });
-    }
-
-
     ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT | ItemTouchHelper.DOWN | ItemTouchHelper.UP) {
 
         @Override
@@ -359,14 +183,62 @@ public class OrdersFragments extends Fragment implements OrderClickedListener {
             return false;
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-            //Remove swiped item from list and notify the RecyclerView
+            //Remove swiped item from Database and Livedata will update Recyclerview
+
             int position = viewHolder.getLayoutPosition();
-            watchlistViewModel.updateWatchListItem(watchlistAdapter.getPositionID(position), false);
-            watchlistAdapter.removeItem(position);
+            LimitOrder limitOrder = ordersAdapter.getActiveLimitOrder(position);
+
+            if(limitOrder != null) {
+
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(requireContext());
+                LayoutInflater inflater = getActivity().getLayoutInflater();
+                View dialogView = inflater.inflate(R.layout.message_dialog, null);
+                dialogBuilder.setView(dialogView);
+                AlertDialog dialog = dialogBuilder.create();
+
+                TextView titleView = (TextView)dialogView.findViewById(R.id.message_dialog_title);
+                titleView.setText("Confirm Cancellation");
+                TextView messageView = (TextView)dialogView.findViewById(R.id.message_dialog_textview);
+                messageView.setText("Cancel " + limitOrder.getCoinName() + " Order?");
+
+                TextView cancelButton = (TextView)dialogView.findViewById(R.id.message_dialog_cancel_button);
+                cancelButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ordersAdapter.notifyDataSetChanged();
+                        dialog.cancel();
+                    }
+                });
+
+                TextView okButton = (TextView)dialogView.findViewById(R.id.message_dialog_ok_button);
+                okButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ordersViewModel.deleteLimitOrder(limitOrder);
+                        dialog.cancel();
+                    }
+                });
+
+                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        ordersAdapter.notifyDataSetChanged();
+                    }
+                });
+
+                dialog.show();
+            }
+
         }
     };
 
-    private ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+    private final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+
+    @Override
+    public void onOrderDelete(LimitOrder limitOrder, int position) {
+
+    }
 }

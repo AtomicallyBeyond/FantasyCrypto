@@ -2,7 +2,7 @@ package com.digitalartsplayground.fantasycrypto.util;
 
 public class CryptoCalculator {
 
-    public static final float FEE = 0.001f;
+    public static final float FEE = 0.005f;
 
     public static float calcMinimumAmount(float price){
         return (1.2f/(1 + FEE)) / price;

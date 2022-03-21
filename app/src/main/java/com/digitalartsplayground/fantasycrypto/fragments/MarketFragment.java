@@ -142,6 +142,7 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
                 sharedPrefs.setBalance(10000);
                 sharedPrefs.setLimitUpdateTime(0);
                 sharedPrefs.setMarketDataTimeStamp(0);
+                sharedPrefs.setFirstTime(true);
 
                 CryptoDatabase.getInstance(getContext()).clearAllTables();
 

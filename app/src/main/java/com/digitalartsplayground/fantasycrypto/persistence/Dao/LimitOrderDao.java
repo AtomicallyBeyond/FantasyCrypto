@@ -22,7 +22,7 @@ public interface LimitOrderDao {
     LiveData<List<LimitOrder>> getFilledOrders();
 
     @Query("DELETE FROM limit_orders WHERE coin_id = :id AND time_created = :timeCreated")
-    void deleteByTimeCreated(String id, long timeCreated);
+    int deleteByTimeCreated(String id, long timeCreated);
 
 
     //Queries done on background thread
@@ -30,15 +30,11 @@ public interface LimitOrderDao {
     @Query("DELETE FROM limit_orders WHERE time_created NOT IN (SELECT time_created FROM limit_orders WHERE is_active = 0 ORDER BY time_created DESC LIMIT 500) AND is_active = 0")
     void cleanInactiveLimitHistory();
 
-
     @Query("SELECT COUNT(is_active) FROM limit_orders WHERE is_active = 1")
     int getActiveCount();
 
     @Query("SELECT COUNT(is_active) FROM limit_orders WHERE is_active = 0")
     int getInactiveLimitCount();
-
-    @Query("SELECT * FROM limit_orders where time_created=:timeStamp")
-    LimitOrder getLimitByTimeStamp(long timeStamp);
 
     @Query("SELECT * FROM limit_orders where is_active=1")
     List<LimitOrder> getBackgroundActiveOrders();
@@ -49,6 +45,6 @@ public interface LimitOrderDao {
     @Query("SELECT * FROM limit_orders where is_active=1 AND buy_order=0")
     List<LimitOrder> getActiveSellOrders();
 
-    @Query("SELECT * FROM limit_orders where coin_id=:coinID")
-    LimitOrder getBackgroundLimitOrder(String coinID);
+    @Query("SELECT * FROM limit_orders where time_created=:timeCreated")
+    LimitOrder getLimitByTimeCreated(long timeCreated);
 }

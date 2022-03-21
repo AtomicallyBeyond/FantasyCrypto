@@ -1,11 +1,14 @@
 package com.digitalartsplayground.fantasycrypto.fragments;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,6 +42,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinBottomViewModel.OrderType;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinBottomViewModel.TradingType;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinBottomViewModel.TradingStage;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 import com.skydoves.powerspinner.OnSpinnerItemSelectedListener;
@@ -492,7 +496,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View view) {
 
-                if(activeOrdersCount >= 20 && tradingType == TradingType.LIMIT ) {
+                if(activeOrdersCount >= 4 && tradingType == TradingType.LIMIT ) {
                     String title = "Exceeded Order Limit";
                     String message =
                             "Cancel an active limit order to place a new one. \n\n" +
@@ -598,8 +602,33 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     }
 
     private void showMessageDialog(String title, String message) {
-        MessageDialogFragment dialogFragment = MessageDialogFragment.getInstance(title, message);
-        dialogFragment.showNow(getChildFragmentManager(), "message");
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(requireContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.message_dialog, null);
+        dialogBuilder.setView(dialogView);
+        AlertDialog dialog = dialogBuilder.create();
+
+        TextView titleView = (TextView)dialogView.findViewById(R.id.message_dialog_title);
+        titleView.setText(title);
+        TextView messageView = (TextView)dialogView.findViewById(R.id.message_dialog_textview);
+        messageView.setText(message);
+
+        TextView cancelButton = (TextView)dialogView.findViewById(R.id.message_dialog_cancel_button);
+        cancelButton.setVisibility(View.GONE);
+
+        TextView okButton = (TextView)dialogView.findViewById(R.id.message_dialog_ok_button);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.cancel();
+            }
+        });
+
+        dialog.show();
+
+/*        MessageDialogFragment dialogFragment = MessageDialogFragment.getInstance(title, message);
+        dialogFragment.showNow(getChildFragmentManager(), "message");*/
     }
 
 
@@ -805,7 +834,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     }
 
 
-    //If isActive = true indicates a limit trade else it's a market trade.
+    //If isActive == true indicates a limit trade else it's a market trade.
     private void completeOrder(float amount, boolean isActive) {
 
         messageBox.setText("");
@@ -823,7 +852,7 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
             value = CryptoCalculator.calcAmountMinusFEE(limitPrice, amount);
         }
 
-        long tempTime = System.currentTimeMillis();
+        long timeCreated = System.currentTimeMillis() + (30 * 60 * 1000);
 
         boolean isMarketOrder = tradingType == TradingType.MARKET;
 
@@ -838,9 +867,11 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
                         isBuyOrder,
                         isMarketOrder,
                         isActive,
-                        tempTime);
+                        timeCreated);
 
-        if(!isBuyOrder) {
+        if(isBuyOrder) {
+            limitOrder.setAccumulatedPurchaseSum(amount * limitPrice);
+        } else {
             limitOrder.setAccumulatedPurchaseSum(amount * asset.getAverageCostPerUnit());
         }
 

@@ -130,8 +130,8 @@ public class MainViewModel extends AndroidViewModel {
         return repository.getBackgroundActiveLimitOrders();
     }
 
-    public LimitOrder getBackgroundLimitOrder(String coinID) {
-        return repository.getBackgroundLimitOrder(coinID);
+    public LimitOrder getLimitByTimeCreated(long timeCreated) {
+        return repository.getLimitByTimeCreated(timeCreated);
     }
 
     public void updateLimitOrder(LimitOrder limitOrder){
@@ -150,9 +150,9 @@ public class MainViewModel extends AndroidViewModel {
         return repository.getCryptoAsset(coinID);
     }
 
-    public void fetchCandleStickData(String id, String days) {
+    public void fetchCandleStickData(String id, String days, long limitTimeCreated) {
 
-        LiveData<Resource<CandleStickData>> liveData = repository.getCandleStickData(id, "usd", days);
+        LiveData<Resource<CandleStickData>> liveData = repository.getCandleStickData(id, "usd", days, limitTimeCreated);
 
         liveCandleData.addSource(liveData, new Observer<Resource<CandleStickData>>() {
             @Override
@@ -225,5 +225,12 @@ public class MainViewModel extends AndroidViewModel {
             }
         });
 
+    }
+
+    public void updateLimit(LimitOrder limitOrder, long timeStamp, boolean isActive) {
+        limitOrder.setCandleCheckTime(timeStamp);
+        limitOrder.setFillDate(timeStamp);
+        limitOrder.setActive(isActive);
+        repository.addLimitOrder(limitOrder);
     }
 }

@@ -15,7 +15,7 @@ public class LimitHelper {
 
         int days = (int)(timeDifference / MILLISECONDS_IN_DAY) + 1;
 
-        if(days == 1) {
+        if(days <= 1) {
             return 1;
         } else if (days <= 7) {
             return 7;

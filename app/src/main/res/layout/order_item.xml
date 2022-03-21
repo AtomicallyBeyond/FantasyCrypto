@@ -3,7 +3,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/linear_main_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -52,8 +51,7 @@
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toTopOf="@+id/limit_trade_type"
-                app:layout_constraintEnd_toEndOf="@+id/limit_trade_type"
-                app:layout_constraintStart_toEndOf="@+id/limits_selected_barrier"
+                app:layout_constraintStart_toStartOf="@+id/limit_trade_type"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -65,8 +63,8 @@
                 android:textColor="@color/gray"
                 android:textSize="10sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/limit_start_barrier"
-                app:layout_constraintStart_toEndOf="@+id/limits_selected_barrier"
+                app:layout_constraintEnd_toEndOf="@+id/limit_start_barrier"
+                app:layout_constraintStart_toStartOf="@+id/limits_selected_guide"
                 app:layout_constraintTop_toBottomOf="@+id/limit_sell_type" />
 
 
@@ -104,28 +102,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/limit_amount" />
 
-            <ImageView
-                android:id="@+id/limits_selected_circle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_selected_circle"
-                android:visibility="gone"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/limits_selected_barrier"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-
-            <ImageView
-                android:id="@+id/limits_empty_circle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_unselected_circle"
-                android:visibility="gone"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/limits_selected_barrier"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-
             <androidx.constraintlayout.widget.Barrier
                 android:id="@+id/limit_start_barrier"
                 android:layout_width="wrap_content"
@@ -139,13 +115,13 @@
                 android:layout_height="wrap_content"
                 app:barrierDirection="bottom" />
 
-            <androidx.constraintlayout.widget.Barrier
-                android:id="@+id/limits_selected_barrier"
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/limits_selected_guide"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:barrierMargin="10dp"
-                app:barrierDirection="right"
-                app:constraint_referenced_ids="limits_selected_circle, limits_empty_circle" />
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="15dp"
+                app:layout_constraintStart_toStartOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

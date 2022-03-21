@@ -67,8 +67,11 @@ public class Repository {
 
     }
 
-    public void deleteLimit(String coinID, long timeCreated) {
-        limitOrderDao.deleteByTimeCreated(coinID, timeCreated);
+    public boolean deleteLimit(String coinID, long timeCreated) {
+
+        int value = limitOrderDao.deleteByTimeCreated(coinID, timeCreated);
+
+        return value != 0;
     }
 
     public void cleanInactiveLimitHistory(){
@@ -99,16 +102,13 @@ public class Repository {
         return limitOrderDao.getActiveSellOrders();
     }
 
-    public LimitOrder getLimitByTimeStamp(long timeStamp) {
-        return limitOrderDao.getLimitByTimeStamp(timeStamp);
-    }
 
     public LiveData<List<LimitOrder>> getFilledLimitOrders() {
         return limitOrderDao.getFilledOrders();
     }
 
-    public LimitOrder getBackgroundLimitOrder(String coinID) {
-        return limitOrderDao.getBackgroundLimitOrder(coinID);
+    public LimitOrder getLimitByTimeCreated(long timeCreated) {
+        return limitOrderDao.getLimitByTimeCreated(timeCreated);
     }
 
 
@@ -344,7 +344,7 @@ public class Repository {
     }
 
 
-    public LiveData<Resource<CandleStickData>> getCandleStickData(String id, String currency, String days) {
+    public LiveData<Resource<CandleStickData>> getCandleStickData(String id, String currency, String days, long limitTimeCreated) {
         return new CoinDataFetcher<CandleStickData>(id, AppExecutors.getInstance()) {
 
             @NonNull
@@ -358,6 +358,7 @@ public class Repository {
             protected CandleStickData processResponse(ApiResponse.ApiSuccessResponse response) {
                 CandleStickData candleStickData = (CandleStickData) response.getBody();
                 candleStickData.setCoinID(id);
+                candleStickData.setLimitTimeCreated(limitTimeCreated);
 
                 return candleStickData;
             }

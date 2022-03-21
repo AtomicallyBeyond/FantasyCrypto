@@ -29,7 +29,7 @@ public class CandleStickChartViewModel extends AndroidViewModel {
 
     public void fetchOneDayCandle(String coinID) {
 
-        LiveData<Resource<CandleStickData>> liveData = repository.getCandleStickData(coinID, "usd", "1");
+        LiveData<Resource<CandleStickData>> liveData = repository.getCandleStickData(coinID, "usd", "1", 0);
 
         liveOneDay.addSource(liveData, new Observer<Resource<CandleStickData>>() {
             @Override
