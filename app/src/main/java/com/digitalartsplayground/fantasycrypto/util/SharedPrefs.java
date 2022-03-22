@@ -11,11 +11,10 @@ public class SharedPrefs {
     public static final String BALANCE = "balance";
     public static final String FIRST_TIME = "firstTime";
     public static final String MARKET_DATA_FETCHER = "marketDataFetcher";
-    public static final String MARKET_DATA_FETCHER_COUNT = "marketDataFetcherCount";
     public static final String LIMIT_UPDATE_TIME = "limitUpdateTime";
-    public static final String SCHEDULER_TIME = "schedulerTime";
     public static final String CLEAN_MARKET_TIME = "cleanMarketTime";
-    public static final String COUNTER = "counter";
+    public static final String BANNER_CLICK_COUNTER = "bannerClickCounter";
+    public static final String COIN_VIEW_COUNT = "coinViewCount";
     public static final String EXPIRE_DATE = "expireDate";
     public static final String TOTAL_VALUE = "totalValue";
 
@@ -90,14 +89,22 @@ public class SharedPrefs {
         editor.putLong(EXPIRE_DATE, expireDate).apply();
     }
 
-    public int getCounter() { return sharedPreferences.getInt(COUNTER, 0); }
+    public int getBannerClickCounter() { return sharedPreferences.getInt(BANNER_CLICK_COUNTER, 0); }
 
-    public void setCounter(int counter){
-        editor.putInt(COUNTER, counter).apply();
+    public void setBannerClickCounter(int count) {
+        editor.putInt(BANNER_CLICK_COUNTER, count).apply();
+    }
+
+    public int getCoinViewCount() {
+        return sharedPreferences.getInt(COIN_VIEW_COUNT, 0);
+    }
+
+    public void setCoinViewCount(int count) {
+        editor.putInt(COIN_VIEW_COUNT, count).apply();
     }
 
     public void resetAdPrefs(){
-        setCounter(0);
+        setBannerClickCounter(0);
         setExpireDate(0);
     }
 

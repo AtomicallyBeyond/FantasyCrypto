@@ -1,17 +1,10 @@
 package com.digitalartsplayground.fantasycrypto;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Html;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -39,6 +32,7 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.IronSourceBannerLayout;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.BannerListener;
+import com.ironsource.mediationsdk.sdk.InterstitialListener;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -78,25 +72,6 @@ public class CoinActivity extends AppCompatActivity {
     private SharedPrefs sharedPrefs;
     private SwitchCompat graphSwitch;
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        IronSource.onResume(this);
-        loadIronSourceBanner();
-        checkAdServingTimeLimit();
-
-        if(SharedPrefs.getInstance(this).getMarketDataTimeStamp()  > Constants.FETCH_TIME_CONSTANT) {
-            coinActivityViewModel.updateMarketUnit(coinID);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        IronSource.onPause(this);
-        destroyBanner();
-    }
 
     @Override
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -106,44 +81,13 @@ public class CoinActivity extends AppCompatActivity {
         init();
     }
 
-    private void checkAdServingTimeLimit(){
-        counter = sharedPrefs.getCounter();
-
-        if(sharedPrefs.getExpireDate() < System.currentTimeMillis()) {
-            sharedPrefs.resetAdPrefs();
-            counter = 0;
-        }
-    }
-
-    private void destroyBanner(){
-
-        if(banner != null && !banner.isDestroyed()) {
-            IronSource.destroyBanner(banner);
-            banner.setBannerListener(null);
-            banner = null;
-        }
-
-        if(coinBannerContainer != null) {
-            coinBannerContainer.removeView(banner);
-        }
-    }
-
-    private void loadIronSourceBanner() {
-
-/*        if(banner == null || banner.isDestroyed()) {
-            if(counter < 5) {
-                banner = IronSource.createBanner(this, ISBannerSize.SMART);
-                coinBannerContainer.addView(banner);
-
-                if(banner != null) {
-                    IronSource.loadBanner(banner);
-                    banner.setBannerListener(bannerListener);
-                }
-            }
-        }*/
-    }
 
     private void init() {
+
+        int coinViewCount = sharedPrefs.getCoinViewCount() + 1;
+        sharedPrefs.setCoinViewCount(coinViewCount);
+        IronSource.setInterstitialListener(interstitialListener);
+        IronSource.loadInterstitial();
 
         coinID = getIntent().getStringExtra(EXTRA_ID);
         coinActivityViewModel = new ViewModelProvider(this).get(CoinActivityViewModel.class);
@@ -172,6 +116,69 @@ public class CoinActivity extends AppCompatActivity {
         initTabLayout();
         setListeners();
         subscribeObservers();
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        IronSource.onResume(this);
+        checkAdServingTimeLimit();
+        loadIronSourceBanner();
+
+        if(SharedPrefs.getInstance(this).getMarketDataTimeStamp()  > Constants.FETCH_TIME_CONSTANT_UPDATE) {
+            coinActivityViewModel.updateMarketUnit(coinID);
+        }
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        IronSource.onPause(this);
+        destroyBanner();
+    }
+
+
+    private void checkAdServingTimeLimit(){
+
+        counter = sharedPrefs.getBannerClickCounter();
+
+        if(sharedPrefs.getExpireDate() < System.currentTimeMillis()) {
+            sharedPrefs.resetAdPrefs();
+            counter = 0;
+        }
+    }
+
+
+    private void loadIronSourceBanner() {
+
+        if(banner == null || banner.isDestroyed()) {
+            if(counter < 5) {
+                banner = IronSource.createBanner(this, ISBannerSize.SMART);
+                coinBannerContainer.addView(banner);
+
+                if(banner != null) {
+                    IronSource.loadBanner(banner);
+                    banner.setBannerListener(bannerListener);
+                }
+            }
+        }
+    }
+
+
+    private void destroyBanner(){
+
+        if(banner != null && !banner.isDestroyed()) {
+            IronSource.destroyBanner(banner);
+            banner.setBannerListener(null);
+            banner = null;
+        }
+
+        if(coinBannerContainer != null) {
+            coinBannerContainer.removeView(banner);
+        }
     }
 
 
@@ -427,8 +434,7 @@ public class CoinActivity extends AppCompatActivity {
 
     BannerListener bannerListener = new BannerListener() {
         @Override
-        public void onBannerAdLoaded() {
-        }
+        public void onBannerAdLoaded() {}
 
         @Override
         public void onBannerAdLoadFailed(IronSourceError ironSourceError) {
@@ -443,39 +449,57 @@ public class CoinActivity extends AppCompatActivity {
 
         @Override
         public void onBannerAdClicked() {
-
             counter++;
-            sharedPrefs.setCounter(counter);
+            sharedPrefs.setBannerClickCounter(counter);
             sharedPrefs.setExpireDate(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
 
             if(counter > 4) {
                 destroyBanner();
             }
-
         }
 
         @Override
-        public void onBannerAdScreenPresented() {
-        }
-
+        public void onBannerAdScreenPresented() { }
         @Override
-        public void onBannerAdScreenDismissed() {
-        }
-
+        public void onBannerAdScreenDismissed() {}
         @Override
-        public void onBannerAdLeftApplication() {
-
-        }
+        public void onBannerAdLeftApplication() {}
     };
 
+    InterstitialListener interstitialListener = new InterstitialListener() {
+        @Override
+        public void onInterstitialAdReady() {
+
+            int coinViewCount = sharedPrefs.getCoinViewCount();
+
+            if(coinViewCount > 20) {
+                IronSource.showInterstitial();
+                sharedPrefs.setCoinViewCount(0);
+            }
+        }
+
+        @Override
+        public void onInterstitialAdLoadFailed(IronSourceError ironSourceError) {}
+        @Override
+        public void onInterstitialAdOpened() {}
+        @Override
+        public void onInterstitialAdClosed() {}
+        @Override
+        public void onInterstitialAdShowSucceeded() {}
+        @Override
+        public void onInterstitialAdShowFailed(IronSourceError ironSourceError) {}
+        @Override
+        public void onInterstitialAdClicked() { }
+    };
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
+        IronSource.setInterstitialListener(null);
+
         coinActivityViewModel = null;
         tabLayout = null;
-
         coinID = null;
         currentPriceString = null;
         buyButton = null;

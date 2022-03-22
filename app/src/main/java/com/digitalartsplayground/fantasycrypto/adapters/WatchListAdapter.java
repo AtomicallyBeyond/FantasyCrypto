@@ -1,13 +1,9 @@
 package com.digitalartsplayground.fantasycrypto.adapters;
 
 import android.graphics.Color;
-import android.view.DragEvent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,8 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
+import com.digitalartsplayground.fantasycrypto.models.MarketWatchUnit;
 import com.robinhood.spark.SparkView;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WatchListAdapter extends RecyclerView.Adapter<WatchListAdapter.ViewHolder> {
-    private List<MarketUnitMaster> marketList = new ArrayList<>(1000);
+    private List<MarketWatchUnit> marketList = new ArrayList<>(1000);
     private ItemClickedListener itemClickedListener;
 
 
@@ -45,7 +40,7 @@ public class WatchListAdapter extends RecyclerView.Adapter<WatchListAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull WatchListAdapter.ViewHolder holder, int position) {
-        MarketUnitMaster marketUnit = marketList.get(position);
+        MarketWatchUnit marketUnit = marketList.get(position);
 
         holder.cryptoName.setText(marketUnit.getCoinName());
         holder.cryptoSymbol.setText(marketUnit.getCoinSymbol());
@@ -78,7 +73,7 @@ public class WatchListAdapter extends RecyclerView.Adapter<WatchListAdapter.View
         return marketList.size();
     }
 
-    public void setMarketList(List<MarketUnitMaster> marketList){
+    public void setMarketList(List<MarketWatchUnit> marketList){
         this.marketList = marketList;
         notifyDataSetChanged();
     }

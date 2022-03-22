@@ -1,7 +1,6 @@
 package com.digitalartsplayground.fantasycrypto.models;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -11,9 +10,8 @@ import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-
-@Entity(tableName = "market_data")
-public class MarketUnitMaster {
+@Entity
+public class MarketUpdate {
 
     @PrimaryKey
     @SerializedName("id")
@@ -22,18 +20,15 @@ public class MarketUnitMaster {
     @NonNull
     private String coinID = "";
 
-    @ColumnInfo(name = "time_stamp")
-    private long timeStamp;
+    @SerializedName("symbol")
+    @Expose
+    @ColumnInfo(name = "coin_symbol")
+    private String coinSymbol;
 
     @SerializedName("name")
     @Expose
     @ColumnInfo(name = "coin_name")
     private String coinName;
-
-    @SerializedName("symbol")
-    @Expose
-    @ColumnInfo(name = "coin_symbol")
-    private String coinSymbol;
 
     @SerializedName("image")
     @Expose
@@ -90,10 +85,9 @@ public class MarketUnitMaster {
     @ColumnInfo(name = "seven_day_percent_change")
     private float sevenDayPercentChange;
 
-    @SerializedName("sparkline_in_7d")
-    @Expose
-    @ColumnInfo(name = "spark_line_data")
-    private Sparkline sparkLineData;
+    @ColumnInfo(name = "time_stamp")
+    private long timeStamp;
+
 
     @Ignore
     private String onDayPercentString;
@@ -101,10 +95,7 @@ public class MarketUnitMaster {
     @Ignore
     private String priceName;
 
-    @ColumnInfo(name = "watch_list_boolean", defaultValue = "0")
-    private boolean isWatchList;
-
-
+    @NonNull
     public String getCoinID() {
         return coinID;
     }
@@ -113,12 +104,12 @@ public class MarketUnitMaster {
         this.coinID = coinID;
     }
 
-    public long getTimeStamp() {
-        return timeStamp;
+    public String getCoinSymbol() {
+        return coinSymbol;
     }
 
-    public void setTimeStamp(long timeStamp) {
-        this.timeStamp = timeStamp;
+    public void setCoinSymbol(String coinSymbol) {
+        this.coinSymbol = coinSymbol.toUpperCase();
     }
 
     public String getCoinName() {
@@ -127,14 +118,6 @@ public class MarketUnitMaster {
 
     public void setCoinName(String coinName) {
         this.coinName = coinName;
-    }
-
-    public String getCoinSymbol() {
-        return coinSymbol;
-    }
-
-    public void setCoinSymbol(String coinSymbol) {
-        this.coinSymbol = coinSymbol;
     }
 
     public String getCoinImageURI() {
@@ -216,13 +199,12 @@ public class MarketUnitMaster {
         this.maxSupply = maxSupply;
     }
 
-    public float getOneDayPercentChange() {
-        return oneDayPercentChange;
+    public long getTimeStamp() {
+        return timeStamp;
     }
 
-    public void setOneDayPercentChange(float oneDayPercentChange) {
-        this.oneDayPercentChange = oneDayPercentChange;
-        onDayPercentString = NumberFormatter.getDecimalWithCommas(oneDayPercentChange, 2) + "%";
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     public float getSevenDayPercentChange() {
@@ -230,24 +212,7 @@ public class MarketUnitMaster {
     }
 
     public void setSevenDayPercentChange(float sevenDayPercentChange) {
-        this.sevenDayPercentChange = sevenDayPercentChange;
-    }
-
-    public Sparkline getSparkLineData() {
-        return sparkLineData;
-    }
-
-    public void setSparkLineData(Sparkline sparkLineData) {
-        this.sparkLineData = sparkLineData;
-    }
-
-    public String getOnDayPercentString() {
-        return onDayPercentString;
-    }
-
-    public void setOnDayPercentString(String onDayPercentString) {
-        this.onDayPercentString = onDayPercentString;
-    }
+        this.sevenDayPercentChange = sevenDayPercentChange; }
 
     public String getPriceName() {
         return priceName;
@@ -257,11 +222,14 @@ public class MarketUnitMaster {
         this.priceName = priceName;
     }
 
-    public boolean isWatchList() {
-        return isWatchList;
+    public void setOneDayPercentChange(float oneDayPercentChange) {
+        this.oneDayPercentChange = oneDayPercentChange;
+        onDayPercentString = NumberFormatter.getDecimalWithCommas(oneDayPercentChange, 2) + "%";
     }
 
-    public void setWatchList(boolean watchList) {
-        isWatchList = watchList;
+    public float getOneDayPercentChange() {
+        return oneDayPercentChange;
     }
+
+    public String getOnDayPercentString() {return onDayPercentString;}
 }

@@ -11,13 +11,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.digitalartsplayground.fantasycrypto.fragments.LeaderBoardFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.MarketFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.OrdersFragments;
@@ -43,6 +43,8 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.IronSourceBannerLayout;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.BannerListener;
+import com.ironsource.mediationsdk.sdk.InterstitialListener;
+
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isErrorScreen = false;
     private boolean isLoadingScreen = true;
     private boolean isFirstTime = false;
-    public static int counter = 0;
+    public static int bannerClickCount = 0;
     private IronSourceBannerLayout banner;
     private FirebaseAnalytics mFirebaseAnalytics;
 
@@ -101,11 +103,13 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         IronSource.onResume(this);
-        loadIronSourceBanner();
         checkAdServingTimeLimit();
+        loadIronSourceBanner();
+
 
         long marketTime = sharedPrefs.getMarketDataTimeStamp();
-        boolean fetchFromServer = (System.currentTimeMillis() - marketTime) > Constants.FETCH_TIME_CONSTANT;
+        boolean fetchFromServer =
+                (System.currentTimeMillis() - marketTime) > Constants.FETCH_TIME_CONSTANT_SERVER;
 
         if(fetchFromServer) {
             mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
@@ -161,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     private void initIronSource(){
 
         IronSource.init(this, "133802ab1",IronSource.AD_UNIT.BANNER);
-        IronSource.init(this, "133802ab1",IronSource.AD_UNIT.REWARDED_VIDEO);
+        IronSource.init(this, "133802ab1", IronSource.AD_UNIT.INTERSTITIAL);
         IronSource.shouldTrackNetworkState(this, true);
 
     }
@@ -189,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
 
         LiveData<Resource<List<MarketUnit>>> liveMarketData = mainViewModel.getLiveMarketData();
 
-        liveMarketData.observe(MainActivity.this, new Observer<Resource<List<MarketUnit>>>() {
+        liveMarketData.observe(this, new Observer<Resource<List<MarketUnit>>>() {
 
             @Override
             public void onChanged(Resource<List<MarketUnit>> listResource) {
@@ -262,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mainViewModel.getLiveCandleData()
-                .observe(MainActivity.this, new Observer<Resource<CandleStickData>>() {
+                .observe(this, new Observer<Resource<CandleStickData>>() {
 
             @Override
             public void onChanged(Resource<CandleStickData> candleStickDataResource) {
@@ -272,12 +276,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        mainViewModel.getLiveUpdateCompleted().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+
+            }
+        });
     }
 
 
     private void scheduleUpdater() {
-
-        SharedPrefs sharedPrefs = SharedPrefs.getInstance(this);
 
         if(scheduleTaskExecutor != null) {
 
@@ -289,13 +298,13 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mainViewModel.fetchMarketData(Constants.FETCH_PAGE_COUNT);
+                            mainViewModel.updateMarketData(Constants.FETCH_PAGE_COUNT);
                         }
                     });
 
                 }
 
-            }, Constants.FETCH_TIME_CONSTANT, Constants.FETCH_TIME_CONSTANT + 10, TimeUnit.MILLISECONDS);
+            }, Constants.FETCH_TIME_CONSTANT_UPDATE, Constants.FETCH_TIME_CONSTANT_UPDATE + 10, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -611,8 +620,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadIronSourceBanner() {
 
-/*        if(banner == null || banner.isDestroyed()) {
-            if(counter < 5) {
+        if(banner == null || banner.isDestroyed()) {
+            if(bannerClickCount < 5) {
                 banner = IronSource.createBanner(this, ISBannerSize.SMART);
                 bannerContainer.addView(banner);
 
@@ -621,16 +630,16 @@ public class MainActivity extends AppCompatActivity {
                     IronSource.loadBanner(banner);
                 }
             }
-        }*/
+        }
     }
 
-    private void checkAdServingTimeLimit(){
+    public void checkAdServingTimeLimit(){
 
-        counter = sharedPrefs.getCounter();
+        bannerClickCount = sharedPrefs.getBannerClickCounter();
 
         if(sharedPrefs.getExpireDate() < System.currentTimeMillis()) {
             sharedPrefs.resetAdPrefs();
-            counter = 0;
+            bannerClickCount = 0;
         }
     }
 
@@ -650,11 +659,11 @@ public class MainActivity extends AppCompatActivity {
         }
         @Override
         public void onBannerAdClicked() {
-            counter++;
-            sharedPrefs.setCounter(counter);
+            bannerClickCount++;
+            sharedPrefs.setBannerClickCounter(bannerClickCount);
             sharedPrefs.setExpireDate(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24));
 
-            if(counter > 4) {
+            if(bannerClickCount > 4) {
                     IronSource.destroyBanner(banner);
             }
         }
@@ -665,7 +674,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBannerAdLeftApplication() { }
     };
-
 
     public void setMarketTab() {
 

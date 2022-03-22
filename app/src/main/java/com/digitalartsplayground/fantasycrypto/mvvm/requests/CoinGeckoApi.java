@@ -6,6 +6,7 @@ import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
+import com.digitalartsplayground.fantasycrypto.models.MarketUpdate;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.responses.ApiResponse;
 import java.util.List;
 import retrofit2.http.GET;
@@ -16,6 +17,15 @@ public interface CoinGeckoApi {
 
     @GET("coins/markets")
     LiveData<ApiResponse<List<MarketUnit>>> getMarketData(
+            @Query("vs_currency")String currency,
+            @Query("order")String order,
+            @Query("per_page")String perPage,
+            @Query("page")String pageNumber,
+            @Query("sparkline")String sparkline,
+            @Query("price_change_percentage")String priceChangeRange);
+
+    @GET("coins/markets")
+    LiveData<ApiResponse<List<MarketUpdate>>> getMarketDataUpdate(
             @Query("vs_currency")String currency,
             @Query("order")String order,
             @Query("per_page")String perPage,
@@ -38,7 +48,14 @@ public interface CoinGeckoApi {
             @Query("days") String days);
 
     @GET("coins/{id}")
-    LiveData<ApiResponse<DeveloperUnit>> getDeveloperData(@Path("id") String id);
+    LiveData<ApiResponse<DeveloperUnit>> getDeveloperData(
+            @Path("id") String id,
+            @Query("localization") String localization,
+            @Query("tickers") String tickers,
+            @Query("market_data") String market,
+            @Query("community_data") String communityData,
+            @Query("developer_data") String developerData,
+            @Query("sparkline") String sparkLine);
 
     @GET("coins/{id}/market_chart/range")
     LiveData<ApiResponse<LineGraphData>> getLineGraphData(

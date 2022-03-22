@@ -8,7 +8,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,16 +23,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.digitalartsplayground.fantasycrypto.CoinActivity;
 import com.digitalartsplayground.fantasycrypto.MainActivity;
 import com.digitalartsplayground.fantasycrypto.R;
-import com.digitalartsplayground.fantasycrypto.adapters.MarketAdapter;
 import com.digitalartsplayground.fantasycrypto.adapters.SearchMarketAdapter;
 import com.digitalartsplayground.fantasycrypto.adapters.WatchListAdapter;
 import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
+import com.digitalartsplayground.fantasycrypto.models.MarketWatchUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.MainViewModel;
-import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
-import com.digitalartsplayground.fantasycrypto.util.Resource;
-import com.ironsource.mediationsdk.O;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -148,11 +142,11 @@ public class WatchListFragment extends Fragment implements ItemClickedListener {
 
     private void subscribeObservers() {
 
-        watchlistViewModel.getWatchList().observe(getViewLifecycleOwner(), new Observer<List<MarketUnitMaster>>() {
+        watchlistViewModel.getWatchList().observe(getViewLifecycleOwner(), new Observer<List<MarketWatchUnit>>() {
             @Override
-            public void onChanged(List<MarketUnitMaster> marketUnitMasters) {
-                if(marketUnitMasters != null) {
-                    watchlistAdapter.setMarketList(marketUnitMasters);
+            public void onChanged(List<MarketWatchUnit> marketWatchUnits) {
+                if(marketWatchUnits != null) {
+                    watchlistAdapter.setMarketList(marketWatchUnits);
                 }
             }
         });
@@ -161,17 +155,17 @@ public class WatchListFragment extends Fragment implements ItemClickedListener {
             watchlistViewModel.loadWatchList();
         }
 
-        watchlistViewModel.getLiveMarketDataMaster().observe(getViewLifecycleOwner(), new Observer<List<MarketUnitMaster>>() {
+        watchlistViewModel.getLiveSearchList().observe(getViewLifecycleOwner(), new Observer<List<MarketWatchUnit>>() {
             @Override
-            public void onChanged(List<MarketUnitMaster> marketUnitMasters) {
-                if(marketUnitMasters != null) {
-                    searchMarketAdapter.setMarketList(marketUnitMasters);
+            public void onChanged(List<MarketWatchUnit> marketWatchUnits) {
+                if(marketWatchUnits != null) {
+                    searchMarketAdapter.setMarketList(marketWatchUnits);
                 }
             }
         });
 
-        if(watchlistViewModel.getLiveMarketDataMaster().getValue() == null) {
-            watchlistViewModel.loadLiveMarketDataMaster();
+        if(watchlistViewModel.getLiveSearchList().getValue() == null) {
+            watchlistViewModel.loadLiveSearchList();
         }
     }
 

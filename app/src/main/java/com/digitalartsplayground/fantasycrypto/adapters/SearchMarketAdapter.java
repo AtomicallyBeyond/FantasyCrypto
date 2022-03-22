@@ -14,8 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.interfaces.ItemClickedListener;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
+import com.digitalartsplayground.fantasycrypto.models.MarketWatchUnit;
 import com.robinhood.spark.SparkView;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,8 +24,8 @@ import java.util.List;
 
 public class SearchMarketAdapter extends RecyclerView.Adapter<SearchMarketAdapter.ViewHolder> implements Filterable {
 
-    private List<MarketUnitMaster> marketList = new ArrayList<>(1000);
-    private List<MarketUnitMaster> marketListFull;
+    private List<MarketWatchUnit> marketList = new ArrayList<>(1000);
+    private List<MarketWatchUnit> marketListFull;
     private ItemClickedListener itemClickedListener;
     private boolean isSearching = false;
 
@@ -48,7 +47,7 @@ public class SearchMarketAdapter extends RecyclerView.Adapter<SearchMarketAdapte
     @Override
     public void onBindViewHolder(@NonNull @NotNull SearchMarketAdapter.ViewHolder holder, int position) {
 
-        MarketUnitMaster marketUnit = marketList.get(position);
+        MarketWatchUnit marketUnit = marketList.get(position);
 
         holder.cryptoName.setText(marketUnit.getCoinName());
         holder.cryptoSymbol.setText(marketUnit.getCoinSymbol());
@@ -88,7 +87,7 @@ public class SearchMarketAdapter extends RecyclerView.Adapter<SearchMarketAdapte
         return marketList.size();
     }
 
-    public void setMarketList(List<MarketUnitMaster> marketList){
+    public void setMarketList(List<MarketWatchUnit> marketList){
         this.marketList = marketList;
         marketListFull = new ArrayList<>(marketList);
         notifyDataSetChanged();
@@ -108,14 +107,14 @@ public class SearchMarketAdapter extends RecyclerView.Adapter<SearchMarketAdapte
     private Filter searchFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
-            List<MarketUnitMaster> filteredList = new ArrayList<>();
+            List<MarketWatchUnit> filteredList = new ArrayList<>();
 
             if (charSequence == null || charSequence.length() == 0) {
                 filteredList.addAll(marketListFull);
             } else {
                 String filterPattern = charSequence.toString().toLowerCase().trim();
 
-                for(MarketUnitMaster marketUnit :marketListFull) {
+                for(MarketWatchUnit marketUnit :marketListFull) {
                     if(marketUnit.getCoinName().toLowerCase().startsWith(filterPattern)) {
                         filteredList.add(marketUnit);
                     } else if (marketUnit.getCoinSymbol().toLowerCase().startsWith(filterPattern)) {

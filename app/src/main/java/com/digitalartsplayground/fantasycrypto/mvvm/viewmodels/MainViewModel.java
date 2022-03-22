@@ -10,24 +10,26 @@ import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
+import com.digitalartsplayground.fantasycrypto.models.MarketUpdate;
+import com.digitalartsplayground.fantasycrypto.models.MarketWatchUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.Repository;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Resource;
-import com.ironsource.mediationsdk.O;
-
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
+
 
 public class MainViewModel extends AndroidViewModel {
 
     private final Repository repository;
     private final MediatorLiveData<Resource<List<MarketUnit>>> liveMarketData = new MediatorLiveData<>();
     private final MediatorLiveData<Resource<CandleStickData>> liveCandleData = new MediatorLiveData<>();
-    private final MediatorLiveData<List<MarketUnitMaster>> liveMarketDataMaster = new MediatorLiveData<>();
-    private final MediatorLiveData<List<MarketUnitMaster>> liveWatchList = new MediatorLiveData<>();
+    private final MediatorLiveData<List<MarketWatchUnit>> liveSearchList = new MediatorLiveData<>();
+    private final MediatorLiveData<List<MarketWatchUnit>> liveWatchList = new MediatorLiveData<>();
+    private final MediatorLiveData<Boolean> liveUpdateCompleted = new MediatorLiveData<>();
 
     private boolean cleanMarketData = true;
+
 
     public MainViewModel(@NonNull @NotNull Application application) {
         super(application);
@@ -39,6 +41,7 @@ public class MainViewModel extends AndroidViewModel {
     public LiveData<Resource<List<MarketUnit>>> getLiveMarketData() {
         return liveMarketData;
     }
+
 
     public void fetchMarketDataCache() {
 
@@ -68,17 +71,20 @@ public class MainViewModel extends AndroidViewModel {
                     "200",
                     pageString,
                     "true",
-                    "24h,7d");
+                    "24h,7d",
+                    true,
+                    true);
         } else {
-            liveData = repository.loadMarketData(
+            liveData = repository.getMarketData(
                     "usd",
                     "market_cap_desc",
                     "200",
                     pageString,
                     "true",
-                    "24h,7d");
+                    "24h,7d",
+                    false,
+                    true);
         }
-
 
         liveMarketData.addSource(liveData, new Observer<Resource<List<MarketUnit>>>() {
             @Override
@@ -109,6 +115,47 @@ public class MainViewModel extends AndroidViewModel {
             fetchMarketData(pages - 1);
 
     }
+
+    public LiveData<Boolean> getLiveUpdateCompleted() {
+        return liveUpdateCompleted;
+    }
+
+
+    public void updateMarketData(int pages) {
+
+        String pageString = String.valueOf(pages);
+        LiveData<Resource<List<MarketUpdate>>> liveData;
+
+        liveData = repository.updateMarketData(
+                "usd",
+                "market_cap_desc",
+                "200",
+                pageString,
+                "true",
+                "24h,7d",
+                false,
+                true);
+
+
+        liveUpdateCompleted.addSource(liveData, new Observer<Resource<List<MarketUpdate>>>() {
+            @Override
+            public void onChanged(Resource<List<MarketUpdate>> listResource) {
+
+                if(listResource.status == Resource.Status.SUCCESS) {
+                    liveUpdateCompleted.setValue(true);
+                    liveUpdateCompleted.removeSource(liveData);
+                } else if(listResource.status == Resource.Status.ERROR){
+                    liveUpdateCompleted.setValue(false);
+                    liveUpdateCompleted.removeSource(liveData);
+                }
+            }
+        });
+
+        if (pages > 1)
+            updateMarketData(pages - 1);
+
+    }
+
 
     public MarketUnit getMarketUnit(String coinID) {
         return repository.getMarketUnit(coinID);
@@ -177,34 +224,33 @@ public class MainViewModel extends AndroidViewModel {
         this.cleanMarketData = cleanMarketData;
     }
 
-    public void loadLiveMarketDataMaster() {
-        LiveData<List<MarketUnitMaster>> liveData = repository.getLiveMarketMasterData();
+    public void loadLiveSearchList() {
+        LiveData<List<MarketWatchUnit>> liveData = repository.getLiveMarketWatchUnits();
 
-        liveMarketDataMaster.addSource(liveData, new Observer<List<MarketUnitMaster>>() {
+        liveSearchList.addSource(liveData, new Observer<List<MarketWatchUnit>>() {
             @Override
-            public void onChanged(List<MarketUnitMaster> marketUnitMasters) {
-                if(marketUnitMasters != null) {
-                    liveMarketDataMaster.setValue(marketUnitMasters);
-                    //liveMarketDataMaster.removeSource(liveData);
+            public void onChanged(List<MarketWatchUnit> marketWatchUnits) {
+                if(marketWatchUnits != null) {
+                    liveSearchList.setValue(marketWatchUnits);
                 }
             }
         });
     }
 
-    public LiveData<List<MarketUnitMaster>> getLiveMarketDataMaster() {
-        return liveMarketDataMaster;
+    public LiveData<List<MarketWatchUnit>> getLiveSearchList() {
+        return liveSearchList;
     }
 
 
     public void loadWatchList() {
 
-        LiveData<List<MarketUnitMaster>> liveData = repository.getWatchList();
+        LiveData<List<MarketWatchUnit>> liveData = repository.getWatchList();
 
-        liveWatchList.addSource(liveData, new Observer<List<MarketUnitMaster>>() {
+        liveWatchList.addSource(liveData, new Observer<List<MarketWatchUnit>>() {
             @Override
-            public void onChanged(List<MarketUnitMaster> marketUnitMasters) {
-                if(marketUnitMasters != null) {
-                    liveWatchList.setValue(marketUnitMasters);
+            public void onChanged(List<MarketWatchUnit> marketWatchUnits) {
+                if(marketWatchUnits != null) {
+                    liveWatchList.setValue(marketWatchUnits);
                     //liveWatchList.removeSource(liveData);
                 }
             }
@@ -212,7 +258,7 @@ public class MainViewModel extends AndroidViewModel {
 
     }
 
-    public LiveData<List<MarketUnitMaster>> getWatchList() {
+    public LiveData<List<MarketWatchUnit>> getWatchList() {
         return liveWatchList;
     }
 

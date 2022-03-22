@@ -1,29 +1,29 @@
 package com.digitalartsplayground.fantasycrypto.models;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-@Entity
-public class MarketUnit extends MarketUpdate{
 
-    @SerializedName("sparkline_in_7d")
-    @Expose
-    @ColumnInfo(name = "spark_line_data")
-    private Sparkline sparkLineData;
+@Entity(tableName = "market_data")
+public class MarketWatchUnit extends MarketUnit {
 
-    public void setSparkLineData(Sparkline sparkLineData) {
-        this.sparkLineData = sparkLineData;
+    @ColumnInfo(name = "watch_list_boolean", defaultValue = "0")
+    private boolean isWatchList;
+
+    public boolean isWatchList() {
+        return isWatchList;
     }
 
-    public Sparkline getSparkLineData() {
-        return sparkLineData;
+    public void setWatchList(boolean watchList) {
+        isWatchList = watchList;
     }
 
 }
-

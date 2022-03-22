@@ -2,7 +2,6 @@ package com.digitalartsplayground.fantasycrypto.mvvm;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
@@ -10,13 +9,12 @@ import com.digitalartsplayground.fantasycrypto.models.DeveloperUnit;
 import com.digitalartsplayground.fantasycrypto.models.LineGraphData;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
-import com.digitalartsplayground.fantasycrypto.models.MarketUnitMaster;
+import com.digitalartsplayground.fantasycrypto.models.MarketUpdate;
+import com.digitalartsplayground.fantasycrypto.models.MarketWatchUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.CoinDataFetcher;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.MarketDataFetcher;
-import com.digitalartsplayground.fantasycrypto.mvvm.requests.MarketDataLoader;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.CryptoAssetDao;
 import com.digitalartsplayground.fantasycrypto.persistence.CryptoDatabase;
-import com.digitalartsplayground.fantasycrypto.persistence.Dao.DeveloperDao;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.LimitOrderDao;
 import com.digitalartsplayground.fantasycrypto.persistence.Dao.MarketDao;
 import com.digitalartsplayground.fantasycrypto.mvvm.requests.ServiceGenerator;
@@ -33,7 +31,6 @@ public class Repository {
     private static Repository instance;
     private final MarketDao marketDao;
     private final CryptoAssetDao cryptoAssetDao;
-    private final DeveloperDao developerDao;
     private final LimitOrderDao limitOrderDao;
     private final SharedPrefs sharedPrefs;
 
@@ -51,7 +48,6 @@ public class Repository {
         CryptoDatabase cryptoDatabase = CryptoDatabase.getInstance(context);
         marketDao = cryptoDatabase.getMarketDao();
         cryptoAssetDao = cryptoDatabase.getCryptoAssetDao();
-        developerDao = cryptoDatabase.getDeveloperDao();
         limitOrderDao = cryptoDatabase.getLimitDao();
         sharedPrefs = SharedPrefs.getInstance(context);
     }
@@ -168,11 +164,11 @@ public class Repository {
         return marketDao.getMarketUnit(id);
     }
 
-    public LiveData<List<MarketUnitMaster>> getLiveMarketMasterData() {
-        return marketDao.getMarketDataMaster();
+    public LiveData<List<MarketWatchUnit>> getLiveMarketWatchUnits() {
+        return marketDao.getMarketWatchUnits();
     }
 
-    public LiveData<List<MarketUnitMaster>> getWatchList() {
+    public LiveData<List<MarketWatchUnit>> getWatchList() {
         return marketDao.getLiveWatchList();
     }
 
@@ -181,27 +177,17 @@ public class Repository {
     }
 
     public LiveData<Resource<DeveloperUnit>> getDeveloperUnit(String coinId) {
-        return new MarketDataFetcher<DeveloperUnit, DeveloperUnit>(AppExecutors.getInstance()) {
+        return new MarketDataFetcher<DeveloperUnit>(AppExecutors.getInstance(), false, false) {
             @Override
             protected void saveCallResult(@NonNull @NotNull DeveloperUnit item) {
 
-                if(item.getCoinDescription() != null) {
-                    developerDao.insertDeveloperUnit(item);
-                }
-
-            }
-
-            @Override
-            protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable DeveloperUnit data) {
-
-                return data == null || data.getCoinDescription() == null;
             }
 
             @NonNull
             @NotNull
             @Override
             protected LiveData<DeveloperUnit> loadFromDb() {
-                return developerDao.getDeveloperLiveUnit(coinId);
+                return null;
             }
 
             @NonNull
@@ -210,7 +196,14 @@ public class Repository {
             protected LiveData<ApiResponse<DeveloperUnit>> createCall() {
                 return ServiceGenerator
                         .getCryptoApi()
-                        .getDeveloperData(coinId);
+                        .getDeveloperData(
+                                coinId,
+                                "false",
+                                "false",
+                                "false",
+                                "false",
+                                "false",
+                                "false");
             }
         }.getAsLiveData();
     }
@@ -222,9 +215,11 @@ public class Repository {
             String perPage,
             String pageNumber,
             String sparkline,
-            String priceChangeRange) {
+            String priceChangeRange,
+            boolean isLoadDatabase,
+            boolean isCacheData) {
 
-        return new MarketDataFetcher<List<MarketUnit>, List<MarketUnit>>(AppExecutors.getInstance()) {
+        return new MarketDataFetcher<List<MarketUnit>>(AppExecutors.getInstance(), isLoadDatabase, isCacheData) {
             @Override
             protected void saveCallResult(@NonNull @NotNull List<MarketUnit> item) {
 
@@ -244,11 +239,6 @@ public class Repository {
 
 
                 sharedPrefs.setMarketDataTimeStamp(timeStamp);
-            }
-
-            @Override
-            protected boolean shouldFetch(@Nullable @org.jetbrains.annotations.Nullable List<MarketUnit> data) {
-                return true;
             }
 
             @NonNull
@@ -274,30 +264,29 @@ public class Repository {
         }.getAsLiveData();
     }
 
-    public LiveData<Resource<List<MarketUnit>>> loadMarketData(
+
+    public LiveData<Resource<List<MarketUpdate>>> updateMarketData(
             String currency,
             String order,
             String perPage,
             String pageNumber,
             String sparkline,
-            String priceChangeRange) {
+            String priceChangeRange,
+            boolean isLoadDatabase,
+            boolean isCacheData) {
 
-        return new MarketDataLoader<List<MarketUnit>>(AppExecutors.getInstance()) {
+        return new MarketDataFetcher<List<MarketUpdate>>(AppExecutors.getInstance(), isLoadDatabase, isCacheData) {
             @Override
-            protected void saveCallResult(@NonNull @NotNull List<MarketUnit> item) {
+            protected void saveCallResult(@NonNull @NotNull List<MarketUpdate> item) {
                 long timeStamp = System.currentTimeMillis();
 
-                for(MarketUnit marketUnit : item) {
+                for(MarketUpdate marketUnit : item) {
                     marketUnit.setTimeStamp(timeStamp);
                 }
 
-                MarketUnit[] marketUnits = item.toArray(new MarketUnit[item.size()]);
+                MarketUpdate[] marketUnits = item.toArray(new MarketUpdate[item.size()]);
 
-                if(sharedPrefs.getIsFirstTime()) {
-                    marketDao.insertMarketUnits(marketUnits);
-                } else {
-                    marketDao.updateMarketUnits(marketUnits);
-                }
+                marketDao.updateMarketUpdates(marketUnits);
 
                 sharedPrefs.setMarketDataTimeStamp(timeStamp);
             }
@@ -305,9 +294,15 @@ public class Repository {
             @NonNull
             @NotNull
             @Override
-            protected LiveData<ApiResponse<List<MarketUnit>>> createCall() {
+            protected LiveData<List<MarketUpdate>> loadFromDb() {
+                return null;
+            }
 
-                return ServiceGenerator.getCryptoApi().getMarketData(
+            @NonNull
+            @NotNull
+            @Override
+            protected LiveData<ApiResponse<List<MarketUpdate>>> createCall() {
+                return ServiceGenerator.getCryptoApi().getMarketDataUpdate(
                         currency,
                         order,
                         perPage,
@@ -316,8 +311,8 @@ public class Repository {
                         priceChangeRange);
             }
         }.getAsLiveData();
-
     }
+
 
     public LiveData<Resource<MarketUnit>> getMarketUnitLive(String id, String currency) {
         return new CoinDataFetcher<MarketUnit>(id, AppExecutors.getInstance()) {
