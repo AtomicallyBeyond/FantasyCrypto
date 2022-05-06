@@ -279,7 +279,7 @@ public class CoinActivity extends AppCompatActivity {
     private void loadURLImage(String urlString) {
         Glide.with(CoinActivity.this)
                 .load(urlString)
-                .placeholder(R.drawable.blur)
+                .placeholder(R.drawable.ic_blur)
                 .circleCrop()
                 .into(coinImage);
     }
@@ -472,7 +472,7 @@ public class CoinActivity extends AppCompatActivity {
 
             int coinViewCount = sharedPrefs.getCoinViewCount();
 
-            if(coinViewCount > 20) {
+            if(coinViewCount > 10) {
                 IronSource.showInterstitial();
                 sharedPrefs.setCoinViewCount(0);
             }

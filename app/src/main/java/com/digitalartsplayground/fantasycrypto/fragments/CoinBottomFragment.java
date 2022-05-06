@@ -3,31 +3,23 @@ package com.digitalartsplayground.fantasycrypto.fragments;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.digitalartsplayground.fantasycrypto.R;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
@@ -42,7 +34,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinBottomViewModel.OrderType;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinBottomViewModel.TradingType;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.CoinBottomViewModel.TradingStage;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 import com.skydoves.powerspinner.OnSpinnerItemSelectedListener;
@@ -90,6 +81,9 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
     private float limitPrice;
     private int activeOrdersCount = 0;
+    private int charcoalColor;
+    private int greenColor;
+    private int redColor;
 
 
     private void getActiveOrderCount() {
@@ -128,6 +122,9 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         Bundle args = getArguments();
         coinID = args.getString(COIN_ID_ARG);
         isBuyOrder = args.getBoolean(IS_BUY_ORDER);
+        charcoalColor = ContextCompat.getColor(requireContext(), R.color.charcoal);
+        greenColor = ContextCompat.getColor(requireContext(), R.color.green);
+        redColor = ContextCompat.getColor(requireContext(), R.color.red);
     }
 
     @NonNull
@@ -136,7 +133,6 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     public Dialog onCreateDialog(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        hideSystemUI(dialog);
         return dialog;
     }
 
@@ -288,20 +284,22 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     }
 
 
+
+
     private void setBuyLayout() {
-        sellButton.setBackgroundColor(getResources().getColor(R.color.charcoal));
-        buyButton.setBackgroundColor(getResources().getColor(R.color.green));
+        sellButton.setBackgroundColor(charcoalColor);
+        buyButton.setBackgroundColor(greenColor);
         orderButton.setText("BUY ORDER");
-        orderButton.setBackgroundColor(getResources().getColor(R.color.green));
+        orderButton.setBackgroundColor(greenColor);
         showBalanceMessage();
     }
 
 
     private void setSellLayout() {
-        buyButton.setBackgroundColor(getResources().getColor(R.color.charcoal));
-        sellButton.setBackgroundColor(getResources().getColor(R.color.red));
+        buyButton.setBackgroundColor(charcoalColor);
+        sellButton.setBackgroundColor(redColor);
         orderButton.setText("SELL ORDER");
-        orderButton.setBackgroundColor(getResources().getColor(R.color.red));
+        orderButton.setBackgroundColor(redColor);
         showCryptoBalance();
     }
 
@@ -345,10 +343,10 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
         if(isBuyOrder) {
             confirmOder.setText("Confirm Buy Order");
-            confirmButton.setBackgroundColor(getResources().getColor(R.color.green));
+            confirmButton.setBackgroundColor(greenColor);
         } else {
             confirmOder.setText("Confirm Sell Order");
-            confirmButton.setBackgroundColor(getResources().getColor(R.color.red));
+            confirmButton.setBackgroundColor(redColor);
         }
 
     }
@@ -565,6 +563,9 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
                     float amount;
                     float balance = SharedPrefs.getInstance(getContext()).getBalance();
 
+                    if(balance < 0)
+                        balance = 0;
+
                     switch ((int)value) {
                         case 25:
                             amount = CryptoCalculator.calcTwentyFivePercent(balance, limitPrice);
@@ -626,17 +627,15 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
         });
 
         dialog.show();
-
-/*        MessageDialogFragment dialogFragment = MessageDialogFragment.getInstance(title, message);
-        dialogFragment.showNow(getChildFragmentManager(), "message");*/
     }
 
 
     private void setAmountFromSlider(float amount) {
+
         if(amount == 0)
             amountEdit.getText().clear();
         else {
-            amountEdit.setText(String.valueOf(amount));
+            amountEdit.setText(NumberFormatter.roundToLastDecimalDigits(amount, 5));
             amountEdit.setSelection(amountEdit.getText().length());
         }
     }
@@ -933,8 +932,6 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
 
     }
 
-
-
     private float getAmount() {
 
         if(isEmpty(amountEdit) || getFloat(amountEdit) == 0) {
@@ -951,35 +948,4 @@ public class CoinBottomFragment extends BottomSheetDialogFragment {
     private boolean isEmpty(EditText etText) {
         return etText.getText().toString().trim().length() == 0;
     }
-
-
-
-    @SuppressWarnings("deprecation")
-    private void hideSystemUI(Dialog dialog) {
-
-        Window window = dialog.getWindow();
-
-        window.setNavigationBarColor(Color.BLACK);
-
-        if(Build.VERSION.SDK_INT < 30) {
-
-            @SuppressLint("WrongConstant") final int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE;
-
-            window.getDecorView().setSystemUiVisibility(flags);
-
-        } else {
-
-
-            WindowInsetsController controller = window.getDecorView().getWindowInsetsController();
-
-            if (controller != null) {
-                controller.hide(WindowInsets.Type.statusBars());
-                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            }
-
-        }
-    }//end hideSystemUI
 }

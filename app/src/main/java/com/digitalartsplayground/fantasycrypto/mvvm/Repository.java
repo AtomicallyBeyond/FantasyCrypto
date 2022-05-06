@@ -136,6 +136,10 @@ public class Repository {
         return cryptoAssetDao.getAllAssets();
     }
 
+    public LiveData<List<CryptoAsset>> getLiveAssetList() {
+        return cryptoAssetDao.getAllCryptoAsset();
+    }
+
     public LiveData<CryptoAsset> getLiveCryptoAsset(String coinID) {
         return cryptoAssetDao.getLiveCryptoAsset(coinID);
     }
@@ -230,13 +234,7 @@ public class Repository {
                 }
 
                 MarketUnit[] marketUnits = item.toArray(new MarketUnit[item.size()]);
-
-                if(sharedPrefs.getIsFirstTime()) {
-                    marketDao.insertMarketUnits(marketUnits);
-                } else {
-                    marketDao.updateMarketUnits(marketUnits);
-                }
-
+                marketDao.insertMarketUnits(marketUnits);
 
                 sharedPrefs.setMarketDataTimeStamp(timeStamp);
             }

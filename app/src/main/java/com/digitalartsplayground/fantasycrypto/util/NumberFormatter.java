@@ -7,18 +7,17 @@ import java.util.Currency;
 
 public class NumberFormatter {
 
-    public static String roundToLastDecimalDigits(float f, int decimalPlace) {
+    public static String roundToLastDecimalDigits(float value, int decimalPlace) {
 
-        if(f != 0) {
+        if(value != 0) {
 
             // split whole number and decimals
-             String[] floatParts = new BigDecimal(f).toPlainString().split("\\.");
+             String[] floatParts = new BigDecimal(value).toPlainString().split("\\.");
 
             int wholeNumberPortion = Integer.parseInt(floatParts[0]);
 
             if(floatParts.length == 1) {
-                String temp = String.format("%-" + decimalPlace + "s", f ).replace(' ', '0');
-                return temp;
+                return floatParts[0];
 
             } else {
                 // count zeroes
@@ -37,7 +36,7 @@ public class NumberFormatter {
                     String toRound = decimalPortion.substring(numDecimalPlaces,
                             numDecimalPlaces + (decimalPlace + 1));
 
-                    int decimalForRounding = Math.round(Float.parseFloat(toRound) / 10);
+                    long decimalForRounding = Math.round(Double.parseDouble(toRound) / 10);
 
                     sb.append(wholeNumberPortion);
                     sb.append(".");
@@ -49,7 +48,7 @@ public class NumberFormatter {
 
                 } else {
 
-                    return new BigDecimal(f).toPlainString();
+                    return new BigDecimal(value).toPlainString();
                 }
 
             }
@@ -59,14 +58,6 @@ public class NumberFormatter {
     }
 
     private static String round(float number, int decimalPlaces) {
-/*        DecimalFormat formatter = new DecimalFormat("#,###,###.##");
-
-        BigDecimal bd = new BigDecimal(Float.toString(d));
-        bd = bd.setScale(3, BigDecimal.ROUND_HALF_DOWN);
-        String temp = formatter.format(d);
-        return temp;
-        //return bd.toPlainString();*/
-
         NumberFormat formatter;
         formatter = NumberFormat.getNumberInstance();
         formatter.setMinimumFractionDigits(decimalPlaces);
@@ -85,13 +76,14 @@ public class NumberFormatter {
             numberToFormat = Math.abs(number);
         }
 
-        if(number < 1) {
+        if(numberToFormat == 0) {
+
+            formattedString = "0.00";
+
+        } else if(number < 1) {
 
             formattedString = roundToLastDecimalDigits(numberToFormat, decimalPlaces);
 
-        } else if(numberToFormat == 0) {
-
-            formattedString = "0";
         } else {
             formattedString = round(numberToFormat, decimalPlaces);
         }
@@ -106,11 +98,11 @@ public class NumberFormatter {
     public static String currency(float number) {
 
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+        currencyFormatter.setCurrency(Currency.getInstance("USD"));
 
         String[] floatParts = new BigDecimal(number).toPlainString().split("\\.");
 
-
-        if(floatParts.length == 2) {
+        if(number < 1 && floatParts.length == 2) {
 
             String decimalPortion = floatParts[1];
             int numDecimalPlaces = 0;
@@ -119,18 +111,12 @@ public class NumberFormatter {
 
             if(numDecimalPlaces > 2)
                 currencyFormatter.setMaximumFractionDigits(numDecimalPlaces + 2);
-            else if(number < 1)
-                currencyFormatter.setMaximumFractionDigits(3);
             else
                 currencyFormatter.setMaximumFractionDigits(2);
 
-            currencyFormatter.setCurrency(Currency.getInstance("USD"));
-
-            return currencyFormatter.format(number);
+        } else {
+            currencyFormatter.setMaximumFractionDigits(2);
         }
-
-
-        currencyFormatter.setMaximumFractionDigits(2);
 
         return currencyFormatter.format(number);
 

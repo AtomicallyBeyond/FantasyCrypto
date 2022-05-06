@@ -83,6 +83,15 @@ public class WatchListFragment extends Fragment implements ItemClickedListener {
         setHasOptionsMenu(true);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(searchRecyclerView.getVisibility() == View.VISIBLE)
+            searchRecyclerView.setVisibility(View.GONE);
+        if(watchlistRecyclerView.getVisibility() != View.VISIBLE)
+            watchlistRecyclerView.setVisibility(View.VISIBLE);
+    }
+
 
     @Override
     public void onCreateOptionsMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater inflater) {

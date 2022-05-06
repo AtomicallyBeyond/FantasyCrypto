@@ -109,7 +109,11 @@ public class MarketUpdate {
     }
 
     public void setCoinSymbol(String coinSymbol) {
-        this.coinSymbol = coinSymbol.toUpperCase();
+
+        if(coinSymbol != null)
+            this.coinSymbol = coinSymbol.toUpperCase();
+        else
+            this.coinSymbol = " ";
     }
 
     public String getCoinName() {
@@ -117,7 +121,11 @@ public class MarketUpdate {
     }
 
     public void setCoinName(String coinName) {
-        this.coinName = coinName;
+
+        if(coinName != null)
+            this.coinName = coinName;
+        else
+            this.coinName = " ";
     }
 
     public String getCoinImageURI() {

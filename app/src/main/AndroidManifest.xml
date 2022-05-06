@@ -11,17 +11,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FantasyCrypto"
-        android:screenOrientation="locked">
+        android:theme="@style/Theme.FantasyCrypto">
+
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-1987714599970585~6549689807"/>
-
         <meta-data android:name="com.google.android.gms.games.APP_ID"
             android:value="@string/app_id" />
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version"/>
+
 
         <service
             android:name=".notifications.PushNotificationService"
@@ -31,17 +31,23 @@
             </intent-filter>
         </service>
 
+
         <activity android:name=".MainActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".CoinActivity"/>
+
+        <activity android:name=".CoinActivity"
+            android:screenOrientation="portrait"/>
+
+
     </application>
 
 </manifest>

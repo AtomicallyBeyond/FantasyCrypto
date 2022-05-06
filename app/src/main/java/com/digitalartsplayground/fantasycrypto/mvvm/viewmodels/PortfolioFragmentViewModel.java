@@ -4,6 +4,8 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
 import com.digitalartsplayground.fantasycrypto.models.LimitOrder;
 import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
@@ -31,12 +33,12 @@ public class PortfolioFragmentViewModel extends AndroidViewModel {
         return repository.getAllAssets();
     }
 
-    public List<LimitOrder> fetchBuyOrders() {
-        return repository.getBuyActiveOrders();
+    public LiveData<List<CryptoAsset>> getLiveAssets() {
+        return repository.getLiveAssetList();
     }
 
-    public List<LimitOrder> fetchSellOrders() {
-        return repository.getSellActiveOrders();
+    public LiveData<List<LimitOrder>> getLiveLimitOrders() {
+        return repository.getActiveLimitOrders();
     }
 
 }

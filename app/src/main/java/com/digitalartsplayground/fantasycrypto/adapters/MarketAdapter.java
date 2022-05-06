@@ -61,7 +61,7 @@ public class MarketAdapter extends RecyclerView.Adapter<MarketAdapter.ViewHolder
         holder.priceChange.setText(marketUnit.getOnDayPercentString());
 
 
-        if(marketUnit.getSevenDayPercentChange() >= 0) {
+         if(marketUnit.getSevenDayPercentChange() >= 0) {
             holder.chart.setLineColor(Color.CYAN);
         } else {
             holder.chart.setLineColor(Color.RED);

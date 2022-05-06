@@ -3,27 +3,27 @@
 
     <item
         android:id="@+id/nav_home"
-        android:icon="@drawable/market"
+        android:icon="@drawable/ic_market"
         android:title="Markets"/>
 
     <item
         android:id="@+id/nav_watchlist"
-        android:icon="@drawable/watchlist"
+        android:icon="@drawable/ic_watchlist"
         android:title="Watchlist"/>
 
     <item
         android:id="@+id/nav_portfolio"
-        android:icon="@drawable/portfolio"
+        android:icon="@drawable/ic_portfolio"
         android:title="Portfolio"/>
 
     <item
         android:id="@+id/nav_orders"
-        android:icon="@drawable/orders"
+        android:icon="@drawable/ic_orders"
         android:title="Orders"/>
 
     <item
         android:id="@+id/nav_leaderboard"
-        android:icon="@drawable/leaderboard"
+        android:icon="@drawable/ic_leaderboard"
         android:title="Leaderboard"/>
 
 </menu>

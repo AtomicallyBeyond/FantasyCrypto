@@ -11,7 +11,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -22,7 +21,6 @@ import com.digitalartsplayground.fantasycrypto.fragments.LeaderBoardFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.MarketFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.OrdersFragments;
 import com.digitalartsplayground.fantasycrypto.fragments.PortfolioFragment;
-import com.digitalartsplayground.fantasycrypto.fragments.TelegramDialogFragment;
 import com.digitalartsplayground.fantasycrypto.fragments.WatchListFragment;
 import com.digitalartsplayground.fantasycrypto.models.CandleStickData;
 import com.digitalartsplayground.fantasycrypto.models.CryptoAsset;
@@ -43,7 +41,6 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.IronSourceBannerLayout;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.BannerListener;
-import com.ironsource.mediationsdk.sdk.InterstitialListener;
 
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
@@ -139,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         isFirstTime = sharedPrefs.getIsFirstTime();
         if(isFirstTime) {
             sharedPrefs.setBalance(10000);
+            sharedPrefs.setFirstTime(false);
             sharedPrefs.setCleanMarketTime(System.currentTimeMillis());
         }
 
@@ -199,13 +197,6 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(Resource<List<MarketUnit>> listResource) {
 
                 if(listResource.status == Resource.Status.SUCCESS) {
-
-                    if(isFirstTime) {
-                        TelegramDialogFragment telegramDialogFragment = TelegramDialogFragment.getInstance();
-                        telegramDialogFragment.show(getSupportFragmentManager(), "Telegram");
-                        isFirstTime = false;
-                        sharedPrefs.setFirstTime(false);
-                    }
 
                     long currentTime = System.currentTimeMillis();
 

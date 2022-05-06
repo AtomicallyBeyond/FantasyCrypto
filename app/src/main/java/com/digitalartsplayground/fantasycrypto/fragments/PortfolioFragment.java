@@ -7,12 +7,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
+
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +30,6 @@ import com.digitalartsplayground.fantasycrypto.models.MarketUnit;
 import com.digitalartsplayground.fantasycrypto.mvvm.viewmodels.PortfolioFragmentViewModel;
 import com.digitalartsplayground.fantasycrypto.util.AppExecutors;
 import com.digitalartsplayground.fantasycrypto.util.Colors;
-import com.digitalartsplayground.fantasycrypto.util.DeviceTypeCheck;
 import com.digitalartsplayground.fantasycrypto.util.NumberFormatter;
 import com.digitalartsplayground.fantasycrypto.util.SharedPrefs;
 import com.github.mikephil.charting.charts.PieChart;
@@ -35,14 +37,10 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.ironsource.mediationsdk.IronSource;
-import com.ironsource.mediationsdk.logger.IronSourceError;
-import com.ironsource.mediationsdk.model.Placement;
-import com.ironsource.mediationsdk.sdk.RewardedVideoListener;
+
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 
 public class PortfolioFragment extends Fragment implements ItemClickedListener {
@@ -67,12 +65,9 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         super.onCreate(savedInstanceState);
 
         mContext = requireContext();
-
         portfolioViewModel = new ViewModelProvider(requireActivity())
                 .get(PortfolioFragmentViewModel.class);
-
         sharedPrefs = SharedPrefs.getInstance(requireActivity().getApplication());
-
         assetsAdapter = new AssetsAdapter(requireContext(), this);
 
     }
@@ -95,8 +90,8 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         ordersView = view.findViewById(R.id.portfolio_orders);
         assetsView = view.findViewById(R.id.portfolio_assets);
         totalView = view.findViewById(R.id.portfolio_value);
-
         initRecyclerView();
+        subscribeObservers();
         return view;
 
     }
@@ -108,8 +103,6 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         ((MainActivity)requireActivity()).setSupportActionBar(toolbar);
     }
 
-
-
     @Override
     public void onResume() {
         super.onResume();
@@ -117,7 +110,6 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         tempBalance = sharedPrefs.getBalance();
         String balanceString = "$" + NumberFormatter.getDecimalWithCommas(tempBalance, 2);
         balanceView.setText(balanceString);
-        updatePortfolioWithAssets();
     }
 
     private void initRecyclerView() {
@@ -130,21 +122,68 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
     }
 
-    private void updatePortfolioWithAssets() {
+    private void subscribeObservers() {
 
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+        portfolioViewModel.getLiveLimitOrders().observe(getViewLifecycleOwner(), new Observer<List<LimitOrder>>() {
             @Override
-            public void run() {
+            public void onChanged(List<LimitOrder> limitOrders) {
+                if(limitOrders != null) {
+                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateOrders(limitOrders);
+                        }
+                    });
+                }
+            }
+        });
 
-                List<CryptoAsset> assets = portfolioViewModel.getAllAssets();
-
-                if(assets != null)
-                    initWithAssets(assets);
+        portfolioViewModel.getLiveAssets().observe(getViewLifecycleOwner(), new Observer<List<CryptoAsset>>() {
+            @Override
+            public void onChanged(List<CryptoAsset> cryptoAssets) {
+                if(cryptoAssets != null) {
+                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateAssets(cryptoAssets);
+                        }
+                    });
+                }
             }
         });
     }
 
-    private void initWithAssets(List<CryptoAsset> cryptoAssets) {
+    @WorkerThread
+    private void updateOrders(List<LimitOrder> limitOrders) {
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                ordersValue = 0;
+
+                for(LimitOrder limitOrder : limitOrders) {
+                    if(limitOrder.isBuyOrder()) {
+                        ordersValue = ordersValue + limitOrder.getValue();
+                    } else {
+                        ordersValue = ordersValue
+                                + (portfolioViewModel.fetchMarketUnit(limitOrder.getCoinID()).getCurrentPrice()
+                                * limitOrder.getAmount());
+                    }
+                }
+
+                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateBalances();
+                    }
+                });
+            }
+        });
+
+    }
+
+    @WorkerThread
+    private void updateAssets(List<CryptoAsset> cryptoAssets) {
         
         float tempPrice;
         MarketUnit tempUnit;
@@ -162,16 +201,12 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             asset.setCurrentPrice(tempUnit.getCurrentPrice());
             asset.setOneDayPercent(tempUnit.getOneDayPercentChange());
 
-
-
             tempPrice = tempUnit.getCurrentPrice() * asset.getAmount();
             asset.setTotalValue(tempPrice);
             assetsValue += tempPrice;
         }
 
-        updateBalances();
-
-        float percent = 0;
+        float percent;
 
         for(CryptoAsset asset : cryptoAssets) {
             percent = (asset.getTotalValue() / assetsValue) * 100f;
@@ -183,44 +218,26 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             @Override
             public void run() {
                 assetsAdapter.setCryptoAssets(cryptoAssets);
+                initPieGraph(cryptoAssets);
+                updateBalances();
             }
         });
-
-        initPieGraph(cryptoAssets);
     }
 
+
+    @MainThread
     private void updateBalances() {
-
-        ordersValue = 0;
-
-        List<LimitOrder> buyActiveOrders = portfolioViewModel.fetchBuyOrders();
-        for(LimitOrder limitOrder : buyActiveOrders) {
-            ordersValue = ordersValue + limitOrder.getValue();
-        }
-
-        List<LimitOrder> sellActiveOrders = portfolioViewModel.fetchSellOrders();
-        for(LimitOrder limitOrder : sellActiveOrders) {
-            ordersValue = ordersValue + (portfolioViewModel.fetchMarketUnit(limitOrder.getCoinID()).getCurrentPrice()
-                    * limitOrder.getAmount());
-        }
-
-        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                balanceView.setText(NumberFormatter.currency(sharedPrefs.getBalance()));
-                ordersView.setText(NumberFormatter.currency(ordersValue));
-                assetsView.setText(NumberFormatter.currency(assetsValue));
-                totalValue = assetsValue + tempBalance + ordersValue;
-                sharedPrefs.setTotalValue(totalValue);
-                String totalString = "Total Value: $" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
-                totalView.setText(totalString);
-            }
-        });
+        balanceView.setText(NumberFormatter.currency(sharedPrefs.getBalance()));
+        ordersView.setText(NumberFormatter.currency(ordersValue));
+        assetsView.setText(NumberFormatter.currency(assetsValue));
+        totalValue = assetsValue + tempBalance + ordersValue;
+        sharedPrefs.setTotalValue(totalValue);
+        String totalString = "Total Value: $" + NumberFormatter.getDecimalWithCommas(totalValue, 2);
+        totalView.setText(totalString);
     }
-
-
 
     private void initPieGraph(List<CryptoAsset> cryptoAssets){
+
         ArrayList<PieEntry> pieEntries = new ArrayList<>();
         String label = "type";
 

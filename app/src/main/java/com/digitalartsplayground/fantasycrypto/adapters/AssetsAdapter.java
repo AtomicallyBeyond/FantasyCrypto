@@ -56,7 +56,7 @@ public class AssetsAdapter extends RecyclerView.Adapter<AssetsAdapter.ViewHolder
         if (tempAsset.getImageURL() != null) {
             Glide.with(context)
                     .load(cryptoAssets.get(position).getImageURL())
-                    .placeholder(R.drawable.blur)
+                    .placeholder(R.drawable.ic_blur)
                     .circleCrop()
                     .into(holder.coinImage);
         } else {

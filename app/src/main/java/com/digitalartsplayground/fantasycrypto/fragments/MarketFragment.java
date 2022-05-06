@@ -22,6 +22,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.digitalartsplayground.fantasycrypto.BuildConfig;
 import com.digitalartsplayground.fantasycrypto.CoinActivity;
 import com.digitalartsplayground.fantasycrypto.MainActivity;
 import com.digitalartsplayground.fantasycrypto.R;
@@ -128,6 +130,13 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
             Uri uri = Uri.parse("https://t.me/fantasy_crypto");
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(intent);
+        } else if(item.getItemId() == R.id.share_app) {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Fantasy Crypto Exchange Simulator");
+            intent.putExtra(Intent.EXTRA_TEXT,
+                    "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID);
+            startActivity(Intent.createChooser(intent, "Share app via"));
         }
 
 
@@ -165,7 +174,7 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
     public void onResume() {
         super.onResume();
         float balance = sharedPrefs.getBalance();
-        String balanceString = NumberFormatter.getDecimalWithCommas(balance, 2);
+        String balanceString = "$" + NumberFormatter.getDecimalWithCommas(balance, 2);
         marketBalance.setText(balanceString);
     }
 
@@ -215,6 +224,7 @@ public class MarketFragment extends Fragment implements ItemClickedListener {
                 }
             }
         });
+
     }
 
 

@@ -37,7 +37,6 @@ public class MainViewModel extends AndroidViewModel {
         repository = Repository.getInstance(application);
     }
 
-
     public LiveData<Resource<List<MarketUnit>>> getLiveMarketData() {
         return liveMarketData;
     }
@@ -52,7 +51,6 @@ public class MainViewModel extends AndroidViewModel {
             public void onChanged(List<MarketUnit> marketUnits) {
                 if(marketUnits != null) {
                     liveMarketData.setValue(Resource.success(marketUnits));
-                    liveMarketData.removeSource(liveData);
                 }
             }
         });
@@ -89,31 +87,31 @@ public class MainViewModel extends AndroidViewModel {
         liveMarketData.addSource(liveData, new Observer<Resource<List<MarketUnit>>>() {
             @Override
             public void onChanged(Resource<List<MarketUnit>> listResource) {
-                if(listResource.status == Resource.Status.SUCCESS ||
-                        listResource.status == Resource.Status.ERROR) {
 
-                    if(listResource.status == Resource.Status.SUCCESS) {
+                if(listResource.status == Resource.Status.SUCCESS) {
 
-                        if(pages == 1) {
-                            liveMarketData.setValue(listResource);
-                        } else if(pages == 2) {
-                            fetchMarketData(pages - 1);
-                        }
-
+                    if(pages == 1) {
+                        liveMarketData.removeSource(liveData);
+                        liveMarketData.addSource(liveData, new Observer<Resource<List<MarketUnit>>>() {
+                            @Override
+                            public void onChanged(Resource<List<MarketUnit>> listResource) {
+                                liveMarketData.setValue(listResource);
+                            }
+                        });
                     } else {
-                        liveMarketData.setValue(listResource);
+                        fetchMarketData(pages - 1);
+                        liveMarketData.removeSource(liveData);
                     }
 
+
+
+                } else if (listResource.status == Resource.Status.ERROR){
+
+                    liveMarketData.setValue(listResource);
                     liveMarketData.removeSource(liveData);
-
                 }
-
             }
         });
-
-        if(pages > 2)
-            fetchMarketData(pages - 1);
-
     }
 
     public LiveData<Boolean> getLiveUpdateCompleted() {
@@ -251,7 +249,6 @@ public class MainViewModel extends AndroidViewModel {
             public void onChanged(List<MarketWatchUnit> marketWatchUnits) {
                 if(marketWatchUnits != null) {
                     liveWatchList.setValue(marketWatchUnits);
-                    //liveWatchList.removeSource(liveData);
                 }
             }
         });
