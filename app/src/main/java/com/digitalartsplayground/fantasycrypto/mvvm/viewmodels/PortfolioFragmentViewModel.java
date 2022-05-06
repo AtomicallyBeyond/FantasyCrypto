@@ -41,4 +41,8 @@ public class PortfolioFragmentViewModel extends AndroidViewModel {
         return repository.getActiveLimitOrders();
     }
 
+    public LiveData<List<MarketUnit>> getMarketListByIDs(List<String> assetIDs) {
+        return repository.getAssetMarketUnits(assetIDs);
+    }
+
 }

@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,6 +41,7 @@ import com.github.mikephil.charting.formatter.PercentFormatter;
 
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -142,10 +144,27 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             @Override
             public void onChanged(List<CryptoAsset> cryptoAssets) {
                 if(cryptoAssets != null) {
-                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+
+                    List<String> coinsIDList = new ArrayList<>(cryptoAssets.size());
+                    for(CryptoAsset asset : cryptoAssets) {
+                        coinsIDList.add(asset.getId());
+                    }
+
+                    LiveData<List<MarketUnit>> liveMarketList = portfolioViewModel.getMarketListByIDs(coinsIDList);
+                    liveMarketList.observe(getViewLifecycleOwner(), new Observer<List<MarketUnit>>() {
                         @Override
-                        public void run() {
-                            updateAssets(cryptoAssets);
+                        public void onChanged(List<MarketUnit> marketUnits) {
+
+                            if(marketUnits != null) {
+
+                                HashMap<String, MarketUnit> hashMap = new HashMap<>();
+                                for(MarketUnit unit : marketUnits) {
+                                    hashMap.put(unit.getCoinID(), unit);
+                                }
+
+                                updateAssets(cryptoAssets, hashMap);
+                                liveMarketList.removeObservers(getViewLifecycleOwner());
+                            }
                         }
                     });
                 }
@@ -182,8 +201,8 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
     }
 
-    @WorkerThread
-    private void updateAssets(List<CryptoAsset> cryptoAssets) {
+
+    private void updateAssets(List<CryptoAsset> cryptoAssets, HashMap<String, MarketUnit> marketHashMap) {
         
         float tempPrice;
         MarketUnit tempUnit;
@@ -191,7 +210,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
         for(CryptoAsset asset : cryptoAssets) {
 
-            tempUnit = portfolioViewModel.fetchMarketUnit(asset.getId());
+            tempUnit = marketHashMap.get(asset.getId());
 
             asset.setFullName(tempUnit.getCoinName());
             asset.setShortName(tempUnit.getCoinSymbol().toUpperCase());
@@ -214,14 +233,9 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
             asset.setPortfolioPercent(percent);
         }
 
-        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                assetsAdapter.setCryptoAssets(cryptoAssets);
-                initPieGraph(cryptoAssets);
-                updateBalances();
-            }
-        });
+        assetsAdapter.setCryptoAssets(cryptoAssets);
+        initPieGraph(cryptoAssets);
+        updateBalances();
     }
 
 
