@@ -18,6 +18,10 @@ import com.digitalartsplayground.fantasycrypto.util.Resource;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
+/**
+ * This ViewModel is shared with MainActivity and MarketFragment because they
+ * both share and work on the same data set.
+ * */
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -30,10 +34,8 @@ public class MainViewModel extends AndroidViewModel {
 
     private boolean cleanMarketData = true;
 
-
     public MainViewModel(@NonNull @NotNull Application application) {
         super(application);
-
         repository = Repository.getInstance(application);
     }
 
@@ -41,7 +43,10 @@ public class MainViewModel extends AndroidViewModel {
         return liveMarketData;
     }
 
-
+    /**
+     * If market data was recently updated, then we only need to fetch data
+     * from local cache.
+     * */
     public void fetchMarketDataCache() {
 
         LiveData<List<MarketUnit>> liveData = repository.getLiveMarketData();
@@ -57,6 +62,11 @@ public class MainViewModel extends AndroidViewModel {
 
     }
 
+    /**
+     * Using recursive function call, this function will fetch data for
+     * all pages, then update LiveData liveMarketData with complete data
+     * set from server.
+     * */
     public void fetchMarketData(int pages) {
 
         String pageString = String.valueOf(pages);
@@ -103,8 +113,6 @@ public class MainViewModel extends AndroidViewModel {
                         liveMarketData.removeSource(liveData);
                     }
 
-
-
                 } else if (listResource.status == Resource.Status.ERROR){
 
                     liveMarketData.setValue(listResource);
@@ -119,6 +127,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
 
+    /**
+     *Using recursive function call. Update market data without loading
+     * database because live data will automatically observe changes in
+     * database and load changes to UI.
+     * */
     public void updateMarketData(int pages) {
 
         String pageString = String.valueOf(pages);

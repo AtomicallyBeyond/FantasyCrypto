@@ -42,7 +42,7 @@ public class PortfolioFragmentViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<MarketUnit>> getMarketListByIDs(List<String> assetIDs) {
-        return repository.getAssetMarketUnits(assetIDs);
+        return repository.getMarketUnitsByID(assetIDs);
     }
 
 }

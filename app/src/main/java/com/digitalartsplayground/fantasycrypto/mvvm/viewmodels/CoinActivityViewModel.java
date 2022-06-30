@@ -53,7 +53,7 @@ public class CoinActivityViewModel extends AndroidViewModel {
 
     public void updateMarketUnit(String coinID) {
 
-        LiveData<Resource<MarketUnit>> liveData = repository.getMarketUnitLive(coinID, "usd");
+        LiveData<Resource<MarketUnit>> liveData = repository.getLiveMarketUnit(coinID, "usd");
 
         liveMarketUnit.addSource(liveData, new Observer<Resource<MarketUnit>>() {
             @Override

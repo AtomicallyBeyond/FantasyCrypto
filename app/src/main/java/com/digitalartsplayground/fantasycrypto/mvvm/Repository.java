@@ -52,6 +52,12 @@ public class Repository {
         sharedPrefs = SharedPrefs.getInstance(context);
     }
 
+    /**
+     *
+     * LIMIT ORDERS SECTION
+     *
+     * */
+
     public void addLimitOrder(LimitOrder limitOrder) {
 
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
@@ -68,10 +74,6 @@ public class Repository {
         int value = limitOrderDao.deleteByTimeCreated(coinID, timeCreated);
 
         return value != 0;
-    }
-
-    public void cleanInactiveLimitHistory(){
-        limitOrderDao.cleanInactiveLimitHistory();
     }
 
     public int getActiveLimitCount() {
@@ -107,6 +109,20 @@ public class Repository {
         return limitOrderDao.getLimitByTimeCreated(timeCreated);
     }
 
+    /**
+     * Remove limit history and only keep the last 500 limit orders. This function should
+     * be called occasionally for house cleaning.
+     */
+    public void cleanInactiveLimitHistory(){
+        limitOrderDao.cleanInactiveLimitHistory();
+    }
+
+
+    /**
+     *
+     * Crypto Assets Section
+     *
+     * */
 
     public void updateCryptoAsset(String coinID, float amount, float value) {
         cryptoAssetDao.updateAmount(coinID, amount, value);
@@ -148,12 +164,15 @@ public class Repository {
         return cryptoAssetDao.getCryptoAsset(coinID);
     }
 
-    public LiveData<List<MarketUnit>> getAssetMarketUnits(List<String> coinIDs) {
-        return marketDao.getAssetMarketUnits(coinIDs);
-    }
 
-    public void cleanMarketListCache(long timeLimit) {
-        marketDao.cleanMarketListCache(timeLimit);
+    /**
+     *
+     * Market Data Section
+     *
+     * */
+
+    public LiveData<List<MarketUnit>> getMarketUnitsByID(List<String> coinIDs) {
+        return marketDao.getAssetMarketUnits(coinIDs);
     }
 
     public LiveData<List<MarketUnit>> getLiveMarketData() {
@@ -180,6 +199,15 @@ public class Repository {
         marketDao.updateWatchListItem(coinID, isWatchList);
     }
 
+    public void cleanMarketListCache(long timeLimit) {
+        marketDao.cleanMarketListCache(timeLimit);
+    }
+
+
+
+    /**
+     * Fetch data for specific coin such as coin description and purpose.
+     * */
     public LiveData<Resource<DeveloperUnit>> getDeveloperUnit(String coinId) {
         return new MarketDataFetcher<DeveloperUnit>(AppExecutors.getInstance(), false, false) {
             @Override
@@ -209,10 +237,14 @@ public class Repository {
                                 "false",
                                 "false");
             }
+
         }.getAsLiveData();
     }
 
 
+    /**
+     * Fetch market data with pagination
+     * */
     public LiveData<Resource<List<MarketUnit>>> getMarketData(
             String currency,
             String order,
@@ -259,10 +291,15 @@ public class Repository {
                         sparkline,
                         priceChangeRange);
             }
+
         }.getAsLiveData();
     }
 
 
+    /**
+     * Similar to getMarketData but streamlined without loading data from DB, only updating current
+     * data in cache from API.
+     * */
     public LiveData<Resource<List<MarketUpdate>>> updateMarketData(
             String currency,
             String order,
@@ -308,12 +345,17 @@ public class Repository {
                         sparkline,
                         priceChangeRange);
             }
+
         }.getAsLiveData();
     }
 
 
-    public LiveData<Resource<MarketUnit>> getMarketUnitLive(String id, String currency) {
-        return new CoinDataFetcher<MarketUnit>(id, AppExecutors.getInstance()) {
+    /**
+     * Fetching a specific coin market data.
+     * */
+    public LiveData<Resource<MarketUnit>> getLiveMarketUnit(String id, String currency) {
+
+        return new CoinDataFetcher<MarketUnit>() {
             @Override
             protected MarketUnit processResponse(ApiResponse.ApiSuccessResponse response) {
 
@@ -333,13 +375,17 @@ public class Repository {
             protected LiveData<ApiResponse<MarketUnit>> createCall() {
                 return ServiceGenerator.getCryptoApi().getMarketUnit(currency, id, "desc", "true", "24h");
             }
+
         }.getAsLiveData();
     }
 
 
+    /**
+     * Fetching candlestick graphing data for a specific coin.
+     * */
     public LiveData<Resource<CandleStickData>> getCandleStickData(String id, String currency, String days, long limitTimeCreated) {
-        return new CoinDataFetcher<CandleStickData>(id, AppExecutors.getInstance()) {
 
+        return new CoinDataFetcher<CandleStickData>() {
             @NonNull
             @NotNull
             @Override
@@ -356,14 +402,16 @@ public class Repository {
                 return candleStickData;
             }
 
-
         }.getAsLiveData();
     }
 
 
+    /**
+     * Fetching line graphing data for a specific coin.
+     * */
     public LiveData<Resource<LineGraphData>> getLineGraphData(String id, String currency, String from, String to, LineGraphData.TimeSpan timeSpan) {
-        return new CoinDataFetcher<LineGraphData>(id, AppExecutors.getInstance()) {
 
+        return new CoinDataFetcher<LineGraphData>() {
             @NonNull
             @NotNull
             @Override

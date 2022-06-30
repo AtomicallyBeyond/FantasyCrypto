@@ -143,6 +143,7 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
         portfolioViewModel.getLiveAssets().observe(getViewLifecycleOwner(), new Observer<List<CryptoAsset>>() {
             @Override
             public void onChanged(List<CryptoAsset> cryptoAssets) {
+
                 if(cryptoAssets != null) {
 
                     List<String> coinsIDList = new ArrayList<>(cryptoAssets.size());
@@ -157,12 +158,12 @@ public class PortfolioFragment extends Fragment implements ItemClickedListener {
 
                             if(marketUnits != null) {
 
-                                HashMap<String, MarketUnit> hashMap = new HashMap<>();
+                                HashMap<String, MarketUnit> marketHashMap = new HashMap<>();
                                 for(MarketUnit unit : marketUnits) {
-                                    hashMap.put(unit.getCoinID(), unit);
+                                    marketHashMap.put(unit.getCoinID(), unit);
                                 }
 
-                                updateAssets(cryptoAssets, hashMap);
+                                updateAssets(cryptoAssets, marketHashMap);
                                 liveMarketList.removeObservers(getViewLifecycleOwner());
                             }
                         }

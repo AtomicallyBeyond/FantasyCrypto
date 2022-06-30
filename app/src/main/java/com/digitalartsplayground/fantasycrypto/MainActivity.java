@@ -39,6 +39,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.ironsource.mediationsdk.ISBannerSize;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.IronSourceBannerLayout;
+import com.ironsource.mediationsdk.integration.IntegrationHelper;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.BannerListener;
 
@@ -53,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
     private MainViewModel mainViewModel;
     private SharedPrefs sharedPrefs;
-    private FrameLayout bannerContainer;
     private ScheduledExecutorService scheduleTaskExecutor;
     private TextView errorView;
     private TextView refreshTextView;
@@ -64,9 +64,9 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private boolean isErrorScreen = false;
     private boolean isLoadingScreen = true;
-    private boolean isFirstTime = false;
     public static int bannerClickCount = 0;
     private IronSourceBannerLayout banner;
+    private FrameLayout bannerContainer;
     private FirebaseAnalytics mFirebaseAnalytics;
 
 
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
         initIronSource();
 
-        isFirstTime = sharedPrefs.getIsFirstTime();
+        boolean isFirstTime = sharedPrefs.getIsFirstTime();
         if(isFirstTime) {
             sharedPrefs.setBalance(10000);
             sharedPrefs.setFirstTime(false);
@@ -606,7 +606,6 @@ public class MainActivity extends AppCompatActivity {
             IronSource.destroyBanner(banner);
             banner = null;
         }
-
     }
 
     private void loadIronSourceBanner() {

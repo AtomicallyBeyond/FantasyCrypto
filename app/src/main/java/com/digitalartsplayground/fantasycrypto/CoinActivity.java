@@ -257,14 +257,14 @@ public class CoinActivity extends AppCompatActivity {
         double parsedNumber = Double.parseDouble(number);
 
         if(Math.abs(parsedNumber / 1000000000) >= 1)
-            return prettyCount(parsedNumber);
+            return extremeNumberFormatter(parsedNumber);
         else {
             NumberFormat formatter = new DecimalFormat("#,###");
             return formatter.format(Double.parseDouble(number));
         }
     }
 
-    public static String prettyCount(Double number) {
+    public static String extremeNumberFormatter(Double number) {
         DecimalFormat df = new DecimalFormat("#.##");
         String numberString;
 
